@@ -1,14 +1,14 @@
-if(typeof require === 'undefiend'){
-  var require = function (){};
+
+if(require){
+  var Entity = require("./entity.js")
+    , _ = require('underscore');
 }
-if(typeof exports == 'undefined'){
-  var exports = this['Ship'] = {};
+
+var Ship = Entity.extend({ 
+   type: 'ship'
+});
+
+
+if(module){
+ module.exports = Ship;
 }
-
-var Entity = require("./entity.js")
-  , _ = require('underscore');
-
-var Ship = Entity.extend({ });
-
-
-exports = Ship;

@@ -1,69 +1,34 @@
-var cls = require("../shared/lib/class.js")
-  , Island = require('../shared/entities/island.js');
-  , Ship = require('../shared/entities/ship.js');
+var Class = require("../shared/lib/class.js")
+  , Island = require('../shared/entities/island.js')
+  , Ship = require('../shared/entities/ship.js')
+  , BaseWorld = require('../shared/lib/baseworld.js')
   , _ = require('underscore');
 
+var World = BaseWorld.extend({
 
-var myWorld = new World();
-
-var World = cls.Class.extend({
-
-   fps: 30,   
-   init: function(id, players){
-       this.id = id;
-       this.players = players;
-       this.islands = this.initalizeIslands();
-       this.ships = [];
-       this.assignStartingIslands();
-       
+   fps: 12,   
+   updateWorld: function(){
+      updateWorld({size: this.size, islands: this.islands, ships: this.ships});
    },
-
-   run: function(){
-       this.lastFrame = new Date();
-       this.intervalId = setInterval(this.step.bind(this), 1000/this.fps)
-   },
-
-   step: function(){
-     _.each(this.islands, function(island){
-       island.update();
-    });
-
-     _.each(this.ships, function(ship){
-       ship.update();
-    });
-     
-   },
-
-
-   initializeIslands: function(){
-      var islandData = this.getIslandData();
-      _.each(islandData, function(data){
-        this.islands.push(new Island(data));
-      });
-
-   },
-
-   getIslandData(): function(){
-    return [{ x: 145, y: 122, id: 1, radius: 30 },
-            { x: 50, y: 50, radius: 32, id: 6},
-            { x: 175, y: 200, id: 2, radius: 35 },
-            { x: 260, y: 320, id: 8, radius: 28 },
-            { x:280, y: 120, id: 7, radius: 54 },  
-            { x: 130, y: 450, id: 3, radius: 54},
-            { x: 100, y: 320, id: 4, radius: 41 },
-            { x: 321, y: 404, id: 5, radius: 45 }];
-   },
-
-   assignStartingIslands: function(){
-      _.each(this.players, function(player, id){
-           player.id = id;
-           this.islands[id].player = player;
-     });
-   },
-
+   getIslandData: function(){
+    return [{ x: 145, y: 122, radius: 30 },
+            { x: 150, y: 50, radius: 32, id: 6},
+            { x: 175, y: 200, radius: 35 },
+            { x: 1260, y: 1320, radius: 28 },
+            { x: 1550, y: 3050, radius: 32, id: 6},
+            { x: 175, y: 200, radius: 35 },
+            { x: 1260, y: 1320, radius: 28 },
+            { x:280, y: 1120, radius: 54 },  
+            { x: 4730, y: 2450, radius: 54},
+            { x: 4800, y: 4820, radius: 41 },
+            { x:280, y: 1120, radius: 54 },  
+            { x: 730, y: 1450, radius: 54},
+            { x: 1200, y: 2320, radius: 41 },
+            { x: 321, y: 404, radius: 45 }];
+   }
 });
 
-var EntityManager = cls.Class.extend({
+var EntityManager = Class.extend({
 
    init: function(){
      this.entities = {};

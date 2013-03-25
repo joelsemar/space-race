@@ -1,19 +1,11 @@
-if(typeof require === 'undefiend'){
-  var require = function (){};
+if(require){
+   var Class = require("./class.js")
+    , _ = require('underscore');
 }
 
-if(typeof exports == 'undefined'){
-    var exports = this['Entity'] = {};
-}
-
-var cls = require("../shared/lib/class.js")
-  , _ = require('underscore');
-
-
-var Vector =  cls.Class.extend({
+var Vector =  Class.extend({
 
     init: function(x, y){
-
       if (typeof x == 'Object') {
          this.x = x.x;
          this.y = x.y;
@@ -21,6 +13,7 @@ var Vector =  cls.Class.extend({
       else {
         this.x = x;
         this.y = y;
+      }
     },
 
     cp: function(){
@@ -135,6 +128,9 @@ var Vector =  cls.Class.extend({
     toString: function(){
         return '[Vector(' + this.x + ', ' + this.y + ') angle: ' + this.angle() + ', length: ' + this.len() + ']';
     }
-};
+});
 
-exports = Vector;
+if(module){
+    module.exports = Vector;
+}
+

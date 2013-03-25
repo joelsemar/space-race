@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+  <head>
+    <script>
+       var require = require || false;
+       var module = module || false;
+       CanvasRenderingContext2D.prototype.clear = 
+       CanvasRenderingContext2D.prototype.clear || function (preserveTransform) {
+          if (preserveTransform) {
+             this.save();
+             this.setTransform(1, 0, 0, 1, 0, 0);
+          }
+
+          this.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+          if (preserveTransform) {
+            this.restore();
+          }           
+        };
+     </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script src="js/class.js"></script>
+    <script src="js/vector.js"></script>
+    <script src="js/entity.js"></script>
+    <script src="js/entitymanager.js"></script>
+    <script src="js/guid.js"></script>
+    <script src="js/island.js"></script>
+    <script src="js/ship.js"></script>
+    <script src="js/baseworld.js"></script>
+    <script src="js/app.js"></script>
+    <style type="text/css">
+      body{
+        background-image: url('img/water.png');
+      }
+    </style>
+  </head>
+  <body >
+    <canvas id="mainCanvas"></canvas>
+  </body>
+
+</html>
+

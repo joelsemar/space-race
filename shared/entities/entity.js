@@ -1,45 +1,81 @@
-if(typeof require === 'undefiend'){
-  var require = function (){};
+if(require){
+  var Class = require("../lib/class.js")
+    ,  Vector = require("../lib/vector.js")
+    , _ = require('underscore')
+    , guid = require('../lib/guid.js');
 }
 
-if(typeof exports == 'undefined'){
-    var exports = this['Entity'] = {};
-}
-
-var cls = require("../shared/lib/class.js")
-  ,  Vector = require("../shared/lib/vector.js")
-  , _ = require('underscore');
-
-
-var Entity = cls.Class.extend({
+var Entity = Class.extend({
     
-    pos: new Vector(0, 0),
-    vel: new Vector(0, 0),
-
-    init: function(){
-      this.id  = guid();
-    },
-    
-    update: function(delta){
-      if(this.vel.x && this.vel.y){
-        this.pos.add(this.vel.mulNew(delta));
+   center: function(){
+     return new Vector(this.pos.x + this.size.x/2, this.pos.y + this.size.x/2);
+   },
+   init: function(obj){
+      for(key in obj){
+        this[key] = obj[key];
       }
-    },
+      _.each(['pos', 'vel', 'size'], function(attr){
+        if(this[attr]){
+          this[attr] = new Vector(this[attr].x, this[attr].y);
+        }
+        else{
+           this[attr] = new Vector(0,0);
+        }
+      }, this)
+      if(!this.id){
+        this.id = guid();
+      }
+      currentWorld.entityManager.register(this);
+   },
+ 
+   update: function(delta){
+     if(this.vel.x || this.vel.y){
+         this.pos.add(this.vel.mulNew(delta));
+     }
+   },
 
-    draw: function(ctx){ },
+   isWithinRect: function(rect){
+    //rect being a loosely defined type that has at least a size and pos vector (like Entity)
+    var points = this.getPoints()
+    var ret = false;
+    _.each(points, function(point){
+        if(this._pointWithinRect(point, rect)){
+           ret  = true;
+        };
+    }, this);
+    return ret;
+    
+   },
+   stop: function(){
+     this.vel.x = 0;
+     this.vel.y = 0;
+   },
+
+   _pointWithinRect: function(point, rect){
+      if(point.x > rect.pos.x && point.x < rect.pos.x + rect.size.x && point.y > rect.pos.y && point.y < rect.pos.y + rect.size.y){
+        return true;
+      }
+      return true;
+   
+   },
+   getPoints: function(){
+     return [this.pos, {x: this.pos.x + this.size.x, y: this.pos.y}, 
+             {x: this.pos.x, y: this.pos.y + this.size.y}, {x: this.pos.x + this.size.x, y: this.pos.y + this.size.y}]
+   },
+
+   loadFromData: function(obj){
+      for(key in obj){
+        this[key] = obj[key];
+      }
+   },
+   draw: function(){},
+
 });
 
-function s4() {
-  return Math.floor((1 + Math.random()) * 0x10000)
-             .toString(16)
-             .substring(1);
-};
 
-function guid() {
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-         s4() + '-' + s4() + s4() + s4();
+if(module){
+    module.exports = Entity;
 }
 
 
-exports = Entity;
 

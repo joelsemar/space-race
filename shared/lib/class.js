@@ -1,4 +1,3 @@
-
 /* Simple JavaScript Inheritance
  * By John Resig http://ejohn.org/
  * MIT Licensed.
@@ -63,6 +62,6 @@ Class.extend = function(prop) {
 };
 
 if(!(typeof exports === 'undefined')) {
-    exports.Class = Class;
+    module.exports = Class;
 }
 
