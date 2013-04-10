@@ -2,14 +2,32 @@ if(require){
   var Class = require("../lib/class.js")
     ,  Vector = require("../lib/vector.js")
     , _ = require('underscore')
-    , guid = require('../lib/guid.js');
+    , utils = require('../lib/utils.js');
 }
+var Rect = Class.extend({
+   size: new Vector(0,0),
+   pos: new Vector(0,0),
+   points: function(){
+     return [this.pos,
+             {x: this.pos.x + this.size.x, y: this.pos.y}, 
+             {x: this.pos.x, y: this.pos.y + this.size.y}, 
+             {x: this.pos.x + this.size.x, y: this.pos.y + this.size.y}]
+   },
+});
 
-var Entity = Class.extend({
-    
+var Entity = Rect.extend({
+   
+   speed: 1,
+
+   setVelocity: function(vel){
+     this.vel = vel;
+     this.vel.normalize().mul(this.speed);
+   },
+
    center: function(){
      return new Vector(this.pos.x + this.size.x/2, this.pos.y + this.size.x/2);
    },
+
    init: function(obj){
       for(key in obj){
         this[key] = obj[key];
@@ -23,44 +41,48 @@ var Entity = Class.extend({
         }
       }, this)
       if(!this.id){
-        this.id = guid();
+        this.id = utils.guid();
       }
-      currentWorld.entityManager.register(this);
+      if(this.vel){
+        this.setVelocity(this.vel);
+      }
+      Game.entityManager.register(this);
    },
  
-   update: function(delta){
+   _update: function(delta){
      if(this.vel.x || this.vel.y){
-         this.pos.add(this.vel.mulNew(delta));
+         this.pos.add(this.vel.mulNew(delta/1000));
+     }
+     this.update(delta);
+   },
+   update: function() {},
+
+   _rect: function(){
+     //the fact that i even need this is a wart...oh well
+     return {
+        x: this.pos.x,
+        y: this.pos.y,
+        size: this.size
      }
    },
+
+   stop: function(){
+     this.vel.x = 0;
+     this.vel.y = 0;
+   },
+
 
    isWithinRect: function(rect){
     //rect being a loosely defined type that has at least a size and pos vector (like Entity)
     var points = this.getPoints()
     var ret = false;
     _.each(points, function(point){
-        if(this._pointWithinRect(point, rect)){
+        if(utils.pointWithinRect(point, rect)){
            ret  = true;
         };
     }, this);
     return ret;
     
-   },
-   stop: function(){
-     this.vel.x = 0;
-     this.vel.y = 0;
-   },
-
-   _pointWithinRect: function(point, rect){
-      if(point.x > rect.pos.x && point.x < rect.pos.x + rect.size.x && point.y > rect.pos.y && point.y < rect.pos.y + rect.size.y){
-        return true;
-      }
-      return true;
-   
-   },
-   getPoints: function(){
-     return [this.pos, {x: this.pos.x + this.size.x, y: this.pos.y}, 
-             {x: this.pos.x, y: this.pos.y + this.size.y}, {x: this.pos.x + this.size.x, y: this.pos.y + this.size.y}]
    },
 
    loadFromData: function(obj){

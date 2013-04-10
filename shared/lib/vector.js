@@ -95,7 +95,11 @@ var Vector =  Class.extend({
     },
     
     normalize: function(){
+        
         var l = this.len();
+        if(!l){
+           return this;
+        }
         this.x /= l;
         this.y /= l;
         return this;
@@ -119,9 +123,15 @@ var Vector =  Class.extend({
             return 0;
         return l;
     },
+
+    distanceTo: function(point){
+        var l = Math.sqrt(Math.pow(Math.abs(this.x - point.x), 2) + Math.pow(Math.abs(this.y  - point.y), 2));
+        if (l < 0.005 && l > -0.005) 
+            return 0;
+        return l;
+    },
     
     is: function(test){
-    
         return typeof test == 'object' && this.x == test.x && this.y == test.y;
     },
     

@@ -6,26 +6,44 @@ var express = require('express')
   , io = require('socket.io').listen(server)
   , _ = require('underscore')
   , path = require('path')
-  , guid = require('../shared/lib/guid.js')
+  , utils = require('../shared/lib/utils.js')
+  , EntityManager = require('../shared/entities/entitymanager.js')
   , World = require('./worldserver.js');
 
 
-var currentPlayers = []
-var neededPlayers = 1;
-var currentWorlds = [];
-currentWorld = undefined;
 
+
+Game = {
+    currentPlayers: [{id: 'computer', color: 'yellow'}],
+    neededPlayers: 2,
+    currentWorlds: [],
+    availableColors: ['blue', 'yellow', 'white', 'red'],
+    socketPool: {},
+    entityManager: new EntityManager(),
+    registerWithToken: function(token){
+        return token;
+    }
+};
 
 io.sockets.on('connection', function(socket){
-   currentPlayers.push({id: guid(), socket: socket});
-   if(currentPlayers.length === neededPlayers){
-      var newWorldId = 'world_' + (currentWorlds.length + 1);
-      currentWorld = new World(newWorldId, currentPlayers);
-      console.log("Creating world "  + newWorldId);
-       
-      currentWorld.run();
-   }
+   id = utils.guid();
+   Game.socketPool[id] = socket;
+   socket.on('register', function(data){
+      var token = Game.registerWithToken(data.token);
+      if (!token){
+         return;
+      }
+      Game.currentPlayers.push({id: token, color: 'blue'});
+      socket.emit('player_assign', {id: token, color: 'blue'});
+      if(Game.currentPlayers.length === Game.neededPlayers){
+        var newWorldId = 'world_' + (Game.currentWorlds.length + 1);
+        Game.world = new World(newWorldId, Game.currentPlayers);
+        console.log("Creating world "  + newWorldId);
+        Game.world.run();
+      }
+   });
 });
+
 
 
 
@@ -36,11 +54,6 @@ updateWorld = function(data){
 app.get('/', function (req, res) {
   res.sendfile(path.resolve('../client/index.html'));
 });
-
-//app.get('/console', function (req, res) {
-//  res.sendfile(__dirname + '/static/console.html');
-//  res.header("X-Frame-Options", "ALLOW FROM *");
-//});
 
 app.use(express.static(path.resolve('../client')));
 

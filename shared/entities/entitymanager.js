@@ -23,7 +23,7 @@ var EntityManager = Class.extend({
 
    updateEntities: function(delta){
      for (id in this.entities){
-         this.entities[id].update(delta);
+         this.entities[id]._update(delta);
      }
    },
 

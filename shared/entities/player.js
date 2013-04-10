@@ -1,12 +1,13 @@
 if (require){
-  var Entity = require('./entity.js');
+  var Entity = require('./entity.js'),
+      utils = require('../lib/utils.js');
 
 }
 
 var Player = Entity.extend({
 
    init: function(id, socket){
-      this.id = guid();
+      this.id = utils.guid();
       this.socket = socket;
    },
 

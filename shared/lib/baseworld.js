@@ -14,13 +14,10 @@ var BaseWorld = Class.extend({
        this.id = id;
        this.players = players;
        this.ships = [];
-       this.entityManager = new EntityManager();
        
    },
 
    run: function(){
-       this.initializeIslands();
-       this.assignStartingIslands();
        this.lastFrame = new Date();
        this.intervalId = setInterval(this.step.bind(this), 1000/this.fps)
    },
@@ -31,34 +28,18 @@ var BaseWorld = Class.extend({
      if (delta < 0){
         delta = 1
      }
-     this.entityManager.updateEntities(delta);
+     Game.entityManager.updateEntities(delta);
      this.lastFrame = now;
      this.currentTick = delta;
-     this.updateWorld();
-     
    },
 
-   updateWorld: function(){ },
 
-   initializeIslands: function(){
-      this.islands = [];
-      var islandData = this.getIslandData();
-      _.each(islandData, function(data){
-        data.pos = {x: data.x, y: data.y};
-        data.size = {x: data.radius*2, y: data.radius*2};
-        this.islands.push(new Island(data));
-      }, this);
-
-   },
-
-   getIslandData: function(){
-      return [];
-   },
-
-   assignStartingIslands: function(){
-      _.each(this.players, function(player, idx){
-           this.islands[idx].player_id = player.id;
-     }, this);
+   playerById: function(id){
+       for(var i=0;i<this.players.length;i++){
+         if(this.players[i].id === id){
+           return this.players[i];
+           }
+       }
    },
 
 });

@@ -1,18 +1,22 @@
+
+
 var World = BaseWorld.extend({
 
   fps: 30,
-  islandImageSrc: 'img/island.png',
-  planeImageSrc: 'img/plane.png',
+  islandImageSrc: 'img/luna.png',
+  shipImageSrc: 'img/ship.png',
   init: function(){
      this._super();
      this.islandImage = new Image();
      this.islandImage.src = this.islandImageSrc;
+     this.shipImage = new Image();
+     this.shipImage.src = this.shipImageSrc;
      
   },
   receiveServerUpdate: function(data){
     this.islands = [];
-    _.each(data.islands, function(island){
-       var localIsland = this.entityManager.entityById(island.id);
+    _.each(data.islands || [], function(island){
+       var localIsland = Game.entityManager.entityById(island.id);
        if(localIsland){
          localIsland.loadFromData(island);
        }
@@ -20,20 +24,19 @@ var World = BaseWorld.extend({
           new Island(island);
        }
     },this);
+    if(data.players){
+      this.players = data.players;
+    }
     //this.ships = data.ships;
     this.size = data.size;
-    this.players = data.players;
   },
 
 });
 
 
-var currentWorld;
 var DrawLoop = Class.extend({
 
-
-  init: function(world){
-    this.world = world;  
+  init: function(){
     window.requestAnimationFrame =  window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
   },
 
@@ -42,138 +45,151 @@ var DrawLoop = Class.extend({
   },
 
   draw: function(){
-    this.world.ctx.clear();
-    this.world.entityManager.drawEntities();
+    Game.viewport.clear();
+    Game.entityManager.drawEntities();
     requestAnimationFrame(this.draw.bind(this));
   },
  
 });
 
-var ViewPort = Entity.extend({
-  type: 'viewport',
+var Player = Entity.extend({
+    selectedIslands: [],
+    selectStart: false,
+    draw: function(){
+       var ctx = Game.viewport.ctx;
+       if(this.selectStart && this.selectEnd){
+         var sizeX = this.selectEnd.x - this.selectStart.x;
+         var sizeY = this.selectEnd.y - this.selectStart.y;
+         ctx.save();
+         ctx.lineWidth = 1;
+         ctx.strokeStyle = 'white';
+         ctx.beginPath();
+         ctx.rect(this.selectStart.x, this.selectStart.y, sizeX, sizeY);
+         ctx.closePath();
+         ctx.stroke();
+         ctx.restore();
+       }
+    },
 
-  pos: new Vector(0,0),
-  vel: new Vector(0,0),
-  scrollSpeed: 1,
-  scrollHitBoxWidth: 300,
-  lastDebug: 0,
-  size: new Vector($(document).width(), $(document).height()),
+    click: function(x,y){
+      this.selectStart = {x: x, y: y};
+      this.isSelecting = true;
+      var x = x + Game.viewport.pos.x;
+      var y = y + Game.viewport.pos.y;
+      var point = new Vector(x, y);
+      var islands = Game.entityManager.getEntitiesByType('island');
+      _.each(islands, function(island){
+        island.selected = false;
+        if (utils.pointInRect(point, island)){
+           if(island.player_id === this.id){
+             if(this.selectedIslands.length){
+               this.attack(island);
+               return;
+             }
+             else{
+                this.selectedIslands.push(island);
+                island.selected = true;
+                return;
+             }
+           }
+           else {
+             this.attack(island);
+             return;
+           }
+        }
+      }, this);
 
-  update: function(delta){
-    this._super(delta);
-    if (this.pos.x <= 0){
-      this.pos.x = 0;
-      this.stop();
-    }
-    if (this.pos.x > currentWorld.size.x - this.size.x){
-      this.pos.x = currentWorld.size.x - this.size.x;
-      this.stop();
-    }
-    if (this.pos.y <= 0){
-      this.pos.y = 0;
-      this.stop();
-    }
-    if (this.pos.y > currentWorld.size.y - this.size.y){
-      this.pos.y = currentWorld.size.y - this.size.y;
-      this.stop();
-    }
-   //  console.log('viewport at: ' + this.pos.x + ', ' + this.pos.y);
-  }, 
-  init: function(world){
-    world.viewport = this;
-    this._super();
-    var canvas = document.getElementById('mainCanvas');
-    canvas.setAttribute('width', this.size.x);
-    canvas.setAttribute('height', this.size.y);
-    canvas.style.width = this.size.x + "px";
-    canvas.style.height = this.size.y + "px";
-    canvas.style.top = "0px";
-    canvas.style.left = "0px";
-    canvas.style.bottom = "0px";
-    canvas.style.right = "0px";
-    canvas.style.zIndex = "10000";
-    world.ctx = canvas.getContext('2d');
-    $(document).mousemove(function(event){
-        var mousePos = {x: event.pageX, y:event.pageY};
-        this.vel.x = 0;
-        this.vel.y = 0;
-        if(mousePos.x < this.scrollHitBoxWidth){
-           this.vel.add(new Vector(-1, 0));
-        }
-        if (mousePos.x > (this.size.x - this.scrollHitBoxWidth)){
-           this.vel.add(new Vector(1, 0));
-        }
-        if (mousePos.y < this.scrollHitBoxWidth){
-           this.vel.add(new Vector(0, -1));
-        }
-        if (mousePos.y > (this.size.y - this.scrollHitBoxWidth)){
-           this.vel.add(new Vector(0, 1));
-        }
-        this.vel.normalize().mul(this.scrollSpeed);
+    },
+
+    clearSelection: function(){
+        _.each(this.selectedIslands, function(island){
+          island.selected = false;
+       }, this);
+       this.selectedIslands = [];
+    },
+
+    attack: function(target){
+      _.each(this.selectedIslands, function(island){
+        island.attack(target);
+      },this);
+      this.clearSelection();
+    },
+ 
+
+    updateSelect: function(x,y){
+      this.selectEnd = {x: x, y: y};
+    },
+
+    stopSelect: function(){
+      if(this.selectEnd){
+         this.selectIslands();
+      }
+      this.selectStart = 0;
+      this.selectEnd = 0;
+      this.isSelecting = false;
         
-    }.bind(this));
-  },
+    },
+
+    selectIslands: function(){
+      var allIslands = Game.entityManager.getEntitiesByType('island');
+      this.selectedIslands = [];
   
+      var selectionRect = {
+        pos: {x: Game.viewport.pos.x +  this.selectStart.x,  
+              y: Game.viewport.pos.y + this.selectStart.y},
+        size: {x: this.selectEnd.x - this.selectStart.x,
+               y: this.selectEnd.y - this.selectStart.y}
+      }
+      _.each(allIslands, function(island){
+          if(island.player_id !== this.id){
+            island.selected = false;
+            return;
+          };
+       
+          if(utils.rectsIntersect(selectionRect, island)){
+             island.selected = true;
+             this.selectedIslands.push(island);
+          } else{
+             island.selected = false;
+          }
+
+  
+           
+
+      }, this);
+      
+
+    },
+
 });
 
+
+var Game = {
+  
+  running: false,
+  start: function(){
+    this.world.run();
+    this.drawLoop.run();
+    this.running = true;
+  },
+ 
+};
 
 $(function(){
-  currentWorld = new World();
-  new ViewPort(currentWorld);
-  new MiniMap(currentWorld);
-  currentWorld.run();
-  new DrawLoop(currentWorld).run();
+  Game.entityManager = new EntityManager();
+  Game.world = new World();
+  Game.viewport = new ViewPort();
+  Game.miniMap = new MiniMap();
+  Game.drawLoop = new DrawLoop();
   this.socket = io.connect();
+  this.socket.emit('register', {'token': 'test_token'});
   this.socket.on('world_update', function(data){
-    currentWorld.receiveServerUpdate(data);
+    Game.world.receiveServerUpdate(data);
+  });
+  this.socket.on('player_assign', function(data){
+     Game.currentPlayer = new Player(data);
+     Game.start();
   });
 });
-
-var MiniMap = Entity.extend({
-  size: new Vector(400, 400),
-  init: function(world){
-    this.world = world;
-    this._super();
-    this.pos.x = this.world.viewport.size.x - this.size.x - 80;
-    this.pos.y = 20;
-    this.xRatio = this.size.x / this.world.size.x;
-    this.yRatio = this.size.y / this.world.size.y;
-  },
-
-  getViewPortCoords: function(){
-     return {pos: {x:this.world.viewport.pos.x * this.xRatio, y: this.world.viewport.pos.y * this.yRatio}, 
-             size: {x: this.world.viewport.size.x *  this.xRatio, y: this.world.viewport.size.y * this.yRatio}}
-   
-  },
-   
-  draw: function(){
-    var ctx = this.world.ctx;
-    var miniViewport = this.getViewPortCoords();
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = 'red';
-    ctx.stroke();
-    ctx.closePath();
-    ctx.rect(this.pos.x + miniViewport.pos.x, this.pos.y + miniViewport.pos.y, miniViewport.size.x, miniViewport.size.y);
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.restore();
-    ctx.save();
-    _.each(this.world.entityManager.getEntitiesByType('island'), function(island){
-        var pos = {x: island.pos.x * this.xRatio, y: island.pos.y * this.yRatio};
-        ctx.fillStyle = 'green';
-        ctx.beginPath();
-        ctx.arc(this.pos.x + pos.x, this.pos.y + pos.y, island.radius / 10, 0, Math.PI *2);
-        ctx.closePath();
-        ctx.fill();
-    }, this);
-    ctx.restore();
-
-  }
-});
-
 
 
