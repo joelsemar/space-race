@@ -7,7 +7,10 @@ var Class = require("../shared/lib/class.js")
 
 var World = BaseWorld.extend({
 
-   fps: 12,
+   fps: 60,
+   numIslands: 40,
+   lastWorldUpdate: 0,
+   worldUpdateInterval: 500,
    run: function(){
        this.initializeIslands();
        this.assignStartingIslands();
@@ -16,11 +19,17 @@ var World = BaseWorld.extend({
 
    step: function(){
        this._super();
-       this.updateWorld();
+       this.lastWorldUpdate += this.currentTick;
+       if(this.lastWorldUpdate > this.worldUpdateInterval){
+          this.updateWorld();
+          this.lastWorldUpdate = 0;
+       }
+
+
    },
 
    updateWorld: function(){
-      updateWorld({size: this.size, islands: this.islands, ships: this.ships, players: this.playerSummary()});
+      updateWorld({size: this.size, islands: this.islandSummary(), ships: this.shipSummary(), players: this.playerSummary()});
    },
 
 
@@ -32,8 +41,25 @@ var World = BaseWorld.extend({
      return ret;
    },
 
+   islandSummary: function(){
+     var ret = [];
+     _.each(this.islands, function(island){
+        ret.push({id: island.id, player_id: island.player_id, resources: island.resources, pos: island.pos, radius: island.radius, size: island.size});
+     });
+     return ret;
+   },
+
+   shipSummary: function(){
+     var ships = Game.entityManager.getEntitiesByType('ship');
+     var ret = [];
+     _.each(ships, function(ship){
+       ret.push({id: ship.id, targetID: ship.targetID, player_id: ship.player_id, pos: ship.pos, vel: ship.vel, resources: ship.resources});
+     });
+     return ret;
+   },
+
    getIslandData: function(){
-    return generateIslands(this.size, 50, 300);
+    return generateIslands(this.size, this.numIslands, 300);
    },
 
    initializeIslands: function(){

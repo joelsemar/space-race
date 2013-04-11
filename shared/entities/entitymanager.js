@@ -26,6 +26,7 @@ var EntityManager = Class.extend({
    },
 
    removeEntity: function(id){
+      console.log("Destroying " + id);
       delete this.entities[id];
    },
 

@@ -2,7 +2,7 @@
 
 var World = BaseWorld.extend({
 
-  fps: 30,
+  fps: 24,
   islandImageSrc: 'img/luna.png',
   shipImageSrc: 'img/ship.png',
   players: [],
@@ -31,6 +31,25 @@ var World = BaseWorld.extend({
           this.players.push(new Player(player));
         }
       }, this);
+    }
+    if(data.ships){
+      _.each(data.ships, function(ship){
+
+        var localShip = Game.entityManager.entityById(ship.id);
+        if(localShip){
+          localShip.loadFromData(ship);
+        }
+        else{
+          new Ship(ship);
+        }
+      })
+      var localShips = Game.entityManager.getEntitiesByType('ship');
+      var remoteShipIds = _.pluck(data.ships, 'id');
+      _.each(localShips, function(localShip){
+          if(!_.contains(remoteShipIds, localShip.id)){
+              Game.entityManager.removeEntity(localShip.id);
+          }
+      });
     }
     //this.ships = data.ships;
     this.size = data.size;
@@ -62,8 +81,8 @@ var DrawLoop = Class.extend({
 var Game = {
 
   debug: false,
-//  debug: true,
   running: false,
+  client: true,
   start: function(){
     this.world.run();
     this.drawLoop.run();
@@ -76,6 +95,7 @@ var Game = {
   },
 
 };
+//Game.debug = true;
 
 $(function(){
   Game.entityManager = new EntityManager();
@@ -84,7 +104,7 @@ $(function(){
   Game.miniMap = new MiniMap();
   Game.drawLoop = new DrawLoop();
   Game.socket = io.connect();
-  Game.socket.emit('register', {'token': 'test_token'});
+  Game.socket.emit('register', {'token': utils.parseQueryString()['token']});
   Game.socket.on('world_update', function(data){
     Game.world.receiveServerUpdate(data);
   });

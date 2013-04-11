@@ -10,7 +10,7 @@ var BaseWorld = Class.extend({
    fps: 12,
    lastFrame: new Date(),
    players: [],
-   size: {x: 5000, y: 5000},
+   size: {x: 3500, y: 3500},
    init: function(id, players){
        this.id = id;
        this.players = players;

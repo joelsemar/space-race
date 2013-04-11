@@ -37,16 +37,16 @@ var ViewPort = Entity.extend({
         var mousePos = {x: event.pageX, y:event.pageY};
         this.vel.x = 0;
         this.vel.y = 0;
-        if(mousePos.x < this.scrollHitBoxWidth){
+        if(mousePos.x < this.scrollHitBoxWidth && this.pos.x > 0){
            this.vel.add(new Vector(-1, 0));
         }
-        if (mousePos.x > (this.size.x - this.scrollHitBoxWidth)){
+        if (mousePos.x > (this.size.x - this.scrollHitBoxWidth) && this.pos.x < (Game.world.size.x - this.size.x)){
            this.vel.add(new Vector(1, 0));
         }
-        if (mousePos.y < this.scrollHitBoxWidth){
+        if (mousePos.y < this.scrollHitBoxWidth && this.pos.y > 0){
            this.vel.add(new Vector(0, -1));
         }
-        if (mousePos.y > (this.size.y - this.scrollHitBoxWidth)){
+        if (mousePos.y > (this.size.y - this.scrollHitBoxWidth) && this.pos.y < (Game.world.size.y - this.size.y)){
            this.vel.add(new Vector(0, 1));
         }
         this.setVelocity(this.vel);
@@ -127,18 +127,15 @@ var ViewPort = Entity.extend({
     };
     canvas.onmouseout = function(){
        Game.currentPlayer.stopSelect();
-       Game.viewport.vel.x = 0;
-       Game.viewport.vel.y = 0;
+    //   Game.viewport.vel.x = 0;
+    //   Game.viewport.vel.y = 0;
     }
 
   },
-
-
-
 });
 
 var MiniMap = Entity.extend({
-  size: new Vector(300, 300),
+  size: new Vector(250, 250),
   init: function(){
     this._super();
     this.pos.x = Game.viewport.size.x - this.size.x - 80;
@@ -214,7 +211,7 @@ var MiniMap = Entity.extend({
         var pos = {x: ship.pos.x * this.xRatio, y: ship.pos.y * this.yRatio};
         ctx.fillStyle = Game.entityManager.entityById(ship.player_id).color;
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 1, 0, Math.PI *2);
+        ctx.arc(pos.x, pos.y, 2, 0, Math.PI *2);
         ctx.closePath();
         ctx.fill();
     }, this);

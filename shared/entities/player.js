@@ -29,40 +29,54 @@ var Player = Entity.extend({
     },
 
     click: function(x,y){
-      this.selectStart = {x: x, y: y};
+      console.log('click!');
+      this.selectStart = new Vector(x, y);
       this.isSelecting = true;
       var x = x + Game.viewport.pos.x;
       var y = y + Game.viewport.pos.y;
       var point = new Vector(x, y);
       var islands = Game.entityManager.getEntitiesByType('island');
+      var islandClicked = false;
       _.each(islands, function(island){
-        island.selected = false;
         if (utils.pointInRect(point, island)){
-           if(island.player_id === this.id){
-             if(this.selectedIslands.length){
-               this.attack(island);
-               return;
-             }
-             else{
-                this.selectedIslands.push(island);
-                island.selected = true;
-                return;
-             }
-           }
-           else {
-             this.attack(island);
-             return;
-           }
+            islandClicked = island;
         }
       }, this);
+      if(!islandClicked){
+        this.clearSelection()
+        return;
+      }
+      else if(this.selectedIslands.length){
+        this.attack(islandClicked);
+      }
+      else{
+        this.select(islandClicked);
+      }
+      this.selectStart = 0;
+      this.isSelected = false;
 
     },
 
+    select: function(target){
+      if(target.player_id !== this.id){
+        return;
+      }
+      target.selected = true;
+      this.selectedIslands.push(target);
+    },
+
+    unSelect: function(target){
+       target.selected = false;
+       if(_.contains(this.selectedIslands, target)){
+           this.selectedIslands.splice(this.selectedIslands.indexOf(target), 1);
+       }
+    },
+
     clearSelection: function(){
-        _.each(this.selectedIslands, function(island){
-          island.selected = false;
-       }, this);
-       this.selectedIslands = [];
+      _.each(this.selectedIslands, function(island){
+        island.selected = false;
+      });
+      this.selectedIslands = [];
     },
 
     attack: function(target){
@@ -74,12 +88,12 @@ var Player = Entity.extend({
     },
 
 
-    updateSelect: function(x,y){
-      this.selectEnd = {x: x, y: y};
+    updateSelect: function(x, y){
+      this.selectEnd = new Vector(x, y)
     },
 
     stopSelect: function(){
-      if(this.selectEnd){
+      if(this.selectEnd && this.selectEnd.distanceTo(this.selectStart) > 10){
          this.selectIslands();
       }
       this.selectStart = 0;
@@ -95,29 +109,21 @@ var Player = Entity.extend({
     selectIslands: function(){
       var allIslands = Game.entityManager.getEntitiesByType('island');
       this.selectedIslands = [];
+      var selectPos = {x: Game.viewport.pos.x +  this.selectStart.x, y: Game.viewport.pos.y + this.selectStart.y};
+      var selectSize =  {x: this.selectEnd.x - this.selectStart.x, y: this.selectEnd.y - this.selectStart.y};
 
-      var selectionRect = {
-        pos: {x: Game.viewport.pos.x +  this.selectStart.x,
-              y: Game.viewport.pos.y + this.selectStart.y},
-        size: {x: this.selectEnd.x - this.selectStart.x,
-               y: this.selectEnd.y - this.selectStart.y}
-      }
+      var selectionRect = new Rect(selectPos, selectSize);
       _.each(allIslands, function(island){
           if(island.player_id !== this.id){
-            island.selected = false;
+            this.unSelect(island);
             return;
           };
 
           if(utils.rectsIntersect(selectionRect, island)){
-             island.selected = true;
-             this.selectedIslands.push(island);
+             this.select(island);
           } else{
-             island.selected = false;
+             this.unSelect(island);
           }
-
-
-
-
       }, this);
 
 

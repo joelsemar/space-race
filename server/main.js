@@ -15,10 +15,12 @@ var express = require('express')
 
 
 Game = {
-    currentPlayers: [{id: 'computer', color: 'yellow'}],
+//    currentPlayers: [{id: 'computer', color: 'blue'}],
+    currentPlayers: [],
     neededPlayers: 2,
+    client: false,
     currentWorlds: [],
-    availableColors: ['blue', 'yellow', 'white', 'red'],
+    colors: ['blue', 'yellow', 'white', 'red'],
     socketPool: {},
     entityManager: new EntityManager(),
     sendAttackSignal: function(){},
@@ -39,10 +41,15 @@ io.sockets.on('connection', function(socket){
       if (!token){
          return;
       }
-      if(!_.contains(_.pluck(Game.currentPlayers, 'id'),  token)){
-         Game.currentPlayers.push(new Player({id: token, color: 'blue'}));
+      console.log("Player " + token + " connected");
+      var player = Game.playerByToken(token);
+
+      if(!player){
+         var color = Game.colors[Game.currentPlayers.length];
+         player = new Player({id: token, color: color});
+         Game.currentPlayers.push(player);
       }
-      socket.emit('player_assign', {id: token, color: 'blue'});
+      socket.emit('player_assign', {id: player.token, color: player.color});
       if(Game.currentPlayers.length === Game.neededPlayers && !Game.running){
         var newWorldId = 'world_' + (Game.currentWorlds.length + 1);
         Game.world = new World(newWorldId, Game.currentPlayers);
@@ -59,6 +66,7 @@ io.sockets.on('connection', function(socket){
       var target = Game.entityManager.entityById(data.target);
       player.selectedIslands = selectedIslands;
       player.attack(target);
+      Game.world.updateWorld();
 
 
    });
@@ -78,4 +86,4 @@ app.get('/', function (req, res) {
 app.use(express.static(path.resolve('../client')));
 
 
-server.listen(8080);
+server.listen(12888);

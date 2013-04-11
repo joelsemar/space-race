@@ -35,15 +35,32 @@ var utils = {
       }
     }
   },
+  valueInRange: function(value, min, max){
+      return value >= min && value <=max;
+  },
+
+  parseQueryString: function(){
+    var vars = {}, values
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++) {
+       values =  hashes[i].split('=');
+
+       vars[values[0]] = values[1];
+    }
+    return vars;
+
+  },
 
   rectsIntersect: function(rectA, rectB){
-    //rect being a loosely defined type that has at least a size and pos vector (like Entity)
-    var rectBPoints = rectB.points();
-    for(var i=0;i<rectBPoints.length;i++){
-      if (this.pointInRect(rectBPoints[i], rectA)){
-         return true;
+      if(!rectA.left || !rectB.left){
+         debugger;
       }
-    }
+
+      xOverlap = this.valueInRange(rectA.left(), rectB.left(), rectB.right()) ||
+                 this.valueInRange(rectB.left(), rectA.left(), rectA.right());
+      yOverlap = this.valueInRange(rectA.top(), rectB.top(), rectB.bottom()) ||
+                 this.valueInRange(rectB.top(), rectA.top(), rectA.bottom());
+      return xOverlap && yOverlap;
   },
 
    pointInRect: function(point, rect){

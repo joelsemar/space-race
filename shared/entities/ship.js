@@ -1,13 +1,13 @@
 
 if(require){
   var Entity = require("./entity.js")
-    , _ = require('underscore');
+    , _ = require('underscore')
+    , utils = require('../lib/utils.js');
 }
 
 var Ship = Entity.extend({
    type: 'ship',
    speed: 80,
-   collidesWith: ['island'],
 
 //   speed: 10,
    resources: 0,
@@ -15,15 +15,25 @@ var Ship = Entity.extend({
    size: {x: 41, y: 77},
    init: function(obj){
       this._super(obj);
-      if(!this.target){
+      if(!this.targetID){
          return;
       }
+      this.target = Game.entityManager.entityById(this.targetID);
+
       this.vel.x = this.target.center().x - this.center().x;
       this.vel.y = this.target.center().y - this.center().y;
 
       this.setVelocity(this.vel);
-      this.pos.add(this.vel.mulNew(1));
+      if(!Game.client){
+         this.pos.add(this.vel.mulNew(1));
+      }
       console.log("ship " + this.id + " created");
+   },
+   update: function(){
+      if (utils.rectsIntersect(this, this.target)){
+        this.collideWithIsland(this.target);
+      }
+
    },
 
    collideWithIsland: function(island){
@@ -33,13 +43,14 @@ var Ship = Entity.extend({
      console.log("colliding with: " + island.id);
      if(island.player_id === this.player_id){
        island.resources += this.resources;
-       this.destroy();
-       return;
      }
-     island.resources -= this.resources;
-     if(island.resources < 0){
-       island.resources = Math.abs(island.resources);
-       island.player_id = this.player_id;
+     else{
+        island.resources -= this.resources;
+        if(island.resources < 0){
+           island.resources = Math.abs(island.resources);
+           island.player_id = this.player_id;
+           island.lastProductionTick = 0;
+        }
      }
      this.destroy();
 

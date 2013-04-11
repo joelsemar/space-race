@@ -7,6 +7,10 @@ if(require){
 var Rect = Class.extend({
    size: new Vector(0,0),
    pos: new Vector(0,0),
+   init: function(pos, size){
+      this.pos = new Vector(pos.x, pos.y);
+      this.size = new Vector(size.x, size.y);
+   },
    points: function(){
      return [this.pos,
              {x: this.pos.x + this.size.x, y: this.pos.y},
@@ -27,6 +31,21 @@ var Rect = Class.extend({
       ctx.strokeText(x + ', ' + y, x + 80, y - 12);
       ctx.strokeText(this.id, x, y  + this.size.y + 12);
       ctx.restore();
+   },
+   area: function(){
+       return this.size.x * this.size.y;
+   },
+   left: function(){
+       return this.pos.x;
+   },
+   top: function(){
+       return this.pos.y;
+   },
+   right: function(){
+       return this.pos.x + this.size.x;
+   },
+   bottom: function(){
+       return this.pos.y + this.size.y;
    },
 });
 

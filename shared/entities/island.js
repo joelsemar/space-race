@@ -41,9 +41,6 @@ var Island = Entity.extend({
      ctx.stroke();
      ctx.closePath();
     }
-    ctx.shadowColor = 'gray';
-    ctx.shadowOffsetX = 1;
-    ctx.shadowOffsetY = 1;
     ctx.strokeText(this.resources, center.x - viewport.pos.x - ctx.measureText(text).width/2, center.y - viewport.pos.y + 9);
     ctx.restore();
 
@@ -55,8 +52,10 @@ var Island = Entity.extend({
      var shipSize =  Math.floor(this.resources/2);
      this.resources -= shipSize;
 
-     s = new Ship({target: target, pos: this.pos, resources: shipSize,
-                   player_id: this.player_id, homeIslandId: this.id});
+     if(!Game.client){
+         s = new Ship({targetID: target.id, pos: this.pos, resources: shipSize,
+                       player_id: this.player_id, homeIslandId: this.id});
+     }
 
   },
 
