@@ -12,7 +12,7 @@ var ViewPort = Entity.extend({
   update: function(){
     this.checkBounds();
    //  console.log('viewport at: ' + this.pos.x + ', ' + this.pos.y);
-  }, 
+  },
 
 
   init: function(){
@@ -50,7 +50,7 @@ var ViewPort = Entity.extend({
            this.vel.add(new Vector(0, 1));
         }
         this.setVelocity(this.vel);
-        
+
     }.bind(this));
   },
 
@@ -64,7 +64,7 @@ var ViewPort = Entity.extend({
        spaceY = 0;
      }
      $(document.body).css({'background-position-x': spaceX, 'background-position-y': spaceY});
-     
+
   },
 
   clear: function(){
@@ -95,7 +95,7 @@ var ViewPort = Entity.extend({
     canvas.onmousemove = function(e){
       if(!Game.currentPlayer.isSelecting){
         return;
-      } 
+      }
       var coords = utils.getCoords(e);
       Game.currentPlayer.updateSelect(coords.x, coords.y);
     };
@@ -103,12 +103,14 @@ var ViewPort = Entity.extend({
     canvas.onmouseup = function(e){
        Game.currentPlayer.stopSelect();
     };
-    canvas.onblur = function(){
+    canvas.onmouseout = function(){
        Game.currentPlayer.stopSelect();
+       Game.viewport.vel.x = 0;
+       Game.viewport.vel.y = 0;
     }
 
   },
-  
+
 });
 
 var MiniMap = Entity.extend({
@@ -149,11 +151,11 @@ var MiniMap = Entity.extend({
 
   getViewPortCoords: function(){
      Game.viewport.checkBounds();
-     return {pos: {x: Game.viewport.pos.x * this.xRatio, y: Game.viewport.pos.y * this.yRatio}, 
+     return {pos: {x: Game.viewport.pos.x * this.xRatio, y: Game.viewport.pos.y * this.yRatio},
              size: {x: Game.viewport.size.x *  this.xRatio, y: Game.viewport.size.y * this.yRatio}}
-   
+
   },
-   
+
   draw: function(){
     var ctx = this.ctx;
     ctx.clear();
@@ -173,14 +175,22 @@ var MiniMap = Entity.extend({
     ctx.save();
     _.each(Game.entityManager.getEntitiesByType('island'), function(island){
         var pos = {x: island.pos.x * this.xRatio, y: island.pos.y * this.yRatio};
-        if(island.player_id){
-          ctx.fillStyle = Game.world.playerById(island.player_id).color;
+        if(island.player_id !== 'neutral'){
+          ctx.fillStyle = Game.entityManager.entityById(island.player_id).color;
         }
         else{
           ctx.fillStyle = 'gray';
         }
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, island.radius / 10, 0, Math.PI *2);
+        ctx.closePath();
+        ctx.fill();
+    }, this);
+    _.each(Game.entityManager.getEntitiesByType('ship'), function(ship){
+        var pos = {x: ship.pos.x * this.xRatio, y: ship.pos.y * this.yRatio};
+        ctx.fillStyle = Game.entityManager.entityById(ship.player_id).color;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 1, 0, Math.PI *2);
         ctx.closePath();
         ctx.fill();
     }, this);

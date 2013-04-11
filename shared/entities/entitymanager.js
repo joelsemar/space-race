@@ -13,6 +13,14 @@ var EntityManager = Class.extend({
      return this.entities[id];
    },
 
+   entitiesByIds: function(ids){
+     var ret = [];
+     _.each(ids, function(id){
+       ret.push(this.entityById(id));
+     }, this);
+     return ret;
+   },
+
    register: function(entity){
       this.entities[entity.id] = entity;
    },
@@ -32,7 +40,7 @@ var EntityManager = Class.extend({
        this.entities[id].draw();
      }
    },
- 
+
    getEntitiesByType: function(type){
      var ret = [];
      for (id in this.entities){

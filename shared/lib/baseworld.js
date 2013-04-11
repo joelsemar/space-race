@@ -7,14 +7,15 @@ if(require){
 }
 
 var BaseWorld = Class.extend({
-   fps: 12,   
+   fps: 12,
    lastFrame: new Date(),
+   players: [],
    size: {x: 5000, y: 5000},
    init: function(id, players){
        this.id = id;
        this.players = players;
        this.ships = [];
-       
+
    },
 
    run: function(){
@@ -33,14 +34,6 @@ var BaseWorld = Class.extend({
      this.currentTick = delta;
    },
 
-
-   playerById: function(id){
-       for(var i=0;i<this.players.length;i++){
-         if(this.players[i].id === id){
-           return this.players[i];
-           }
-       }
-   },
 
 });
 

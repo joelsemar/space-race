@@ -3,7 +3,7 @@
     <script>
        var require = require || false;
        var module = module || false;
-       CanvasRenderingContext2D.prototype.clear = 
+       CanvasRenderingContext2D.prototype.clear =
        CanvasRenderingContext2D.prototype.clear || function (preserveTransform) {
           if (preserveTransform) {
              this.save();
@@ -14,7 +14,7 @@
 
           if (preserveTransform) {
             this.restore();
-          }           
+          }
         };
      </script>
     <script src="/socket.io/socket.io.js"></script>
@@ -28,10 +28,11 @@
     <script src="js/entitymanager.js"></script>
     <script src="js/island.js"></script>
     <script src="js/ship.js"></script>
+    <script src="js/player.js"></script>
     <script src="js/baseworld.js"></script>
     <script src="js/app.js"></script>
     <script src="js/viewport.js"></script>
-    
+
     <style type="text/css">
       body{
         background-image: url('img/stars.png');

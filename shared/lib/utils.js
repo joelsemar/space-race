@@ -29,7 +29,7 @@ var utils = {
           x: e.pageX - canvas.offsetLeft - offset/2,
           y: e.pageY - canvas.offsetTop
         };
-      } 
+      }
       catch (e) {
         alert(e)
       }
@@ -50,7 +50,7 @@ var utils = {
       if(point.x > rect.pos.x && point.x < rect.pos.x + rect.size.x && point.y > rect.pos.y && point.y < rect.pos.y + rect.size.y){
         return true;
       }
-   
+
    },
    s4: function() { return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)},
 
@@ -59,7 +59,11 @@ var utils = {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
             s4() + '-' + s4() + s4() + s4();
    },
-  
+
+   capitalize: function(s){
+    return s.charAt(0).toUpperCase() + s.slice(1);
+   },
+
 }
 
 if(module){

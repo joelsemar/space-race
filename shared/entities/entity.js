@@ -9,15 +9,16 @@ var Rect = Class.extend({
    pos: new Vector(0,0),
    points: function(){
      return [this.pos,
-             {x: this.pos.x + this.size.x, y: this.pos.y}, 
-             {x: this.pos.x, y: this.pos.y + this.size.y}, 
+             {x: this.pos.x + this.size.x, y: this.pos.y},
+             {x: this.pos.x, y: this.pos.y + this.size.y},
              {x: this.pos.x + this.size.x, y: this.pos.y + this.size.y}]
    },
 });
 
 var Entity = Rect.extend({
-   
+
    speed: 1,
+   collidesWith: [],
 
    setVelocity: function(vel){
      this.vel = vel;
@@ -25,7 +26,7 @@ var Entity = Rect.extend({
    },
 
    center: function(){
-     return new Vector(this.pos.x + this.size.x/2, this.pos.y + this.size.x/2);
+     return new Vector(this.pos.x + this.size.x/2, this.pos.y + this.size.y/2);
    },
 
    init: function(obj){
@@ -41,20 +42,32 @@ var Entity = Rect.extend({
         }
       }, this)
       if(!this.id){
-        this.id = utils.guid();
+        this.id = utils.guid().slice(0,5);
       }
       if(this.vel){
         this.setVelocity(this.vel);
       }
       Game.entityManager.register(this);
    },
- 
+
    _update: function(delta){
      if(this.vel.x || this.vel.y){
          this.pos.add(this.vel.mulNew(delta/1000));
      }
+     _.each
+     if(this.collidesWith.length){
+       var entities = Game.entityManager.entities;
+       for (id in entities){
+         var entity = entities[id];
+         if(this.collidesWith.indexOf(entity.type) !== -1  && utils.rectsIntersect(this, entity)){
+             var methodName = 'collideWith' + utils.capitalize(entity.type);
+             this[methodName](entity);
+         }
+      }
+     }
      this.update(delta);
    },
+
    update: function() {},
 
    _rect: function(){
@@ -71,6 +84,10 @@ var Entity = Rect.extend({
      this.vel.y = 0;
    },
 
+   destroy: function(){
+     Game.entityManager.removeEntity(this.id);
+   },
+
 
    isWithinRect: function(rect){
     //rect being a loosely defined type that has at least a size and pos vector (like Entity)
@@ -82,7 +99,7 @@ var Entity = Rect.extend({
         };
     }, this);
     return ret;
-    
+
    },
 
    loadFromData: function(obj){

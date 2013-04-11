@@ -7,7 +7,7 @@ var Class = require("../shared/lib/class.js")
 
 var World = BaseWorld.extend({
 
-   fps: 12,   
+   fps: 12,
    run: function(){
        this.initializeIslands();
        this.assignStartingIslands();
@@ -20,7 +20,16 @@ var World = BaseWorld.extend({
    },
 
    updateWorld: function(){
-      updateWorld({size: this.size, islands: this.islands, ships: this.ships, players: this.players});
+      updateWorld({size: this.size, islands: this.islands, ships: this.ships, players: this.playerSummary()});
+   },
+
+
+   playerSummary: function(){
+     var ret =[];
+     _.each(this.players, function(player){
+       ret.push({id: player.id, color:player.color});
+     })
+     return ret;
    },
 
    getIslandData: function(){
@@ -30,7 +39,6 @@ var World = BaseWorld.extend({
    initializeIslands: function(){
       this.islands = [];
       var islandData = this.getIslandData();
-      console.log(islandData);
       _.each(islandData, function(data){
         data.pos = {x: data.x, y: data.y};
         data.size = {x: data.radius*2, y: data.radius*2};
@@ -89,13 +97,13 @@ function generateIslands(worldSize, numIslands, minDistance){
         };
         if(!foundCollision){
             placed = true;
-            islands.push({x: candidateLocation.x, y: candidateLocation.y, radius: radius});
+            islands.push({x: candidateLocation.x, y: candidateLocation.y, radius: radius, player_id: 'neutral'});
         }
 
 
      }
-    
-      
+
+
    }
    return islands;
 }
@@ -104,6 +112,6 @@ function randomChoice(sequence){
 }
 function getCenter(pos, radius){
     return new Vector(pos.x + radius, pos.y + radius);
-    
+
 }
 module.exports = World;
