@@ -21,16 +21,12 @@ var Island = Entity.extend({
   draw: function(){
     var viewport = Game.viewport;
     var ctx = viewport.ctx;
-    var x = this.pos.x - viewport.pos.x;
-    var y = this.pos.y - viewport.pos.y;
+    var offset = Game.viewport.getOffset(this.pos);
+    var x = offset.x;
+    var y = offset.y;
     var center = this.center();
     var text = this.resources;
     var color = 'white';
-    ctx.save();
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x, y, this.size.x, this.size.y);
-    ctx.restore();
     ctx.save();
     ctx.drawImage(Game.world.islandImage, x, y, this.size.x, this.size.y);
     ctx.font = '18px Helvetica';
@@ -48,12 +44,7 @@ var Island = Entity.extend({
     ctx.shadowColor = 'gray';
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 1;
-
-
-    ctx.fillText(this.resources, center.x - viewport.pos.x - ctx.measureText(text).width/2, center.y - viewport.pos.y + 9);
-    ctx.font = '12px';
-    ctx.fillText(this.id, x, y + this.size.y + 12);
-    ctx.fillText(this.pos.print(), x + this.size.x, y + this.size.y + 12);
+    ctx.strokeText(this.resources, center.x - viewport.pos.x - ctx.measureText(text).width/2, center.y - viewport.pos.y + 9);
     ctx.restore();
 
   },

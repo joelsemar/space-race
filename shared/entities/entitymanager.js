@@ -36,8 +36,13 @@ var EntityManager = Class.extend({
    },
 
    drawEntities: function(){
+     var entity;
      for (id in this.entities){
-       this.entities[id].draw();
+       entity = this.entities[id];
+       entity.draw();
+       if(Game.debug){
+         entity.drawDebug();
+       }
      }
    },
 

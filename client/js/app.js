@@ -61,6 +61,8 @@ var DrawLoop = Class.extend({
 
 var Game = {
 
+  debug: false,
+//  debug: true,
   running: false,
   start: function(){
     this.world.run();

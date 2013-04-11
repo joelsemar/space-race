@@ -71,8 +71,14 @@ var ViewPort = Entity.extend({
     this.ctx.clear();
   },
 
-  draw: function(){
-    var ctx = this.ctx;    
+  getOffset: function(pos){
+      return new Vector(Math.round(pos.x - this.pos.x), Math.round(pos.y - this.pos.y))
+  },
+
+
+  drawDebug: function(){
+
+    var ctx = this.ctx;
     ctx.save();
     ctx.strokeStyle = 'white';
     ctx.font = '12px';
@@ -82,9 +88,7 @@ var ViewPort = Entity.extend({
       ctx.strokeStyle = 'yellow';
       ctx.strokeText(Math.round(this.pos.x + this.currMousePos.x) + ', ' + Math.round(this.pos.y + this.currMousePos.y), this.currMousePos.x + 15, this.currMousePos.y + 15)
     }
-
     ctx.restore();
-    
 
   },
 
@@ -134,7 +138,7 @@ var ViewPort = Entity.extend({
 });
 
 var MiniMap = Entity.extend({
-  size: new Vector(400, 400),
+  size: new Vector(300, 300),
   init: function(){
     this._super();
     this.pos.x = Game.viewport.size.x - this.size.x - 80;
@@ -216,7 +220,8 @@ var MiniMap = Entity.extend({
     }, this);
     ctx.restore();
 
-  }
+  },
+  drawDebug: function(){},
 });
 
 

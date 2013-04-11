@@ -49,32 +49,23 @@ var Ship = Entity.extend({
    draw: function() {
     var viewport = Game.viewport;
     var ctx = viewport.ctx;
-    var x = this.pos.x - viewport.pos.x;
-    var y = this.pos.y - viewport.pos.y;
+    var offset = Game.viewport.getOffset(this.pos);
+    var x = offset.x;
+    var y = offset.y;
     var center = this.center();
     ctx.save();
     ctx.strokeStyle = 'white';
+    //ctx.strokeStyle = Game.entityManager.entityById(this.player_id).color;
+    ctx.font = '12px';
     ctx.lineWidth = 1;
-    ctx.strokeRect(x, y, this.size.x, this.size.y);
-    ctx.restore();
-    ctx.save();
     ctx.translate(x + this.size.x/2, y + this.size.y/2);
     ctx.rotate(Math.PI - this.vel.angle());
     ctx.translate(-this.size.x/2, -this.size.y/2);
     ctx.drawImage(Game.world.shipImage, 0, 0, this.size.x, this.size.y);
+    ctx.rotate(-1 * (Math.PI - this.vel.angle()));
+    ctx.strokeText(this.resources, 0, 0);
     ctx.restore();
 
-    ctx.save();
-    ctx.strokeRect(x, y, this.size.x, this.size.y);
-    ctx.restore();
-
-
-    ctx.font = '14px';
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 1;
-    //ctx.strokeStyle = Game.entityManager.entityById(this.player_id).color;
-    ctx.strokeText(this.resources, x, y);
-    ctx.strokeText(this.pos.print(), x + this.size.x, y + this.size.y);
    },
 
 

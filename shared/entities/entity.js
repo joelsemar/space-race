@@ -13,6 +13,21 @@ var Rect = Class.extend({
              {x: this.pos.x, y: this.pos.y + this.size.y},
              {x: this.pos.x + this.size.x, y: this.pos.y + this.size.y}]
    },
+   drawDebug: function(){
+      var ctx = Game.viewport.ctx;
+      var offset = Game.viewport.getOffset(this.pos);
+      var x = offset.x;
+      var y = offset.y;
+      ctx.save();
+      ctx.strokeStyle = 'white';
+      ctx.font = '12px';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, this.size.x, this.size.y);
+      ctx.strokeText(this.pos.print(), x, y - 12);
+      ctx.strokeText(x + ', ' + y, x + 80, y - 12);
+      ctx.strokeText(this.id, x, y  + this.size.y + 12);
+      ctx.restore();
+   },
 });
 
 var Entity = Rect.extend({
