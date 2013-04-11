@@ -16,6 +16,10 @@ var Vector =  Class.extend({
       }
     },
 
+    print: function(){
+        return Math.round(this.x) + ', ' + Math.round(this.y);
+    },
+
     cp: function(){
         return new Vector(this.x, this.y);
     },

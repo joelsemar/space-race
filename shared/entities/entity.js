@@ -30,23 +30,7 @@ var Entity = Rect.extend({
    },
 
    init: function(obj){
-      for(key in obj){
-        this[key] = obj[key];
-      }
-      _.each(['pos', 'vel', 'size'], function(attr){
-        if(this[attr]){
-          this[attr] = new Vector(this[attr].x, this[attr].y);
-        }
-        else{
-           this[attr] = new Vector(0,0);
-        }
-      }, this)
-      if(!this.id){
-        this.id = utils.guid().slice(0,5);
-      }
-      if(this.vel){
-        this.setVelocity(this.vel);
-      }
+      this.loadFromData(obj);
       Game.entityManager.register(this);
    },
 
@@ -105,6 +89,20 @@ var Entity = Rect.extend({
    loadFromData: function(obj){
       for(key in obj){
         this[key] = obj[key];
+      }
+      _.each(['pos', 'vel', 'size'], function(attr){
+        if(this[attr]){
+          this[attr] = new Vector(this[attr].x, this[attr].y);
+        }
+        else{
+           this[attr] = new Vector(0,0);
+        }
+      }, this)
+      if(!this.id){
+        this.id = utils.guid().slice(0,5);
+      }
+      if(this.vel){
+        this.setVelocity(this.vel);
       }
    },
    draw: function(){},

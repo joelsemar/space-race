@@ -52,7 +52,6 @@ io.sockets.on('connection', function(socket){
       }
    });
    socket.on('attack_signal', function(data){
-      debugger;
       console.log('receieved attack signal ' + JSON.stringify(data));
       var selectedIslands = Game.entityManager.entitiesByIds(data.islands);
       console.log("Attacking With: " + JSON.stringify(selectedIslands));

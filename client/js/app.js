@@ -76,7 +76,7 @@ var Game = {
 };
 
 $(function(){
-  Game.entityManager = new EntityManager();
+  Game.entityManager = new EntityManager();
   Game.world = new World('client', []);
   Game.viewport = new ViewPort();
   Game.miniMap = new MiniMap();

@@ -86,7 +86,7 @@ function generateIslands(worldSize, numIslands, minDistance){
 
      while(!placed){
         foundCollision = false;
-        candidateLocation = {x: randomChoice(_.range(10, worldSize.x - diameter)), y:  randomChoice(_.range(10, worldSize.y - diameter))};
+        candidateLocation = {x: randomChoice(_.range(20, worldSize.x - diameter)), y:  randomChoice(_.range(20, worldSize.y - diameter))};
         for(var j=0;j<islands.length;j++){
             var island = islands[j];
             var distance = getCenter(island, island.radius).distanceTo(getCenter(candidateLocation, radius));

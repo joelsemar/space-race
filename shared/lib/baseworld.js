@@ -15,7 +15,6 @@ var BaseWorld = Class.extend({
        this.id = id;
        this.players = players;
        this.ships = [];
-
    },
 
    run: function(){

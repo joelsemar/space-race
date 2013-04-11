@@ -26,7 +26,7 @@ var utils = {
       // Works in Safari on iPad/iPhone
       try {
         return {
-          x: e.pageX - canvas.offsetLeft - offset/2,
+          x: e.pageX - canvas.offsetLeft,
           y: e.pageY - canvas.offsetTop
         };
       }

@@ -63,10 +63,18 @@ var Ship = Entity.extend({
     ctx.translate(-this.size.x/2, -this.size.y/2);
     ctx.drawImage(Game.world.shipImage, 0, 0, this.size.x, this.size.y);
     ctx.restore();
-    ctx.font = '10px Ariel';
+
+    ctx.save();
+    ctx.strokeRect(x, y, this.size.x, this.size.y);
+    ctx.restore();
+
+
+    ctx.font = '14px';
+    ctx.strokeStyle = 'white';
     ctx.lineWidth = 1;
-    ctx.strokeStyle = Game.entityManager.entityById(this.player_id).color;
+    //ctx.strokeStyle = Game.entityManager.entityById(this.player_id).color;
     ctx.strokeText(this.resources, x, y);
+    ctx.strokeText(this.pos.print(), x + this.size.x, y + this.size.y);
    },
 
 

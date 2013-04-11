@@ -33,7 +33,7 @@ var Island = Entity.extend({
     ctx.restore();
     ctx.save();
     ctx.drawImage(Game.world.islandImage, x, y, this.size.x, this.size.y);
-    ctx.font = 'italic 18px Helvetica';
+    ctx.font = '18px Helvetica';
     if (this.player_id !== 'neutral'){
        color = Game.entityManager.entityById(this.player_id).color;
     }
@@ -51,8 +51,9 @@ var Island = Entity.extend({
 
 
     ctx.fillText(this.resources, center.x - viewport.pos.x - ctx.measureText(text).width/2, center.y - viewport.pos.y + 9);
-    ctx.font = '12px Ariel';
+    ctx.font = '12px';
     ctx.fillText(this.id, x, y + this.size.y + 12);
+    ctx.fillText(this.pos.print(), x + this.size.x, y + this.size.y + 12);
     ctx.restore();
 
   },

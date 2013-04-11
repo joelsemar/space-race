@@ -15,8 +15,8 @@ var ViewPort = Entity.extend({
   },
 
 
-  init: function(){
-    this._super();
+  init: function(obj){
+    this._super(obj);
     var canvas = document.getElementById('mainCanvas');
     canvas.setAttribute('width', this.size.x);
     canvas.setAttribute('height', this.size.y);
@@ -71,6 +71,23 @@ var ViewPort = Entity.extend({
     this.ctx.clear();
   },
 
+  draw: function(){
+    var ctx = this.ctx;    
+    ctx.save();
+    ctx.strokeStyle = 'white';
+    ctx.font = '12px';
+    ctx.strokeText(this.pos.print(), 15, 15)
+    if(this.currMousePos){
+      ctx.strokeText(this.currMousePos.print(), this.currMousePos.x - 5, this.currMousePos.y - 5)
+      ctx.strokeStyle = 'yellow';
+      ctx.strokeText(Math.round(this.pos.x + this.currMousePos.x) + ', ' + Math.round(this.pos.y + this.currMousePos.y), this.currMousePos.x + 15, this.currMousePos.y + 15)
+    }
+
+    ctx.restore();
+    
+
+  },
+
   checkBounds: function(){
     if (this.pos.x <= 0){
       this.pos.x = 0;
@@ -93,10 +110,11 @@ var ViewPort = Entity.extend({
     };
 
     canvas.onmousemove = function(e){
+      var coords = utils.getCoords(e);
+      Game.viewport.currMousePos = new Vector(coords.x, coords.y);
       if(!Game.currentPlayer.isSelecting){
         return;
       }
-      var coords = utils.getCoords(e);
       Game.currentPlayer.updateSelect(coords.x, coords.y);
     };
 
@@ -110,6 +128,8 @@ var ViewPort = Entity.extend({
     }
 
   },
+
+
 
 });
 
