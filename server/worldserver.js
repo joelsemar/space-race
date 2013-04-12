@@ -1,6 +1,7 @@
 var Class = require("../shared/lib/class.js")
   , Island = require('../shared/entities/island.js')
   , Ship = require('../shared/entities/ship.js')
+  , EntityManager = require('../shared/entities/entitymanager.js')
   , BaseWorld = require('../shared/lib/baseworld.js')
   , Vector = require('../shared/lib/vector.js')
   , _ = require('underscore');
@@ -76,7 +77,17 @@ var World = BaseWorld.extend({
 
    assignStartingIslands: function(){
       _.each(this.players, function(player, idx){
-           this.islands[idx].player_id = player.id;
+           var i = idx, island;
+           while(true){
+             island = this.islands[i];
+             if(island.radius >= 40 && island.player_id == 'neutral'){
+                island.player_id = player.id;
+                break;
+             }
+             else{
+                 i++;
+             }
+           }
      }, this);
    },
 });

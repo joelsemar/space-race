@@ -15,8 +15,8 @@ var express = require('express')
 
 
 Game = {
-//    currentPlayers: [{id: 'computer', color: 'blue'}],
-    currentPlayers: [],
+    currentPlayers: [{id: 'computer', color: 'blue'}],
+//    currentPlayers: [],
     neededPlayers: 2,
     client: false,
     currentWorlds: [],
@@ -86,4 +86,4 @@ app.get('/', function (req, res) {
 app.use(express.static(path.resolve('../client')));
 
 
-server.listen(12888);
+server.listen(8080);
