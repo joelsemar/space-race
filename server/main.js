@@ -1,9 +1,10 @@
+var log = true;
 var express = require('express')
   , app = express()
   , server = require('http').createServer(app)
   , routing = require('./routing')
   , routes  = require('./routes')
-  , io = require('socket.io').listen(server, {log: false})
+  , io = require('socket.io').listen(server, {log: log})
   , _ = require('underscore')
   , path = require('path')
   , utils = require('../shared/lib/utils.js')
@@ -15,8 +16,8 @@ var express = require('express')
 
 
 Game = {
-    currentPlayers: [{id: 'computer', color: 'blue'}],
-//    currentPlayers: [],
+//    currentPlayers: [{id: 'computer', color: 'blue'}],
+    currentPlayers: [],
     neededPlayers: 2,
     client: false,
     currentWorlds: [],

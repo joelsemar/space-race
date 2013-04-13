@@ -9,10 +9,10 @@ var Ship = Entity.extend({
    type: 'ship',
    speed: 80,
 
-//   speed: 10,
    resources: 0,
    target: null,
    size: {x: 41, y: 77},
+   collidesWith: ['ship' ],
    init: function(obj){
       this._super(obj);
       if(!this.targetID){
@@ -33,7 +33,38 @@ var Ship = Entity.extend({
       if (utils.rectsIntersect(this, this.target)){
         this.collideWithIsland(this.target);
       }
+      if(this.resources <= 0){
+        this.destroy();
+      }
 
+   },
+
+   collideWithShip: function(ship){
+     var thisTempResources = this.resources;
+     if(this.id === ship.id){
+       return;
+     }
+     if(this.player_id === ship.player_id){
+       if(this.target.id === ship.target.id){
+         ship.resources += this.resources;
+         this.resources = 0;
+         return;
+       }
+       else{
+         return;
+       }
+     }
+     else{
+       this.resources -= ship.resources;
+       if(this.resources < 0){
+         this.resources = 0;
+       }
+       ship.resources -= thisTempResources;
+       if(ship.resources < 0){
+         ship.resources = 0;
+       }
+     }
+     
    },
 
    collideWithIsland: function(island){

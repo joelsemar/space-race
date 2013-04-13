@@ -112,6 +112,18 @@ $(function(){
      Game.currentPlayer = new Player(data);
      Game.start();
   });
+  $(document.body).keypress(function(e){
+    if(e.shiftKey){
+      Game.scrollLock = true;
+    }
+  });
+  $(document.body).keyup(function(e){
+    if(e.shiftKey){
+      Game.scrollLock = false;
+    }
+
+  })
+
 });
 
 

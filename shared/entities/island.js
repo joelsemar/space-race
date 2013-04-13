@@ -8,12 +8,16 @@ var Island = Entity.extend({
 
   type: 'island',
   resources: 0,
+  maxResources: 50,
   productionInterval: 2000,
   lastProductionTick: 0,
   update: function(delta){
     this.lastProductionTick += delta;
     if(this.lastProductionTick >= this.productionInterval && this.player_id !== 'neutral'){
       this.resources += Math.floor(this.radius/10);
+      if(this.resources > this.maxResources){
+        this.resources = this.maxResources;
+      }
       this.lastProductionTick = 0;
     }
   },

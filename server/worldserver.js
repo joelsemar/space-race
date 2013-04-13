@@ -92,22 +92,6 @@ var World = BaseWorld.extend({
    },
 });
 
-var EntityManager = Class.extend({
-
-   init: function(){
-     this.entities = {};
-   },
-   entityById: function(id){
-     return this.entities[id];
-   },
-   addEntity: function(entity){
-      this.entities[entity.id] = entity;
-   },
-   removeEntity: function(id){
-      delete this.entities[id];
-   }
-
-});
 
 var islandRadii = [30, 30, 30, 30, 30, 35, 35, 35,  45, 45, 45, 45, 50, 50, 50, 55, 55, 60, 80];
 
