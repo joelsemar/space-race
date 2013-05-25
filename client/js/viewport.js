@@ -32,12 +32,12 @@ var ViewPort = Entity.extend({
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     $(document).mousemove(function(event){
-        if(Game.currentPlayer.isSelecting || Game.scrollLock){
-            return;
-        }
         var mousePos = {x: event.pageX, y:event.pageY};
         this.vel.x = 0;
         this.vel.y = 0;
+        if(Game.currentPlayer.isSelecting || event.shiftKey){
+            return;
+        }
         if(mousePos.x < this.scrollHitBoxWidth && this.pos.x > 0){
            this.vel.add(new Vector(-1, 0));
         }
@@ -56,12 +56,6 @@ var ViewPort = Entity.extend({
   },
 
   update: function(delta){
-     if(Game.scrollLock){
-        this.checkBounds();
-        this.vel.x = 0;
-        this.vel.y = 0;
-        return;
-     }
      var spaceX = this.pos.x/30 * -1;
      var spaceY = this.pos.y/30 * -1;
      if(Math.abs(spaceX) > this.size.x){

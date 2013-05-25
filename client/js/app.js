@@ -43,7 +43,7 @@ var World = BaseWorld.extend({
           new Ship(ship);
         }
       })
-      var localShips = Game.entityManager.getEntitiesByType('ship');
+      var localShips = Game.entityManager.entitiesByType('ship');
       var remoteShipIds = _.pluck(data.ships, 'id');
       _.each(localShips, function(localShip){
           if(!_.contains(remoteShipIds, localShip.id)){
@@ -53,6 +53,7 @@ var World = BaseWorld.extend({
     }
     //this.ships = data.ships;
     this.size = data.size;
+    this.resetFrame();
   },
 
 });
@@ -98,6 +99,7 @@ var Game = {
 //Game.debug = true;
 
 $(function(){
+  $("#chat_form").show();
   Game.entityManager = new EntityManager();
   Game.world = new World('client', []);
   Game.viewport = new ViewPort();

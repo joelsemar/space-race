@@ -40,18 +40,21 @@ var EntityManager = Class.extend({
      var entity;
      for (id in this.entities){
        entity = this.entities[id];
-       entity.draw();
-       if(Game.debug){
-         entity.drawDebug();
+       if(utils.rectsIntersect(Game.viewport, entity) || entity.type === 'minimap' || entity.type === 'player'){
+          entity.draw();
+          if(Game.debug){
+            entity.drawDebug();
+          }
        }
      }
    },
 
-   getEntitiesByType: function(type){
+   entitiesByType: function(type, filterFunc){
      var ret = [];
+     filterFunc = filterFunc || function(){return true};
      for (id in this.entities){
         var entity = this.entities[id];
-        if(entity.type === type){
+        if(entity.type === type && filterFunc(entity)){
           ret.push(entity);
         }
      }

@@ -12,14 +12,19 @@ var BaseWorld = Class.extend({
    players: [],
    size: {x: 3500, y: 3500},
    init: function(id, players){
-       this.id = id;
-       this.players = players;
-       this.ships = [];
+     this.id = id;
+     this.players = players;
    },
 
    run: function(){
-       this.lastFrame = new Date();
-       this.intervalId = setInterval(this.step.bind(this), 1000/this.fps)
+     this.lastFrame = new Date();
+     this.intervalId = setInterval(this.step.bind(this), 1000/this.fps)
+   },
+
+   resetFrame: function(){
+     this.lastFrame = new Date();
+     clearInterval(this.intervalId);
+     this.run();
    },
 
    step: function(){

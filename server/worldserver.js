@@ -45,13 +45,14 @@ var World = BaseWorld.extend({
    islandSummary: function(){
      var ret = [];
      _.each(this.islands, function(island){
-        ret.push({id: island.id, player_id: island.player_id, resources: island.resources, pos: island.pos, radius: island.radius, size: island.size});
+        ret.push({id: island.id, player_id: island.player_id, resources: island.resources, lastProductionTick: island.lastProductionTick,
+                  pos: island.pos, radius: island.radius, size: island.size});
      });
      return ret;
    },
 
    shipSummary: function(){
-     var ships = Game.entityManager.getEntitiesByType('ship');
+     var ships = Game.entityManager.entitiesByType('ship');
      var ret = [];
      _.each(ships, function(ship){
        ret.push({id: ship.id, targetID: ship.targetID, player_id: ship.player_id, pos: ship.pos, vel: ship.vel, resources: ship.resources});
@@ -80,7 +81,7 @@ var World = BaseWorld.extend({
            var i = idx, island;
            while(true){
              island = this.islands[i];
-             if(island.radius >= 40 && island.player_id == 'neutral'){
+             if(island.radius >= 50 && island.player_id == 'neutral'){
                 island.player_id = player.id;
                 break;
              }

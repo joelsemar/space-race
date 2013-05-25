@@ -1,4 +1,4 @@
-var log = true;
+var log = false;
 var express = require('express')
   , app = express()
   , server = require('http').createServer(app)
@@ -7,6 +7,7 @@ var express = require('express')
   , io = require('socket.io').listen(server, {log: log})
   , _ = require('underscore')
   , path = require('path')
+  , Class = require('../shared/lib/class.js')
   , utils = require('../shared/lib/utils.js')
   , Player = require('../shared/entities/player.js')
   , EntityManager = require('../shared/entities/entitymanager.js')
@@ -15,15 +16,19 @@ var express = require('express')
 
 
 
-Game = {
-//    currentPlayers: [{id: 'computer', color: 'blue'}],
-    currentPlayers: [],
+var games = {};
+Game = Class.extend({
+    
+    init: function(){
+       this.entityManager =  new EntityManager();
+    },
+    currentPlayers: [{id: 'computer', color: 'blue'}],
+//    currentPlayers: [],
     neededPlayers: 2,
     client: false,
     currentWorlds: [],
-    colors: ['blue', 'yellow', 'white', 'red'],
+    colors: ['blue', 'yellow', 'red', 'red'],
     socketPool: {},
-    entityManager: new EntityManager(),
     sendAttackSignal: function(){},
     playerByToken: function(token){
        return this.entityManager.entityById(token);
@@ -32,7 +37,7 @@ Game = {
     registerWithToken: function(token){
         return token;
     }
-};
+});
 
 io.sockets.on('connection', function(socket){
    id = utils.guid();
@@ -65,7 +70,7 @@ io.sockets.on('connection', function(socket){
       console.log("Attacking With: " + JSON.stringify(selectedIslands));
       var player = Game.playerByToken(data.token);
       var target = Game.entityManager.entityById(data.target);
-      player.selectedIslands = selectedIslands;
+      _.map(selectedIslands, function(i){i.selected = true});
       player.attack(target);
       Game.world.updateWorld();
 

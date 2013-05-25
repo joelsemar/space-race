@@ -52,10 +52,6 @@ var utils = {
   },
 
   rectsIntersect: function(rectA, rectB){
-      if(!rectA.left || !rectB.left){
-         debugger;
-      }
-
       xOverlap = this.valueInRange(rectA.left(), rectB.left(), rectB.right()) ||
                  this.valueInRange(rectB.left(), rectA.left(), rectA.right());
       yOverlap = this.valueInRange(rectA.top(), rectB.top(), rectB.bottom()) ||

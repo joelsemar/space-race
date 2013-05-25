@@ -8,7 +8,7 @@ var Island = Entity.extend({
 
   type: 'island',
   resources: 0,
-  maxResources: 50,
+  maxResources: 500,
   productionInterval: 2000,
   lastProductionTick: 0,
   update: function(delta){

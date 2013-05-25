@@ -1,5 +1,6 @@
 
 var MiniMap = Entity.extend({
+  type: 'minimap',
   size: new Vector(250, 250),
   radiusRatio: 10,
   islandMousedOver: false,
@@ -57,7 +58,6 @@ var MiniMap = Entity.extend({
 
     $(canvas).mousemove(function(e){
       var pos = new Vector(e.clientX - this.pos.x, e.clientY - this.pos.y);
-      console.log(pos)
       this.islandMousedOver = false;
       if(!this.cachedIslandPos.length){
         this.getCachedIslandPos();
@@ -68,12 +68,15 @@ var MiniMap = Entity.extend({
         }
       }, this);
     }.bind(this));
+    $(canvas).mouseout(function(e){
+      this.islnadMousedOver = false;
+    }.bind(this));
 
     this.ctx = canvas.getContext('2d');
   },
 
   getCachedIslandPos: function(){
-    var allIslands = Game.entityManager.getEntitiesByType('island');
+    var allIslands = Game.entityManager.entitiesByType('island');
     this.cachedIslandPos = _.map(allIslands, function(island){
       var center = this.scale(island.pos), 
           radius = island.radius/this.radiusRatio;
@@ -103,12 +106,12 @@ var MiniMap = Entity.extend({
     ctx.stroke();
     ctx.closePath();
     ctx.rect(miniViewport.pos.x, miniViewport.pos.y, miniViewport.size.x, miniViewport.size.y);
-    ctx.strokeStyle = 'white';
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
     ctx.save();
-    _.each(Game.entityManager.getEntitiesByType('island'), function(island){
+
+    _.each(Game.entityManager.entitiesByType('island'), function(island){
         var pos = {x: island.pos.x * this.xRatio, y: island.pos.y * this.yRatio};
         var radius = island.radius / this.radiusRatio;
         if(island.player_id !== 'neutral'){
@@ -119,10 +122,15 @@ var MiniMap = Entity.extend({
         }
         ctx.beginPath();
         ctx.arc(pos.x + radius, pos.y + radius, radius, 0, Math.PI *2);
-        ctx.closePath();
         ctx.fill();
+        if(island.selected && island.player_id === Game.currentPlayer.id){
+          ctx.strokeStyle = Game.currentPlayer.color;
+          ctx.arc(pos.x + radius, pos.y + radius, radius + 2, 0, Math.PI *2);
+          ctx.stroke();
+        }
     }, this);
-    _.each(Game.entityManager.getEntitiesByType('ship'), function(ship){
+
+    _.each(Game.entityManager.entitiesByType('ship'), function(ship){
         var pos = {x: ship.pos.x * this.xRatio + this.scale(ship.size).x/2, y: ship.pos.y * this.yRatio + this.scale(ship.size).y/2};
         ctx.fillStyle = Game.entityManager.entityById(ship.player_id).color;
         ctx.beginPath();
@@ -130,12 +138,9 @@ var MiniMap = Entity.extend({
         ctx.closePath();
         ctx.fill();
     }, this);
+
     if(this.islandMousedOver){
-        ctx.strokeStyle = Game.currentPlayer.color
-        ctx.beginPath();
-        ctx.arc(this.islandMousedOver.center.x, this.islandMousedOver.center.y, this.islandMousedOver.radius + 2, 0, Math.PI*2);
-        ctx.closePath();
-        ctx.stroke();
+        this.drawCrossHairs(ctx, this.islandMousedOver.center, this.islandMousedOver.radius + 2);
     }
     ctx.restore();
 
@@ -144,10 +149,24 @@ var MiniMap = Entity.extend({
   drawCrossHairs: function(ctx, pos, radius){
       var length = 3
       ctx.save();
-      ctx.beginpath();
+      ctx.strokeStyle = Game.currentPlayer.color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, radius, 0, Math.PI*2);
       ctx.moveTo(pos.x - radius - length, pos.y);
       ctx.lineTo(pos.x - radius, pos.y);
+
       ctx.moveTo(pos.x, pos.y - radius - length)
+      ctx.lineTo(pos.x, pos.y - radius)
+
+      ctx.moveTo(pos.x + radius, pos.y);
+      ctx.lineTo(pos.x + radius + length, pos.y);
+
+      ctx.moveTo(pos.x, pos.y + radius)
+      ctx.lineTo(pos.x, pos.y + radius + length)
+
+      ctx.stroke();
+      ctx.restore();
 
   },
   drawDebug: function(){},
