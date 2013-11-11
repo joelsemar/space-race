@@ -28,31 +28,8 @@ var ViewPort = Entity.extend({
     canvas.style.bottom = "0px";
     canvas.style.right = "0px";
     canvas.style.zIndex = "10";
-    this.bindEvents(canvas);
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    $(document).mousemove(function(event){
-        var mousePos = {x: event.pageX, y:event.pageY};
-        this.vel.x = 0;
-        this.vel.y = 0;
-        if(Game.currentPlayer.isSelecting || event.shiftKey){
-            return;
-        }
-        if(mousePos.x < this.scrollHitBoxWidth && this.pos.x > 0){
-           this.vel.add(new Vector(-1, 0));
-        }
-        if (mousePos.x > (this.size.x - this.scrollHitBoxWidth) && this.pos.x < (Game.world.size.x - this.size.x)){
-           this.vel.add(new Vector(1, 0));
-        }
-        if (mousePos.y < this.scrollHitBoxWidth && this.pos.y > 0){
-           this.vel.add(new Vector(0, -1));
-        }
-        if (mousePos.y > (this.size.y - this.scrollHitBoxWidth) && this.pos.y < (Game.world.size.y - this.size.y)){
-           this.vel.add(new Vector(0, 1));
-        }
-        this.setVelocity(this.vel);
-
-    }.bind(this));
   },
 
   update: function(delta){
@@ -107,13 +84,13 @@ var ViewPort = Entity.extend({
     }
   },
 
-  bindEvents: function(canvas){
-    canvas.onmousedown = function(e){
+  bindEvents: function(){
+    this.canvas.onmousedown = function(e){
       var coords = utils.getCoords(e);
       Game.currentPlayer.click(coords.x, coords.y);
     };
 
-    canvas.onmousemove = function(e){
+    this.canvas.onmousemove = function(e){
       var coords = utils.getCoords(e);
       Game.viewport.currMousePos = new Vector(coords.x, coords.y);
       if(!Game.currentPlayer.isSelecting){
@@ -122,13 +99,36 @@ var ViewPort = Entity.extend({
       Game.currentPlayer.updateSelect(coords.x, coords.y);
     };
 
-    canvas.onmouseup = function(e){
+    this.canvas.onmouseup = function(e){
       Game.currentPlayer.stopSelect();
     };
-    canvas.onmouseout = function(){
+    this.canvas.onmouseout = function(){
       Game.currentPlayer.stopSelect();
     }
 
+    $(document).mousemove(function(event){
+        var mousePos = {x: event.pageX, y:event.pageY};
+
+        this.vel.x = 0;
+        this.vel.y = 0;
+        if(Game.currentPlayer.isSelecting || event.shiftKey){
+            return;
+        }
+        if(mousePos.x < this.scrollHitBoxWidth && this.pos.x > 0){
+           this.vel.add(new Vector(-1, 0));
+        }
+        if (mousePos.x > (this.size.x - this.scrollHitBoxWidth) && this.pos.x < (Game.world.size.x - this.size.x)){
+           this.vel.add(new Vector(1, 0));
+        }
+        if (mousePos.y < this.scrollHitBoxWidth && this.pos.y > 0){
+           this.vel.add(new Vector(0, -1));
+        }
+        if (mousePos.y > (this.size.y - this.scrollHitBoxWidth) && this.pos.y < (Game.world.size.y - this.size.y)){
+           this.vel.add(new Vector(0, 1));
+        }
+        this.setVelocity(this.vel);
+
+    }.bind(this));
   },
 });
 

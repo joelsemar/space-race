@@ -49,6 +49,7 @@ var Island = Entity.extend({
     ctx.restore();
 
   },
+
   attack: function(target){
      if(!this.resources || this.id === target.id){
          return;
@@ -56,7 +57,7 @@ var Island = Entity.extend({
      var shipSize =  Math.floor(this.resources/2);
      this.resources -= shipSize;
 
-     if(!Game.client){
+     if(!RUNNING_ON_CLIENT){
          s = new Ship({targetID: target.id, pos: this.pos, resources: shipSize,
                        player_id: this.player_id, homeIslandId: this.id});
      }

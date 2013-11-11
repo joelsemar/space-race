@@ -11,59 +11,24 @@ var express = require('express')
   , utils = require('../shared/lib/utils.js')
   , Player = require('../shared/entities/player.js')
   , EntityManager = require('../shared/entities/entitymanager.js')
-  , World = require('./worldserver.js');
+  , Gamemaster = require('./gamemaster.js');
 
 
 
 
-var games = {};
-Game = Class.extend({
-    
-    init: function(){
-       this.entityManager =  new EntityManager();
-    },
-    currentPlayers: [{id: 'computer', color: 'blue'}],
-//    currentPlayers: [],
-    neededPlayers: 2,
-    client: false,
-    currentWorlds: [],
-    colors: ['blue', 'yellow', 'red', 'red'],
-    socketPool: {},
-    sendAttackSignal: function(){},
-    playerByToken: function(token){
-       return this.entityManager.entityById(token);
-    },
-    running: false,
-    registerWithToken: function(token){
-        return token;
-    }
-});
 
 io.sockets.on('connection', function(socket){
    id = utils.guid();
-   Game.socketPool[id] = socket;
    socket.on('register', function(data){
-      var token = Game.registerWithToken(data.token);
-      if (!token){
+  
+      var player = Gamemaster.getPlayerWithToken(data.token);
+      if (!player){
          return;
       }
       console.log("Player " + token + " connected");
-      var player = Game.playerByToken(token);
-
-      if(!player){
-         var color = Game.colors[Game.currentPlayers.length];
-         player = new Player({id: token, color: color});
-         Game.currentPlayers.push(player);
-      }
       socket.emit('player_assign', {id: player.token, color: player.color});
-      if(Game.currentPlayers.length === Game.neededPlayers && !Game.running){
-        var newWorldId = 'world_' + (Game.currentWorlds.length + 1);
-        Game.world = new World(newWorldId, Game.currentPlayers);
-        console.log("Creating world "  + newWorldId);
-        Game.world.run();
-        Game.running = true;
-      }
    });
+
    socket.on('attack_signal', function(data){
       console.log('receieved attack signal ' + JSON.stringify(data));
       var selectedIslands = Game.entityManager.entitiesByIds(data.islands);
@@ -81,8 +46,8 @@ io.sockets.on('connection', function(socket){
 
 
 
-updateWorld = function(data){
-  io.sockets.emit('world_update', data);
+updateWorld = function(gameID, data){
+  io.sockets.in(gameID).emit('world_update', data);
 }
 
 app.get('/', function (req, res) {

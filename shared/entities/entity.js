@@ -73,7 +73,8 @@ var Entity = Rect.extend({
      if(this.vel.x || this.vel.y){
          this.pos.add(this.vel.mulNew(delta/1000));
      }
-     _.each
+
+     //Todo: just loop over collidesWith and grab the entities for each and so forth
      if(this.collidesWith.length){
        var entities = Game.entityManager.entities;
        for (id in entities){

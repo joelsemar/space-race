@@ -1,4 +1,5 @@
 
+var RUNNING_ON_CLIENT = true;
 
 var World = BaseWorld.extend({
 
@@ -14,6 +15,7 @@ var World = BaseWorld.extend({
      this.shipImage.src = this.shipImageSrc;
 
   },
+
   receiveServerUpdate: function(data){
     this.islands = [];
     _.each(data.islands || [], function(island){
@@ -25,6 +27,7 @@ var World = BaseWorld.extend({
           new Island(island);
        }
     },this);
+
     if(data.players){
       _.each(data.players, function(player){
         if(!Game.entityManager.entityById(player.id)){
@@ -32,6 +35,7 @@ var World = BaseWorld.extend({
         }
       }, this);
     }
+
     if(data.ships){
       _.each(data.ships, function(ship){
 
@@ -73,7 +77,7 @@ var DrawLoop = Class.extend({
     Game.viewport.clear();
     Game.entityManager.drawEntities();
     requestAnimationFrame(this.draw.bind(this));
-  },
+  }
 
 });
 
@@ -86,6 +90,7 @@ var Game = {
   client: true,
   start: function(){
     this.world.run();
+    this.viewport.bindEvents();
     this.drawLoop.run();
     this.running = true;
   },
@@ -111,6 +116,7 @@ $(function(){
     Game.world.receiveServerUpdate(data);
   });
   Game.socket.on('player_assign', function(data){
+     data.game = Game;
      Game.currentPlayer = new Player(data);
      Game.start();
   });
