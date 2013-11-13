@@ -11,8 +11,9 @@ var BaseWorld = Class.extend({
    lastFrame: new Date(),
    players: [],
    size: {x: 3500, y: 3500},
-   init: function(id, players){
-     this.id = id;
+
+   init: function(players){
+     console.log('game initialized with ' + JSON.stringify(players));
      this.players = players;
    },
 

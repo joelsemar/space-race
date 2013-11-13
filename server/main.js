@@ -10,23 +10,22 @@ var express = require('express')
   , Class = require('../shared/lib/class.js')
   , utils = require('../shared/lib/utils.js')
   , Player = require('../shared/entities/player.js')
-  , EntityManager = require('../shared/entities/entitymanager.js')
-  , Gamemaster = require('./gamemaster.js');
+  , EntityManager = require('../shared/entities/entitymanager.js');
 
-
-
+Game = require('./game.js');
+RUNNING_ON_CLIENT = false;
 
 
 io.sockets.on('connection', function(socket){
    id = utils.guid();
    socket.on('register', function(data){
   
-      var player = Gamemaster.getPlayerWithToken(data.token);
+      var player = Game.addPlayer(data.token);
       if (!player){
          return;
       }
-      console.log("Player " + token + " connected");
-      socket.emit('player_assign', {id: player.token, color: player.color});
+      console.log("Player " + player.id + " connected");
+      socket.emit('player_assign', {id: player.id, color: player.color});
    });
 
    socket.on('attack_signal', function(data){
@@ -37,7 +36,7 @@ io.sockets.on('connection', function(socket){
       var target = Game.entityManager.entityById(data.target);
       _.map(selectedIslands, function(i){i.selected = true});
       player.attack(target);
-      Game.world.updateWorld();
+      Game.world.updateClient();
 
 
    });
@@ -46,8 +45,8 @@ io.sockets.on('connection', function(socket){
 
 
 
-updateWorld = function(gameID, data){
-  io.sockets.in(gameID).emit('world_update', data);
+updateClient = function(data){
+  io.sockets.emit('world_update', data);
 }
 
 app.get('/', function (req, res) {

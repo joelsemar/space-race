@@ -11,8 +11,9 @@ var Player = Entity.extend({
     selectStart: false,
 
     draw: function(){
-       var ctx = this.game.viewport.ctx;
+       var ctx = Game.viewport.ctx;
        if(this.selectStart && this.selectEnd){
+         console.log('drawing select box')
          var sizeX = this.selectEnd.x - this.selectStart.x;
          var sizeY = this.selectEnd.y - this.selectStart.y;
          ctx.save();
@@ -29,10 +30,10 @@ var Player = Entity.extend({
     click: function(x,y){
       this.selectStart = new Vector(x, y);
       this.isSelecting = true;
-      var x = x + this.game.viewport.pos.x;
-      var y = y + this.game.viewport.pos.y;
+      var x = x + Game.viewport.pos.x;
+      var y = y + Game.viewport.pos.y;
       var point = new Vector(x, y);
-      var islands = this.game.entityManager.entitiesByType('island');
+      var islands = Game.entityManager.entitiesByType('island');
 
       var islandClicked = false;
       _.each(islands, function(island){
@@ -79,19 +80,19 @@ var Player = Entity.extend({
     },
 
     clearSelection: function(){
-      _.each(this.game.entityManager.entitiesByType('island'), function(island){
+      _.each(Game.entityManager.entitiesByType('island'), function(island){
         island.selected = false;
       });
     },
 
     selectedIslands: function(){
-      return this.game.entityManager.entitiesByType('island', function(i){
+      return Game.entityManager.entitiesByType('island', function(i){
         return i.selected === true;
       }.bind(this));
     },
 
     attack: function(target){
-      this.game.sendAttackSignal(target);
+      Game.sendAttackSignal(target);
       _.each(this.selectedIslands(), function(island){
         island.attack(target);
       },this);
@@ -105,8 +106,8 @@ var Player = Entity.extend({
 
 
     selectVisible: function(){
-      _.each(this.game.entityManager.entitiesByType('island'), function(island){
-        if(island.player_id === this.id && utils.rectsIntersect(island, this.game.viewport)){
+      _.each(Game.entityManager.entitiesByType('island'), function(island){
+        if(island.player_id === this.id && utils.rectsIntersect(island, Game.viewport)){
           this.select(island);
         }
       } , this);
@@ -127,8 +128,8 @@ var Player = Entity.extend({
     },
 
     selectIslands: function(){
-      var allIslands = this.game.entityManager.entitiesByType('island');
-      var selectPos = {x: this.game.viewport.pos.x +  this.selectStart.x, y: this.game.viewport.pos.y + this.selectStart.y};
+      var allIslands = Game.entityManager.entitiesByType('island');
+      var selectPos = {x: Game.viewport.pos.x +  this.selectStart.x, y: Game.viewport.pos.y + this.selectStart.y};
       var selectSize =  {x: this.selectEnd.x - this.selectStart.x, y: this.selectEnd.y - this.selectStart.y};
 
       var selectionRect = new Rect(selectPos, selectSize);

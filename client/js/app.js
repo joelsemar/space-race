@@ -29,10 +29,9 @@ var World = BaseWorld.extend({
     },this);
 
     if(data.players){
+      this.players = [];
       _.each(data.players, function(player){
-        if(!Game.entityManager.entityById(player.id)){
           this.players.push(new Player(player));
-        }
       }, this);
     }
 
@@ -89,6 +88,7 @@ var Game = {
   running: false,
   client: true,
   start: function(){
+    console.log('starting game');
     this.world.run();
     this.viewport.bindEvents();
     this.drawLoop.run();
@@ -96,7 +96,7 @@ var Game = {
   },
 
   sendAttackSignal: function(target){
-    this.socket.emit('attack_signal', {token: this.currentPlayer.token, target: target.id,
+    this.socket.emit('attack_signal', {token: this.currentPlayer.id, target: target.id,
                                       islands: this.currentPlayer.selectedIslandIds()});
   },
 
@@ -104,22 +104,25 @@ var Game = {
 //Game.debug = true;
 
 $(function(){
-  $("#chat_form").show();
+//  $("#chat_form").show();
   Game.entityManager = new EntityManager();
-  Game.world = new World('client', []);
+  Game.world = new World([]);
   Game.viewport = new ViewPort();
   Game.miniMap = new MiniMap();
   Game.drawLoop = new DrawLoop();
   Game.socket = io.connect();
   Game.socket.emit('register', {'token': utils.parseQueryString()['token']});
+
   Game.socket.on('world_update', function(data){
     Game.world.receiveServerUpdate(data);
   });
+
   Game.socket.on('player_assign', function(data){
      data.game = Game;
      Game.currentPlayer = new Player(data);
      Game.start();
   });
+
   $(document.body).keypress(function(e){
     if(e.shiftKey){
       Game.scrollLock = true;

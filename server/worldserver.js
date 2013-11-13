@@ -10,8 +10,9 @@ var World = BaseWorld.extend({
 
    fps: 60,
    numIslands: 40,
-   lastWorldUpdate: 0,
-   worldUpdateInterval: 500,
+   lastClientUpdate: 0,
+   clientUpdateInterval: 500,
+
    run: function(){
        this.initializeIslands();
        this.assignStartingIslands();
@@ -20,17 +21,17 @@ var World = BaseWorld.extend({
 
    step: function(){
        this._super();
-       this.lastWorldUpdate += this.currentTick;
-       if(this.lastWorldUpdate > this.worldUpdateInterval){
-          this.updateWorld();
-          this.lastWorldUpdate = 0;
+       this.lastClientUpdate += this.currentTick;
+       if(this.lastClientUpdate > this.clientUpdateInterval){
+          this.updateClient();
+          this.lastClientUpdate = 0;
        }
 
 
    },
 
-   updateWorld: function(){
-      updateWorld({size: this.size, islands: this.islandSummary(), ships: this.shipSummary(), players: this.playerSummary()});
+   updateClient: function(){
+      updateClient({size: this.size, islands: this.islandSummary(), ships: this.shipSummary(), players: this.playerSummary()});
    },
 
 
