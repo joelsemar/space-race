@@ -10,6 +10,7 @@ var Player = Entity.extend({
     pendingDoubleClick: false,
     selectStart: false,
 
+
     draw: function(){
        var ctx = Game.viewport.ctx;
        if(this.selectStart && this.selectEnd){

@@ -29,9 +29,11 @@ var World = BaseWorld.extend({
     },this);
 
     if(data.players){
-      this.players = [];
+
       _.each(data.players, function(player){
-          this.players.push(new Player(player));
+          if(!_.contains(_.pluck(this.players, 'id'), player.id)){
+            this.players.push(new Player(player));
+          }
       }, this);
     }
 
@@ -87,6 +89,42 @@ var Game = {
   debug: false,
   running: false,
   client: true,
+
+  init: function(){
+    //  $("#chat_form").show();
+    var token = utils.parseQueryString()['token'];
+    this.entityManager = new EntityManager();
+    this.world = new World([]);
+    this.viewport = new ViewPort();
+    this.miniMap = new MiniMap();
+    this.drawLoop = new DrawLoop();
+    this.socket = io.connect();
+    this.currentPlayerId = token;
+    this.socket.emit('register', {'token': token});
+
+
+    this.socket.on('game_start', function(data){
+        Game.world.players.push(new Player(data));
+        Game.start();
+    });
+
+    this.socket.on('world_update', function(data){
+        Game.world.receiveServerUpdate(data);
+    });
+
+    $(document.body).keypress(function(e){
+        if(e.shiftKey){
+          Game.scrollLock = true;
+        }
+    });
+    $(document.body).keyup(function(e){
+        if(e.shiftKey){
+          Game.scrollLock = false;
+        }
+
+    })
+  },
+
   start: function(){
     console.log('starting game');
     this.world.run();
@@ -96,45 +134,20 @@ var Game = {
   },
 
   sendAttackSignal: function(target){
-    this.socket.emit('attack_signal', {token: this.currentPlayer.id, target: target.id,
-                                      islands: this.currentPlayer.selectedIslandIds()});
+    this.socket.emit('attack_signal', {token: this.currentPlayerId, target: target.id,
+                                      islands: this.getCurrentPlayer().selectedIslandIds()});
+  },
+
+  getCurrentPlayer: function(){
+     return this.entityManager.entityById(this.currentPlayerId);
+    
   },
 
 };
 //Game.debug = true;
 
 $(function(){
-//  $("#chat_form").show();
-  Game.entityManager = new EntityManager();
-  Game.world = new World([]);
-  Game.viewport = new ViewPort();
-  Game.miniMap = new MiniMap();
-  Game.drawLoop = new DrawLoop();
-  Game.socket = io.connect();
-  Game.socket.emit('register', {'token': utils.parseQueryString()['token']});
-
-  Game.socket.on('world_update', function(data){
-    Game.world.receiveServerUpdate(data);
-  });
-
-  Game.socket.on('player_assign', function(data){
-     data.game = Game;
-     Game.currentPlayer = new Player(data);
-     Game.start();
-  });
-
-  $(document.body).keypress(function(e){
-    if(e.shiftKey){
-      Game.scrollLock = true;
-    }
-  });
-  $(document.body).keyup(function(e){
-    if(e.shiftKey){
-      Game.scrollLock = false;
-    }
-
-  })
-
+  Game.init();
 });
 
 

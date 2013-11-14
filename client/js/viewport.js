@@ -30,7 +30,6 @@ var ViewPort = Entity.extend({
     canvas.style.zIndex = "10";
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.bindEvents();
   },
 
   update: function(delta){
@@ -86,25 +85,27 @@ var ViewPort = Entity.extend({
   },
 
   bindEvents: function(){
+    var currentPlayer = Game.getCurrentPlayer();
     this.canvas.onmousedown = function(e){
       var coords = utils.getCoords(e);
-      Game.currentPlayer.click(coords.x, coords.y);
+      currentPlayer.click(coords.x, coords.y);
     };
 
     this.canvas.onmousemove = function(e){
       var coords = utils.getCoords(e);
       Game.viewport.currMousePos = new Vector(coords.x, coords.y);
-      if(!Game.currentPlayer.isSelecting){
+      if(!currentPlayer.isSelecting){
         return;
       }
-      Game.currentPlayer.updateSelect(coords.x, coords.y);
+      currentPlayer.updateSelect(coords.x, coords.y);
     };
 
     this.canvas.onmouseup = function(e){
-      Game.currentPlayer.stopSelect();
+      currentPlayer.stopSelect();
     };
+
     this.canvas.onmouseout = function(){
-      Game.currentPlayer.stopSelect();
+      currentPlayer.stopSelect();
     }
 
     $(document).mousemove(function(event){
@@ -112,9 +113,11 @@ var ViewPort = Entity.extend({
 
         this.vel.x = 0;
         this.vel.y = 0;
-        if(Game.currentPlayer.isSelecting || event.shiftKey){
+        if(currentPlayer.isSelecting || event.shiftKey){
             return;
         }
+
+        
         if(mousePos.x < this.scrollHitBoxWidth && this.pos.x > 0){
            this.vel.add(new Vector(-1, 0));
         }

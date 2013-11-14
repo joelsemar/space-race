@@ -44,8 +44,8 @@ var MiniMap = Entity.extend({
       var mm = Game.miniMap;
       var miniMapPosX = e.clientX - mm.pos.x;
       var miniMapPosY = e.clientY - mm.pos.y;
-      if(this.islandMousedOver && Game.currentPlayer.selectedIslands.length){
-        Game.currentPlayer.attack(Game.entityManager.entityById(this.islandMousedOver.id));
+      if(this.islandMousedOver && Game.getCurrentPlayer().selectedIslands.length){
+        Game.getCurrentPlayer().attack(Game.entityManager.entityById(this.islandMousedOver.id));
         return;
       }
       miniMapPosX /= mm.xRatio;
@@ -123,8 +123,8 @@ var MiniMap = Entity.extend({
         ctx.beginPath();
         ctx.arc(pos.x + radius, pos.y + radius, radius, 0, Math.PI *2);
         ctx.fill();
-        if(island.selected && island.player_id === Game.currentPlayer.id){
-          ctx.strokeStyle = Game.currentPlayer.color;
+        if(island.selected && island.player_id === Game.getCurrentPlayer().id){
+          ctx.strokeStyle = Game.getCurrentPlayer().color;
           ctx.arc(pos.x + radius, pos.y + radius, radius + 2, 0, Math.PI *2);
           ctx.stroke();
         }
@@ -149,7 +149,7 @@ var MiniMap = Entity.extend({
   drawCrossHairs: function(ctx, pos, radius){
       var length = 3
       ctx.save();
-      ctx.strokeStyle = Game.currentPlayer.color;
+      ctx.strokeStyle = Game.getCurrentPlayer().color;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, radius, 0, Math.PI*2);

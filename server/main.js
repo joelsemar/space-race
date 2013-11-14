@@ -13,6 +13,7 @@ var express = require('express')
   , EntityManager = require('../shared/entities/entitymanager.js');
 
 Game = require('./game.js');
+Game.initPlayers();
 RUNNING_ON_CLIENT = false;
 
 
@@ -22,10 +23,11 @@ io.sockets.on('connection', function(socket){
   
       var player = Game.addPlayer(data.token);
       if (!player){
+         socket.emit('game_start');
          return;
       }
       console.log("Player " + player.id + " connected");
-      socket.emit('player_assign', {id: player.id, color: player.color});
+      socket.emit('game_start', {id: player.id, color: player.color});
    });
 
    socket.on('attack_signal', function(data){
@@ -37,7 +39,6 @@ io.sockets.on('connection', function(socket){
       _.map(selectedIslands, function(i){i.selected = true});
       player.attack(target);
       Game.world.updateClient();
-
 
    });
 });

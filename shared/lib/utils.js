@@ -35,6 +35,7 @@ var utils = {
       }
     }
   },
+
   valueInRange: function(value, min, max){
       return value >= min && value <=max;
   },
