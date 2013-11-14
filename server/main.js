@@ -23,7 +23,7 @@ io.sockets.on('connection', function(socket){
   
       var player = Game.addPlayer(data.token);
       if (!player){
-         socket.emit('game_start');
+         socket.emit('token_fail');
          return;
       }
       console.log("Player " + player.id + " connected");
