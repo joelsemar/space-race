@@ -14,10 +14,13 @@ var Island = Entity.extend({
   update: function(delta){
     this.lastProductionTick += delta;
     if(this.lastProductionTick >= this.productionInterval && this.player_id !== 'neutral'){
-      this.resources += Math.floor(this.radius/10);
-      if(this.resources > this.maxResources){
-        this.resources = this.maxResources;
+      if(this.resources < this.maxResources){
+        this.resources += Math.floor(this.radius/20);
+        if(this.resources > this.maxResources){
+            this.resources = this.maxResources;
+        }
       }
+      
       this.lastProductionTick = 0;
     }
   },

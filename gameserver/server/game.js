@@ -4,10 +4,9 @@ var  World = require('./worldserver.js')
 
 var Game = Class.extend({
     
-    maxPlayers: 2,
     players: [],
     colors: ['blue', 'yellow', 'red', 'green'],
-    tokens: ['player1', 'player2'],
+    tokens: ['player1', 'player2', 'player3'],
 
     init: function(){
        this.entityManager =  new EntityManager();
@@ -53,7 +52,6 @@ var Game = Class.extend({
 
     start: function(){
       this.world = new World(this.players);
-      console.log("Creating world "  + this.world.id);
       this.world.run();
       this.running = true;
     },
