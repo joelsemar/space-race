@@ -6,7 +6,7 @@ var Game = Class.extend({
     
     players: [],
     colors: ['blue', 'yellow', 'red', 'green'],
-    tokens: ['player1', 'player2', 'player3'],
+    tokens: ['player1', 'computer'],
 
     init: function(){
        this.entityManager =  new EntityManager();

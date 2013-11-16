@@ -96,17 +96,25 @@ var Ship = Entity.extend({
     var y = offset.y;
     var center = this.center();
     ctx.save();
-    ctx.strokeStyle = 'white';
-    //ctx.strokeStyle = Game.entityManager.entityById(this.player_id).color;
     ctx.font = '12px';
     ctx.lineWidth = 1;
     ctx.translate(x + this.size.x/2, y + this.size.y/2);
     ctx.rotate(Math.PI - this.vel.angle());
     ctx.translate(-this.size.x/2, -this.size.y/2);
     ctx.drawImage(Game.world.shipImage, 0, 0, this.size.x, this.size.y);
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'blue';
+    ctx.arc(this.size.x/2, this.size.y/2, this.size.x/2+20, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.stroke();
     ctx.rotate(-1 * (Math.PI - this.vel.angle()));
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'white';
     ctx.strokeText(this.resources, 0, 0);
+     
     ctx.restore();
+
 
    },
 
