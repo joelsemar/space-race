@@ -44,10 +44,12 @@ var Island = Entity.extend({
     ctx.strokeStyle = color;
     if(this.selected){
      ctx.beginPath();
+     ctx.lineWidth = 2;
      ctx.arc(center.x - viewport.pos.x, center.y - viewport.pos.y, this.radius+2, 0, Math.PI * 2, true);
      ctx.stroke();
      ctx.closePath();
     }
+    ctx.lineWidth = 1;
     ctx.strokeText(this.resources, center.x - viewport.pos.x - ctx.measureText(text).width/2, center.y - viewport.pos.y + 9);
     ctx.restore();
 

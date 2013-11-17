@@ -7,7 +7,7 @@ if(require){
 
 var Ship = Entity.extend({
    type: 'ship',
-   speed: 80,
+   speed: 110,
 
    resources: 0,
    target: null,
@@ -104,7 +104,9 @@ var Ship = Entity.extend({
     ctx.drawImage(Game.world.shipImage, 0, 0, this.size.x, this.size.y);
     ctx.beginPath();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = 'blue';
+    if (this.player_id !== 'neutral'){
+       ctx.strokeStyle = Game.entityManager.entityById(this.player_id).color;
+    }
     ctx.arc(this.size.x/2, this.size.y/2, this.size.x/2+20, 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.stroke();
