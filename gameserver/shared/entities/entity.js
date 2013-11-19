@@ -7,10 +7,13 @@ if(require){
 var Rect = Class.extend({
    size: new Vector(0,0),
    pos: new Vector(0,0),
+
    init: function(pos, size){
      this.pos = new Vector(pos.x, pos.y);
      this.size = new Vector(size.x, size.y);
+     this.onInit();
    },
+
    points: function(){
      return [this.pos,
              {x: this.pos.x + this.size.x, y: this.pos.y},
@@ -48,6 +51,8 @@ var Rect = Class.extend({
    bottom: function(){
      return this.pos.y + this.size.y;
    },
+
+   onInit: function(){},
 });
 
 var Entity = Rect.extend({
@@ -67,6 +72,7 @@ var Entity = Rect.extend({
    init: function(obj){
       this.loadFromData(obj);
       Game.entityManager.register(this);
+      this.onInit();
    },
 
    _update: function(delta){

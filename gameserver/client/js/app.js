@@ -31,7 +31,11 @@ var World = BaseWorld.extend({
     if(data.players){
 
       _.each(data.players, function(player){
-          if(!_.contains(_.pluck(this.players, 'id'), player.id)){
+          var clientPlayer = Game.entityManager.entityById(player.id);
+          if(clientPlayer){
+            clientPlayer.resourcesGathered = player.resourcesGathered; 
+          }
+          else{
             this.players.push(new Player(player));
           }
       }, this);
@@ -101,6 +105,7 @@ var Game = {
     this.socket = io.connect();
     this.currentPlayerId = token;
     this.socket.emit('register', {'token': token});
+    new ScoreBoard();
 
 
     this.socket.on('game_start', function(data){
@@ -140,7 +145,6 @@ var Game = {
 
   getCurrentPlayer: function(){
      return this.entityManager.entityById(this.currentPlayerId);
-    
   },
 
 };

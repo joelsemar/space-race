@@ -38,7 +38,7 @@ var World = BaseWorld.extend({
    playerSummary: function(){
      var ret =[];
      _.each(this.players, function(player){
-       ret.push({id: player.id, color:player.color});
+       ret.push({id: player.id, color:player.color, resourcesGathered: player.resourcesGathered});
      })
      return ret;
    },

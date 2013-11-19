@@ -13,8 +13,7 @@ var Ship = Entity.extend({
    target: null,
    size: {x: 41, y: 77},
    collidesWith: ['ship' ],
-   init: function(obj){
-      this._super(obj);
+   onInit: function(){
       if(!this.targetID){
          return;
       }
@@ -29,6 +28,7 @@ var Ship = Entity.extend({
       }
       console.log("ship " + this.id + " created");
    },
+
    update: function(){
       if (utils.rectsIntersect(this, this.target)){
         this.collideWithIsland(this.target);

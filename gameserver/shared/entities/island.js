@@ -13,9 +13,13 @@ var Island = Entity.extend({
   lastProductionTick: 0,
   update: function(delta){
     this.lastProductionTick += delta;
+    var newResources;
     if(this.lastProductionTick >= this.productionInterval && this.player_id !== 'neutral'){
+      //players still get credit for resources gathered over max, just not ships
+      newResources = Math.floor(this.radius/20);
+      this.getPlayer().resourcesGathered += newResources;
       if(this.resources < this.maxResources){
-        this.resources += Math.floor(this.radius/20);
+        this.resources += newResources;
         if(this.resources > this.maxResources){
             this.resources = this.maxResources;
         }
@@ -36,10 +40,12 @@ var Island = Entity.extend({
     var color = 'white';
     ctx.save();
     ctx.drawImage(Game.world.islandImage, x, y, this.size.x, this.size.y);
-    ctx.font = '18px Helvetica';
+    ctx.font = '22px Helvetica';
+
     if (this.player_id !== 'neutral'){
-       color = Game.entityManager.entityById(this.player_id).color;
+       color = this.getPlayer().color;
     }
+
     ctx.fillStyle = color;
     ctx.strokeStyle = color;
     if(this.selected){
@@ -50,9 +56,14 @@ var Island = Entity.extend({
      ctx.closePath();
     }
     ctx.lineWidth = 1;
-    ctx.strokeText(this.resources, center.x - viewport.pos.x - ctx.measureText(text).width/2, center.y - viewport.pos.y + 9);
+    ctx.fillText(text, center.x - viewport.pos.x - ctx.measureText(text).width/2, center.y - viewport.pos.y + 9);
     ctx.restore();
 
+  },
+
+
+  getPlayer: function(){
+    return Game.entityManager.entityById(this.player_id);
   },
 
   attack: function(target){

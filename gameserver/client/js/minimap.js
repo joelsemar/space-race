@@ -1,12 +1,46 @@
 
-var MiniMap = Entity.extend({
-  type: 'minimap',
+var UIElement = Entity.extend({
+  type: 'UIElement',
+  zIndex: '100',
+
+  click: function(e){},
+  mousemove: function(e){},
+
+  constructCanvas: function(){
+    var canvas = document.getElementById(this.canvasId);
+    canvas.setAttribute('width', this.size.x);
+    canvas.setAttribute('height', this.size.y);
+    canvas.style.width = this.size.x + 'px';
+    canvas.style.height = this.size.y + 'px';
+    canvas.style.top = this.pos.y + 'px';
+    canvas.style.left = this.pos.x + 'px';
+    canvas.style.zIndex =  this.zIndex;
+    canvas.style.position = 'fixed';
+
+    $(canvas).click(function(e){
+      this.click(e);
+    }.bind(this));
+
+    $(canvas).mousemove(function(e){
+     this.mousemove(e)
+    }.bind(this));
+
+    $(canvas).mouseout(function(e){
+      this.islnadMousedOver = false;
+    }.bind(this));
+
+    this.ctx = canvas.getContext('2d');
+  },
+});
+
+
+var MiniMap = UIElement.extend({
   size: new Vector(250, 250),
+  canvasId: 'miniMapLayer',
   radiusRatio: 10,
   islandMousedOver: false,
   cachedIslandPos: [],
-  init: function(){
-    this._super();
+  onInit: function(){
     this.pos.x = Game.viewport.size.x - this.size.x - 80;
     this.pos.y = 20;
     this.xRatio = this.size.x / Game.world.size.x;
@@ -28,19 +62,7 @@ var MiniMap = Entity.extend({
     }
   },
 
-  constructCanvas: function(){
-    canvas = document.getElementById('miniMapLayer');
-    canvas.setAttribute('width', this.size.x);
-    canvas.setAttribute('height', this.size.y);
-    canvas.setAttribute('id', 'miniMapLayer');
-    canvas.style.width = this.size.x + 'px';
-    canvas.style.height = this.size.y + 'px';
-    canvas.style.top = this.pos.y + 'px';
-    canvas.style.left = this.pos.x + 'px';
-    canvas.style.zIndex =  '100';
-    canvas.style.position = 'fixed';
-
-    $(canvas).click(function(e){
+  click: function(e){
       var mm = Game.miniMap;
       var miniMapPosX = e.clientX - mm.pos.x;
       var miniMapPosY = e.clientY - mm.pos.y;
@@ -54,26 +76,23 @@ var MiniMap = Entity.extend({
       Game.viewport.pos.y = miniMapPosY - Game.viewport.size.y/2;
       Game.viewport.vel.x = 0;
       Game.viewport.vel.y = 0;
-    }.bind(this));
+   },
 
-    $(canvas).mousemove(function(e){
-      var pos = new Vector(e.clientX - this.pos.x, e.clientY - this.pos.y);
-      this.islandMousedOver = false;
-      if(!this.cachedIslandPos.length){
+  mousemove: function(e){
+    var pos = new Vector(e.clientX - this.pos.x, e.clientY - this.pos.y);
+    this.islandMousedOver = false;
+
+    if(!this.cachedIslandPos.length){
         this.getCachedIslandPos();
-      }
-      _.each(this.cachedIslandPos, function(island){
-        if(pos.distanceTo(island.center) < island.radius){
-          this.islandMousedOver = island;
-        }
-      }, this);
-    }.bind(this));
-    $(canvas).mouseout(function(e){
-      this.islnadMousedOver = false;
-    }.bind(this));
+    }
 
-    this.ctx = canvas.getContext('2d');
+    _.each(this.cachedIslandPos, function(island){
+        if(pos.distanceTo(island.center) < island.radius){
+            this.islandMousedOver = island;
+        }
+    }, this);
   },
+
 
   getCachedIslandPos: function(){
     var allIslands = Game.entityManager.entitiesByType('island');
@@ -170,4 +189,38 @@ var MiniMap = Entity.extend({
 
   },
   drawDebug: function(){},
+});
+
+var ScoreBoard = UIElement.extend({
+    type: 'UIElement',
+    canvasId: 'scoreboardLayer',
+
+    onInit: function(){
+      this.pos = {x: 20, y: 20};
+      this.size = {x: 200, y: 200};
+      this.constructCanvas();
+    },
+
+    draw: function(){
+      var ctx = this.ctx;
+      ctx.clear();
+      ctx.save();
+      ctx.font = '18px Helvetica';
+      ctx.lineWidth = 1;
+    
+      var players = Game.world.players.sort(function(a, b){ return b.resourcesGathered - a.resourcesGathered});
+      
+      _.each(players, function(player, index){
+        index += 1;
+        var text = player.id + ' -- ' + player.resourcesGathered;
+        ctx.strokeStyle = player.color;
+        ctx.fillStyle = player.color;
+        ctx.fillText(text, 0, (index * 30));
+        
+      }, this);
+      ctx.restore();
+
+    },
+
+  
 });

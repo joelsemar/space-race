@@ -9,6 +9,7 @@ var Player = Entity.extend({
     doubleClickDelay: 300,
     pendingDoubleClick: false,
     selectStart: false,
+    resourcesGathered: 0,
 
 
     draw: function(){

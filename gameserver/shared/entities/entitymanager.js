@@ -40,7 +40,7 @@ var EntityManager = Class.extend({
      var entity;
      for (id in this.entities){
        entity = this.entities[id];
-       if(utils.rectsIntersect(Game.viewport, entity) || entity.type === 'minimap' || entity.type === 'player'){
+       if(utils.rectsIntersect(Game.viewport, entity) || entity.type === 'UIElement' || entity.type === 'player'){
           entity.draw();
           if(Game.debug){
             entity.drawDebug();
