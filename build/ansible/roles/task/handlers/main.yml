@@ -1,0 +1,4 @@
+---
+- name: restart celery
+  service: name=celeryd state=restarted
+  sudo: yes

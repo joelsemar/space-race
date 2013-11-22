@@ -1,0 +1,18 @@
+[uwsgi]
+socket = /run/uwsgi/app/{{app_name}}/socket
+single-interpreter = true
+enable-threads = true
+chdir = {{ app_path }}/server
+uid = {{ webserver_user }}
+gid = {{ webserver_group }}
+pythonpath = {{ app_path }}/server
+virtualenv = {{ app_path}}/python-virtual
+module = wsgi_app
+processes = 6
+ksm = true
+master = true
+max-requests = 1000
+
+touch-reload = {{app_path}}/touch-reload
+
+

@@ -1,0 +1,9 @@
+[webservers]
+10.10.10.100
+
+[dbservers]
+10.10.10.100
+
+[taskservers]
+10.10.10.100
+

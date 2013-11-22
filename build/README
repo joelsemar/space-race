@@ -1,0 +1,20 @@
+Dependencies:
+
+
+Ansible 1.1 
+This is a python lib and can be installed (if you have pip) with
+pip install ansible
+
+
+Vagrant 1.2.2
+Get it here: http://downloads.vagrantup.com/
+
+
+VirtualBox
+Get it here: https://www.virtualbox.org/wiki/Downloads
+
+
+Copy app.conf.example to app.conf, review params, and make necessary edits, then
+
+cd anvil-viewbox-server/build/
+vagrant up

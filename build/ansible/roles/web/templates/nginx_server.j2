@@ -1,0 +1,44 @@
+server {
+    listen   {{ webserver_port }};                          ## default: listen for ipv4
+    listen   [::]:{{ webserver_port }} default ipv6only=on; ## listen for ipv6
+
+    # Make site accessible from http://localhost/
+    server_name localhost;
+
+    location / {
+        uwsgi_pass unix://run/uwsgi/app/${app_name}/socket;
+        include uwsgi_params;
+
+{% if enable_cors %}
+        add_header 'Access-Control-Allow-Origin' $http_Origin;
+        add_header 'Access-Control-Allow-Credentials' 'true';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
+        add_header 'Access-Control-Allow-Headers' 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+
+        if ($request_method = OPTIONS) {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            add_header 'Access-Control-Allow-Origin' $http_Origin;
+            add_header 'Access-Control-Allow-Credentials' 'true';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
+            add_header 'Access-Control-Allow-Headers' 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+            return 204;
+        }
+{% endif %}
+    }
+
+    location /static/admin/{
+        alias {{app_path}}/python-virtual/lib/python2.7/site-packages/django/contrib/admin/static/admin/;
+    }
+
+    location /media/{
+        alias {{app_path}}/server/media/;
+    }
+
+    location /static/{
+        alias {{app_path}}/server/static/;
+    }
+
+}
+

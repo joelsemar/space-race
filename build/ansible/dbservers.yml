@@ -1,0 +1,9 @@
+
+- hosts: dbservers
+  tasks:
+    - include: roles/db/tasks/main.yml
+  handlers:
+    - include: roles/db/handlers/main.yml
+  vars_files:
+    -  env_vars/${env}.yml
+

@@ -1,0 +1,67 @@
+---
+- name: install PostgreSQL and PostGIS packages
+  apt: pkg=${item} state=installed
+  with_items: 
+    -  postgresql-9.1
+    -  postgresql-server-dev-9.1
+    -  postgresql-9.1-postgis
+    -  python-psycopg2
+  sudo: yes
+
+- name: setup pg_hba.conf file
+  copy: >
+      src=roles/db/files/pg_hba.conf
+      dest=/etc/postgresql/9.1/main/pg_hba.conf
+      mode=0644
+      force=yes
+      owner=postgres
+      group=postgres
+  sudo: yes
+  sudo_user: postgres
+  notify:
+    - restart postgres
+
+- name: set postgres to listen on all
+  lineinfile: >
+         line="listen_addresses = '*'"
+         dest=/etc/postgresql/9.1/main/postgresql.conf
+         regexp="listen_addresses = "
+  sudo: yes
+  notify:
+    - restart postgres
+
+- name: setup postgis script
+  copy: >
+        src=roles/db/files/setup_postgis
+        mode=744
+        dest=/tmp/setup_postgis
+        owner=postgres
+        group=postgres
+  sudo: yes
+  notify:
+    - restart postgres
+ 
+- name: setup postgis template
+  shell: /tmp/setup_postgis
+  sudo: yes
+  sudo_user: postgres
+
+#TODO: parameterize
+- name: create ${app_name} database
+  postgresql_db: >
+    name=${db_name}
+    template=template_postgis
+    encoding=utf-8
+  sudo: yes
+  sudo_user: postgres
+
+- name: create ${app_name} database user        
+  postgresql_user: >
+      db=${db_name}
+      name=${db_user}
+      password=${db_password}
+      role_attr_flags=CREATEDB
+  sudo: yes
+  sudo_user: postgres
+
+

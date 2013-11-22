@@ -1,0 +1,87 @@
+---
+- name: refresh apt cache and install any updates
+  apt: upgrade=yes update_cache=yes
+  sudo: yes
+
+- name: create devops group
+  group: name=devops gid=777 state=present
+  sudo: yes
+
+- name: create devops user
+  user: name=devops group=devops uid=777 shell=/bin/bash state=present
+  sudo: yes
+
+- name: add devops to sudo group
+  user: >
+      name=devops
+      groups=sudo
+      append=yes
+  sudo: yes
+
+- name: add devops authorized key
+  authorized_key: user=devops key='$FILE(roles/common/files/devops_key.pub)'
+  sudo: yes
+
+- name: Copy sudoers file for safety
+  command: cp -f /etc/sudoers /etc/sudoers.tmp
+  sudo: yes
+
+- name: Create sudoers file backup
+  command: cp -f /etc/sudoers /etc/sudoers.${date}.bak
+  sudo: yes
+
+- name: give devops passwordless sudo
+  lineinfile: >
+      dest=/etc/sudoers.tmp 
+      state=present 
+      regexp="^devops ALL=(ALL) NOPASSWD: ALL$" 
+      line="devops ALL=(ALL) NOPASSWD: ALL"
+  sudo: yes
+
+- name: sudoers file check
+  shell: visudo -q -c -f /etc/sudoers.tmp && cp -f /etc/sudoers.tmp /etc/sudoers
+  sudo: yes
+
+- name: Install common apt packages
+  apt: pkg=${item} state=installed
+  with_items:
+    - build-essential
+    - git
+    - python2.7-dev
+    - python-httplib2
+    - python-pip
+    - python-software-properties
+    - python-virtualenv
+    - tmux
+    - vim
+  sudo: yes
+
+- name: create common directories
+  file: ${item}
+  with_items:
+      - >
+        dest=/var/ansible_flags
+        mode=0777
+        owner=root
+        group=root
+        state=directory
+      - >
+        dest=/var/cache/pip
+        mode=0777
+        owner=root
+        group=root
+        state=directory
+  sudo: yes
+
+- name: Update global environment variables
+  lineinfile: >
+      dest=/etc/profile
+      line='export ${item.variable}=${item.value}'
+      regexp='export ${item.variable}='
+      insertafter=EOF
+      create=yes
+      state=present
+  with_items:
+    - variable: PIP_DOWNLOAD_CACHE
+      value: /var/cache/pip
+  sudo: yes

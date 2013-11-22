@@ -1,0 +1,107 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby sw=2 :
+require 'yaml'
+require 'erb'
+require 'ostruct'
+
+
+def environment()
+  # Find the current Vagrant::Environment object in memory
+  ObjectSpace.each_object(Vagrant::Environment) do |env|
+    return env
+  end
+end
+
+def data_dir()
+  environment.data_dir.to_path
+end
+
+
+def local_cache_dir(vm, subdir)
+  cache_root = ENV['VAGRANT_CACHE_ROOT'] || File.join(data_dir, 'cache')
+  cache_dir = File.join(cache_root, vm.box, subdir)
+  FileUtils.mkdir_p(cache_dir) unless File.exists? cache_dir
+  cache_dir
+end
+
+
+def add_local_cache(vm)
+  [
+    ['apt', '/var/cache/apt/archives/'],
+    ['pip', '/var/cache/pip'],
+  ].each do |cache_subdir, guest_dir|
+    vm.synced_folder(
+      local_cache_dir(vm, cache_subdir),
+      guest_dir,
+      :owner => 'root',
+      :group => 'root',
+      :extra => 'dmode=777,fmode=666',
+    )
+  end
+end
+
+
+def share_host_dir(vm, app_config)
+  if app_config.code_shared_by_host
+    vm.synced_folder(
+      app_config.local_code_dir,
+      app_config.code_path,
+      :owner => 'www-data',
+      :group => 'www-data',
+      :extra => 'dmode=774',
+    )
+  end
+end
+
+
+def build_extra_vars(config)
+end
+
+
+Vagrant.configure('2') do |config|
+  
+  if !File.exists?('app.conf')
+     puts("Copy over the app.conf.example file to app.conf, make local edits and retry")
+     next
+  end
+ 
+  app_config = OpenStruct.new(YAML.load(ERB.new(File.read('app.conf')).result))
+  if app_config.local_code_dir
+     app_config.code_shared_by_host = true
+  end
+
+  config.vm.box = 'precise64'
+  config.vm.box_url = 'http://files.vagrantup.com/precise64.box'
+  add_local_cache(config.vm)
+
+  config.vm.define :web do |web|
+    web.vm.network :private_network, ip: '10.10.10.100'
+    web.vm.hostname = "web-1.local.#{app_config.app_name}"
+    share_host_dir( web.vm, app_config)
+    if app_config.webserver_host_port > 0
+      web.vm.network :forwarded_port, guest: app_config.webserver_port, host: app_config.webserver_host_port
+      web.vm.network :forwarded_port, guest: app_config.runserver_port, host: app_config.runserver_host_port
+    end
+    web.vm.provision :ansible do |ansible|
+      ansible.playbook = 'ansible/site.yml'
+      ansible.inventory_file = 'ansible/inventories/local'
+      ansible.extra_vars = app_config.marshal_dump
+      ansible.verbose = true
+    end
+  end
+
+  
+# a vm with no provisioner to test as if it was a cloud server
+#  config.vm.define :web_test do |web|
+#    web.vm.network :private_network, ip: '10.10.10.101'
+#    web.vm.hostname = "web-1.local.#{app_config.app_name}"
+#    if app_config.webserver_host_port > 0
+#      web.vm.network :forwarded_port, guest: app_config.webserver_port, host: app_config.webserver_host_port
+#    end
+#  end
+
+end
+
+
+
+

@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+    - include: roles/common/tasks/main.yml
+  vars_files:
+    -  env_vars/${env}.yml

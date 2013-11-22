@@ -1,0 +1,102 @@
+---
+- name: ${app_name} - ensure ${webserver_user} user exists
+  user: name=${webserver_user} shell=/bin/bash state=present groups=www-data
+  sudo: yes
+
+- name: ${app_name} - create required directories for app
+  file: >
+      dest=${app_path}
+      mode=0775
+      owner=${webserver_user}
+      group=${webserver_group}
+      state=directory
+  sudo: yes
+
+- name: ${app_name} - ensure ${webserver_user} home directory exists
+  file: >
+      dest=~${webserver_user}
+      mode=0775
+      owner=${webserver_user}
+      group=${webserver_group}
+      state=directory
+  sudo: yes
+
+- name: ${app_name} - create .ssh directory for ${webserver_user} user
+  file: >
+      dest=/home/${webserver_user}/.ssh
+      mode=0700
+      owner=${webserver_user}
+      group=${webserver_group}
+      state=directory
+  sudo: yes
+
+- name: ${app_name} - copy ssh private key for git checkouts
+  copy: >
+      src=roles/web/files/id_rsa_git_ro
+      dest=/home/${webserver_user}/.ssh/id_rsa_git_ro
+      mode=0400
+      force=yes
+      owner=${webserver_user}
+      group=${webserver_group}
+  sudo: yes
+
+- name: ${app_name} - set up ssh config to use key for ${git_provider}
+  template: >
+      src=roles/web/templates/ssh_config.j2
+      dest=~${webserver_user}/.ssh/config
+      mode=0400
+      owner=${webserver_user}
+      group=${webserver_group}
+  sudo: yes
+
+- name: ${app_name} - set up .gitconfig for ${webserver_user}
+  template: >
+      src=roles/web/templates/gitconfig.j2
+      dest=~${webserver_user}/.gitconfig
+      mode=0664
+      owner=${webserver_user}
+      group=${webserver_group}
+  sudo: yes
+
+- name: ${app_name} - create ${code_path} directory
+  file: >
+      dest=${code_path}
+      mode=0775
+      state=directory
+      owner=${webserver_user}
+      group=${webserver_group}
+  sudo: yes
+
+# if an external checkout directory is provided, we will let the host OS
+# manage git, and this task will be skipped.
+# TODO: add depth parameter when available
+- name: ${app_name} - checkout code
+  when_unset: ${code_shared_by_host}
+  git: >
+      dest=${code_path}
+      repo=${git_repo}
+      version=${git_branch}
+      force=yes
+#      depth=1
+  sudo: yes
+  sudo_user: ${webserver_user}
+  tags:
+     - update
+
+- name: link application code to ${app_path}
+  file: >
+      src=${manage_path}
+      dest=${app_path}/server
+      owner=${webserver_user}
+      group=${webserver_group}
+      state=link
+  sudo: yes
+
+- name: activate python virtualenv in .bashrc
+  lineinfile: >
+      dest=~${webserver_user}/.bashrc
+      insertafter=EOF
+      line="source /opt/${app_name}/python-virtual/bin/activate"
+      regexp="^source /opt/${app_name}/python-virtual/bin/activate$"
+  sudo: yes
+

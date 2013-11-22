@@ -1,0 +1,16 @@
+---
+app_name: "viewbox"
+project_name: "anvil-viewbox-server"
+git_repo: "git@bitbucket.org:dweiss/anvil-viewbox-server.git"
+webserver_user: "viewbox"
+git_provider: "bitbucket.org"
+code_path: "/srv/anvil-viewbox-server" 
+app_path: "/opt/viewbox"
+manage_path: "/srv/anvil-viewbox-server/viewbox" 
+webserver_group: "www-data"
+webserver_port: 80
+enable_cors: ""
+git_branch: dev
+db_user: viewbox
+db_name: viewbox
+db_password: viewbox
