@@ -35,7 +35,7 @@ def add_local_cache(vm)
       guest_dir,
       :owner => 'root',
       :group => 'root',
-      :extra => 'dmode=777,fmode=666',
+      :mount_options => ['dmode=777', 'fmode=666'],
     )
   end
 end
@@ -48,7 +48,7 @@ def share_host_dir(vm, app_config)
       app_config.code_path,
       :owner => 'www-data',
       :group => 'www-data',
-      :extra => 'dmode=774',
+      :mount_options => ['dmode=774'],
     )
   end
 end
@@ -59,12 +59,12 @@ end
 
 
 Vagrant.configure('2') do |config|
-  
+
   if !File.exists?('app.conf')
      puts("Copy over the app.conf.example file to app.conf, make local edits and retry")
      next
   end
- 
+
   app_config = OpenStruct.new(YAML.load(ERB.new(File.read('app.conf')).result))
   if app_config.local_code_dir
      app_config.code_shared_by_host = true
@@ -84,13 +84,13 @@ Vagrant.configure('2') do |config|
     end
     web.vm.provision :ansible do |ansible|
       ansible.playbook = 'ansible/site.yml'
-      ansible.inventory_file = 'ansible/inventories/local'
+      ansible.inventory_path = 'ansible/inventories/local'
       ansible.extra_vars = app_config.marshal_dump
       ansible.verbose = true
     end
   end
 
-  
+
 # a vm with no provisioner to test as if it was a cloud server
 #  config.vm.define :web_test do |web|
 #    web.vm.network :private_network, ip: '10.10.10.101'
