@@ -113,7 +113,7 @@
 
 - name: install ${app_name} webserver python requirements files
   pip: >
-      requirements=${code_path}/requirements.txt
+      requirements=${code_path}/apiserver/requirements.txt
       virtualenv=${app_path}/python-virtual
       use_mirrors=yes
   notify:

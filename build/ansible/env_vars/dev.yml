@@ -1,7 +1,7 @@
 ---
-app_name: "viewbox"
-project_name: "anvil-viewbox-server"
-git_repo: "git@bitbucket.org:dweiss/anvil-viewbox-server.git"
+app_name: "space-race"
+project_name: "space-race"
+git_repo: "git@github.com:joelsemar/space-race.git"
 webserver_user: "viewbox"
 git_provider: "bitbucket.org"
 code_path: "/srv/anvil-viewbox-server" 

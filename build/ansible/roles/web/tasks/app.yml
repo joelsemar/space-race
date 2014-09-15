@@ -71,7 +71,7 @@
 # manage git, and this task will be skipped.
 # TODO: add depth parameter when available
 - name: ${app_name} - checkout code
-  when_unset: ${code_shared_by_host}
+  when: not {{ code_shared_by_host }} 
   git: >
       dest=${code_path}
       repo=${git_repo}
