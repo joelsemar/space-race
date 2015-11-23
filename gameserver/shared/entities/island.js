@@ -11,6 +11,7 @@ var Island = Entity.extend({
   maxResources: 500,
   productionInterval: 2000,
   lastProductionTick: 0,
+  upgrade: null,
   update: function(delta){
     this.lastProductionTick += delta;
     var newResources;

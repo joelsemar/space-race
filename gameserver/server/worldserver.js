@@ -9,7 +9,7 @@ var Class = require("../shared/lib/class.js")
 var World = BaseWorld.extend({
 
    fps: 60,
-   numIslands: 75,
+   numIslands: 50,
    lastClientUpdate: 0,
    clientUpdateInterval: 500,
 
@@ -62,7 +62,7 @@ var World = BaseWorld.extend({
    },
 
    getIslandData: function(){
-     return generateIslands(this.size, this.numIslands, 400);
+     return generateIslands(this.size, this.numIslands, 500);
    },
 
    initializeIslands: function(){

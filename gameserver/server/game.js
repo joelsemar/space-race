@@ -5,8 +5,8 @@ var  World = require('./worldserver.js')
 var Game = Class.extend({
     
     players: [],
-    colors: ['blue', 'yellow', 'red', 'green'],
-    tokens: ['player1', 'player2'],
+    colors: ['blue', 'red', 'red', 'green'],
+    tokens: ['daddy',  'avery'],
 
     init: function(){
        this.entityManager =  new EntityManager();

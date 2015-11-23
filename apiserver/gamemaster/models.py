@@ -6,7 +6,6 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import models as auth_models
 
 
-
 # Create your models here.
 
 
@@ -14,9 +13,7 @@ class Account(AbstractUser):
 
     pass
 
-auth_models.User = Accunt
-
-
+auth_models.User = Account
 
 
 class CurrencyType(BaseModel):
@@ -24,12 +21,13 @@ class CurrencyType(BaseModel):
 
 
 class BountyType(BaseModel):
-    
+
     amount = models.DecimalField()
     currency = models.ForeignKey(CurrencyType)
 
+
 class Game(BaseModel):
-    
+
     num_players = models.PositiveIntegerField(default=2)
     bounty = models.ForeignKey(BountyType)
     start_time = models.DateTimeField(null=True, default=None)
@@ -37,18 +35,16 @@ class Game(BaseModel):
 
     @property
     def state(self):
-        if self.start_time == None:
+        if self.start_time is None:
             return 'lobby'
 
-        elif self.end_time == None:
+        elif self.end_time is None:
             return 'running'
 
         else:
             return 'done'
 
-class Player(BaseModoel):
+
+class Player(BaseModel):
     game = models.ForeignKey(Game)
     account = models.ForeignKey(Account)
-
-
-    
