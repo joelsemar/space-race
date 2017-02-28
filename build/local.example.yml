@@ -1,0 +1,27 @@
+---
+devops:
+  user: devops
+  group: devops
+  key: ~/.ssh/evid-devops
+  public_key: ~/.ssh/evid-devops.pub
+
+shared_code_directory: ~/evid-server
+
+# these are unfortunate copies that do nothing more than make the ./manage.py work
+# they dont affect actual deployment (we cant use jinja interpolation in this file)
+django_root: /srv/evid-server/evidio
+virtualenv: /srv/python-env
+
+vagrant:
+  vms:
+    - hostname: web1
+      ip: 10.10.10.100
+      ports:
+         - host: 8080
+           guest: 80
+         - host: 9000
+           guest: 9000
+      sync:
+         from: ~/evid-server
+         to: /srv/evid-server
+

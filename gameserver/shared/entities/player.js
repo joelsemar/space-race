@@ -72,7 +72,7 @@ var Player = Entity.extend({
     },
 
     select: function(target){
-      if(target.player_id === this.id){
+      if(target.playerId === this.id){
          target.selected = true;
       }
     },
@@ -89,7 +89,7 @@ var Player = Entity.extend({
 
     selectedIslands: function(){
       return Game.entityManager.entitiesByType('island', function(i){
-        return i.selected === true;
+        return i.selected === true && i.playerId === this.playerId;
       }.bind(this));
     },
 
@@ -109,7 +109,7 @@ var Player = Entity.extend({
 
     selectVisible: function(){
       _.each(Game.entityManager.entitiesByType('island'), function(island){
-        if(island.player_id === this.id && utils.rectsIntersect(island, Game.viewport)){
+        if(island.playerId === this.id && utils.rectsIntersect(island, Game.viewport)){
           this.select(island);
         }
       } , this);
@@ -136,7 +136,7 @@ var Player = Entity.extend({
 
       var selectionRect = new Rect(selectPos, selectSize);
       _.each(allIslands, function(island){
-          if(island.player_id !== this.id){
+          if(island.playerId !== this.id){
             this.unSelect(island);
             return;
           };

@@ -1,6 +1,7 @@
 ---
-- hosts: all
-  tasks:
-    - include: roles/common/tasks/main.yml
+- hosts: all:!localhost
+  roles:
+      - common
   vars_files:
-    -  env_vars/${env}.yml
+    -  group_vars/default.yml
+    -  group_vars/{{env}}.yml

@@ -1,0 +1,19 @@
+[uwsgi]
+socket = /run/uwsgi/app/{{project.app_name}}/socket
+single-interpreter = true
+enable-threads = true
+chdir = {{ django.root }}
+uid = {{ devops.app_user }}
+gid = www-data
+pythonpath = {{ django.root }}
+virtualenv = {{ project.virtualenv }}
+module = {{ uwsgi.module }}
+processes = {{uwsgi.processes}}
+ksm = true
+master = true
+max-requests = {{uwsgi.max_requests}}
+env = DJANGO_ENV={{env}}
+daemonize = {{uwsgi.log_dir}}
+touch-reload = /srv/touch-reload
+
+

@@ -1,0 +1,55 @@
+---
+
+- name: remove old build
+  file: > 
+     dest="{{react_app_location}}/build"
+     state=absent
+
+- name: run npm install
+  shell: npm install
+  args:
+    chdir: "{{react_app_location}}"
+
+
+- name: run npm build
+  shell: npm run build
+  args:
+    chdir: "{{react_app_location}}"
+
+
+- name: build status.html
+  ignore_errors: True 
+  template: >
+     dest="{{react_app_location}}/build/status.html"
+     src=roles/django/templates/status.html.j2
+     mode=775
+
+# Apparently this will be available in the 2.3 version of ansible.. :)
+# until then we hve to do this ugly hack below
+#- name: upload static assets to s3 backed cdn
+#  s3_sync:
+#    bucket: "{{cdn_s3_bucket}}" 
+#    file_root: "{{react_app_location}}/build"
+#    aws_access_key: "{{AWS_ACCESS_KEY_ID}}"
+#    aws_secret_key: "{{AWS_SECRET_ACCESS_KEY}}"
+#  tags:
+#    -update
+
+
+- name: upload static assets
+  s3:
+    aws_access_key: "{{AWS_ACCESS_KEY_ID}}"
+    aws_secret_key: "{{AWS_SECRET_ACCESS_KEY}}"
+    bucket: "{{ cdn.s3_bucket }}"
+    mode: put
+    object: "static/{{ item }}"
+    src: "{{react_app_location}}/build/static/{{ item }}"
+    permission: "public-read"
+  with_items: "{{ static_files_cmd.stdout|from_json }}"
+
+- name: create build archive
+  shell: "tar -cvzf  build_{{current_git_commit.stdout}}.tgz build/"
+  args:
+   chdir: "{{react_app_location}}"
+
+

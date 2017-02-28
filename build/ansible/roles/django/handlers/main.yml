@@ -1,0 +1,17 @@
+---
+- name: restart uwsgi
+  service: >
+      name=uwsgi
+      enabled=yes
+      state=restarted
+  sudo: yes
+  when: "'appservers' in group_names"
+  notify:
+    - restart nginx
+  tags:
+    - update
+
+- name: restart nginx
+  service: name=nginx state=restarted
+  when: "'appservers' in group_names"
+  sudo_user: root

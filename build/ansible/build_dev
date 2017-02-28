@@ -1,6 +1,0 @@
-#!/bin/bash
-ansible-playbook -v  -u root -i inventories/dev common.yml -e "env=dev" --private-key=~/.ssh/peppered_devops && \
-ansible-playbook -v  -u devops -i inventories/dev dbservers.yml -e "env=dev" --private-key=~/.ssh/peppered_devops && \
-ansible-playbook -v  -u devops -i inventories/dev webservers.yml -e "env=dev" --private-key=~/.ssh/peppered_devops
-ansible-playbook -v  -u devops -i inventories/dev taskservers.yml -e "env=dev" --private-key=~/.ssh/peppered_devops
-

@@ -44,7 +44,7 @@ var Ship = Entity.extend({
      if(this.id === ship.id){
        return;
      }
-     if(this.player_id === ship.player_id){
+     if(this.playerId === ship.playerId){
        if(this.target.id === ship.target.id){
          ship.resources += this.resources;
          this.resources = 0;
@@ -72,14 +72,14 @@ var Ship = Entity.extend({
       return;
      }
      console.log("colliding with: " + island.id);
-     if(island.player_id === this.player_id){
+     if(island.playerId === this.playerId){
        island.resources += this.resources;
      }
      else{
         island.resources -= this.resources;
         if(island.resources < 0){
            island.resources = Math.abs(island.resources);
-           island.player_id = this.player_id;
+           island.playerId = this.playerId;
            island.lastProductionTick = 0;
         }
      }
@@ -104,8 +104,8 @@ var Ship = Entity.extend({
     ctx.drawImage(Game.world.shipImage, 0, 0, this.size.x, this.size.y);
     ctx.beginPath();
     ctx.lineWidth = 2;
-    if (this.player_id !== 'neutral'){
-       ctx.strokeStyle = Game.entityManager.entityById(this.player_id).color;
+    if (this.playerId !== 'neutral'){
+       ctx.strokeStyle = Game.entityManager.entityById(this.playerId).color;
     }
     ctx.arc(this.size.x/2, this.size.y/2, this.size.x/2+20, 0, Math.PI * 2, true);
     ctx.closePath();

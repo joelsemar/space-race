@@ -1,17 +1,20 @@
 ---
+
 - name: install PostgreSQL and PostGIS packages
-  apt: pkg=${item} state=installed
-  with_items: 
-    -  postgresql-9.1
-    -  postgresql-server-dev-9.1
-    -  postgresql-9.1-postgis
+  apt: pkg={{item}} state=installed allow_unauthenticated=yes
+
+  with_items:
     -  python-psycopg2
+    -  postgresql-contrib
+    -  postgresql
+    -  postgresql-9.5-postgis-2.2
+
   sudo: yes
 
 - name: setup pg_hba.conf file
   copy: >
       src=roles/db/files/pg_hba.conf
-      dest=/etc/postgresql/9.1/main/pg_hba.conf
+      dest=/etc/postgresql/9.5/main/pg_hba.conf
       mode=0644
       force=yes
       owner=postgres
@@ -24,7 +27,7 @@
 - name: set postgres to listen on all
   lineinfile: >
          line="listen_addresses = '*'"
-         dest=/etc/postgresql/9.1/main/postgresql.conf
+         dest=/etc/postgresql/9.5/main/postgresql.conf
          regexp="listen_addresses = "
   sudo: yes
   notify:
@@ -40,28 +43,47 @@
   sudo: yes
   notify:
     - restart postgres
- 
+
 - name: setup postgis template
   shell: /tmp/setup_postgis
   sudo: yes
   sudo_user: postgres
 
-#TODO: parameterize
-- name: create ${app_name} database
+- name: create {{project.app_name}} database
   postgresql_db: >
-    name=${db_name}
+    name={{db.name}}
     template=template_postgis
     encoding=utf-8
-  sudo: yes
-  sudo_user: postgres
+    state=present
+  become: true
+  become_user: postgres
 
-- name: create ${app_name} database user        
+
+- name: create {{project.app_name}} database user
   postgresql_user: >
-      db=${db_name}
-      name=${db_user}
-      password=${db_password}
-      role_attr_flags=CREATEDB
-  sudo: yes
-  sudo_user: postgres
+      db={{db.name}}
+      name={{db.user}}
+      password={{db.password}}
+      role_attr_flags=SUPERUSER
+  become: true
+  become_user: postgres
 
+- postgresql_ext: >
+    name=postgis
+    db={{item}}
+  become: true
+  become_user: postgres
+  with_items:
+    - template1
+    - "{{db.name}}"
+
+
+- name: kill idle postgresql connections
+  shell: >
+         ps aux|grep postgres | grep idle | awk '{print $2}' | xargs kill -9
+         executable=/bin/bash
+  sudo: yes
+  ignore_errors: yes
+  tags:
+     - update
 

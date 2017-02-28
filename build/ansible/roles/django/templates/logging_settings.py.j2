@@ -1,0 +1,71 @@
+
+LOG_FILE = os.path.join('{{ django.log_dir }}', "{{project.app_name}}.log")
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(asctime)s -- %(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter':'simple',
+        },
+        'default':{
+            'level': 'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': LOG_FILE,
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'simple',
+
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+    },
+    'loggers': {
+        'default': {
+          {% if env == 'local' %}
+            'handlers': ['default', 'console'],
+          {% else %}
+            'handlers': ['default'],
+          {% endif %}
+            'level': 'DEBUG',
+        },
+        'apnsclient.apns': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'apnsclient.transport': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'apnsclients.backends.stdio': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'concurrent.futures': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+
+        'django.db.backends': {
+            'handlers': ['default'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+    }
+}

@@ -1,0 +1,15 @@
+---
+- name: Database | {{project.app_name}} Migrate Django database.
+  sudo_user: "{{devops.app_user}}"
+  django_manage: >
+    command=migrate
+    app_path={{django.root}}
+    settings={{django.settings}}
+    virtualenv={{project.virtualenv}}
+  tags:
+    - database
+    - update
+    - app
+  notify:
+    - restart uwsgi
+

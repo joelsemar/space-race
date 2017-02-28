@@ -1,0 +1,20 @@
+[appservers]
+10.10.10.100 db_manager=true
+
+[dbservers]
+10.10.10.100
+
+[buildserver]
+10.10.10.100
+
+[brokers]
+10.10.10.100
+
+[workers]
+10.10.10.100
+
+[staticwebservers]
+10.10.10.100
+
+[local]
+localhost ansible_connection=local ansible_python_interpreter=python

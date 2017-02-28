@@ -1,0 +1,8 @@
+---
+- name: Jenkins
+  hosts: buildserver
+  sudo: yes
+  roles:
+    - jenkins
+  vars_files:
+    -  group_vars/default.yml

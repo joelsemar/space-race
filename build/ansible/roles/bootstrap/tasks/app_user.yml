@@ -1,0 +1,13 @@
+---
+- name: ensure {{devops.app_user}} user exists
+  user: name={{devops.app_user}} shell=/bin/bash state=present groups=www-data
+  sudo: yes
+
+- name: create .ssh directory for {{devops.app_user}} user
+  file: >
+      dest=/home/{{devops.app_user}}/.ssh
+      mode=0700
+      owner={{devops.app_user}}
+      group=www-data
+      state=directory
+  sudo: yes

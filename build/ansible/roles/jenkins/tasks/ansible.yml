@@ -1,0 +1,105 @@
+- pip: name=pyyaml
+
+- name: create .ssh directory for jenkins user
+  file: >
+      dest={{jenkins_lib}}/.ssh
+      mode=0700
+      owner=jenkins
+      group=jenkins
+      state=directory
+  sudo: yes
+
+- name: add jenkins user to sudo group
+  user: >
+      name=jenkins
+      groups=sudo
+      append=yes
+  sudo: yes
+
+
+- name: Ansible | copy read only key to checkout build code
+  copy: >
+      src=roles/jenkins/files/{{item.build_key_name}}
+      dest={{jenkins_lib}}/.ssh/{{item.build_key_name}}
+      mode=0400
+      force=yes
+      owner=jenkins
+      group=jenkins
+  sudo: yes
+  with_items: builds
+
+
+
+- name: Ansible | copy devops key 
+  copy: >
+      src={{item.devops_key}}
+      dest={{jenkins_lib}}/.ssh/{{item.devops_key_name}}
+      mode=0400
+      force=yes
+      owner=jenkins
+      group=jenkins
+  sudo: yes
+  with_items: builds
+
+- name: Ansible | copy devops public key
+  copy: >
+      src={{item.devops_public_key}}
+      dest={{jenkins_lib}}/.ssh/{{item.devops_key_name}}.pub
+      mode=0400
+      force=yes
+      owner=jenkins
+      group=jenkins
+  sudo: yes
+  with_items: builds
+
+#- name: Ansible| set up ssh config to set strict host key checking
+#  template: >
+#      src=roles/jenkins/templates/ssh_config.j2
+#      dest=~{{jenkins_lib}}/.ssh/config
+#      mode=0400
+#      owner=jenkins
+#      group=jenkins
+#  sudo: yes
+
+- name: Ansible | Install ansible ..2meta5me
+  pip: name=ansible version=2.1.1.0
+
+- name: Ansible | Checkout build code
+  git: >
+      dest={{jenkins_lib}}/{{item.project_name}}
+      repo={{item.repo}}
+      version={{item.branch}}
+      force=yes
+      accept_hostkey=yes
+      key_file={{jenkins_lib}}/.ssh/{{item.build_key_name}}
+  sudo: yes
+  sudo_user: jenkins
+  tags:
+    - update
+  with_items: builds
+
+
+
+- name: Ansible Install required build packages
+  pip: >
+      requirements={{jenkins_lib}}/{{item.project_name}}/requirements.txt
+      use_mirrors=yes
+      extra_args="--upgrade"
+  sudo: yes
+  with_items: builds
+  tags:
+     - update
+
+- name: Ansible | place secrets
+  copy: >
+      src={{secrets}}
+      dest={{jenkins_lib}}/{{item.project_name}}/ansible/group_vars/secrets.yml
+      mode=0400
+      force=yes
+      owner=jenkins
+      group=jenkins
+  sudo: yes
+  with_items: builds
+  when: secrets is defined
+  tags:
+     - update

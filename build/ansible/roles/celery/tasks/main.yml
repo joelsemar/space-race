@@ -1,0 +1,38 @@
+---
+- name: Install Celery configuration
+  sudo: yes
+  template: >
+    src=roles/celery/templates/celeryconf.j2
+    dest=/etc/default/celeryd
+
+- name: Install Celery worker init script
+  sudo: yes
+  template: >
+    src=roles/celery/files/celeryd
+    dest=/etc/init.d/celeryd
+    mode=0744
+  notify:
+    - restart celeryd
+
+- name: Install Celerybeat  init script
+  sudo: yes
+  template: >
+    src=roles/celery/files/celerybeat
+    dest=/etc/init.d/celerybeat
+    mode=0744
+  notify:
+    - restart celerybeat
+
+- name: restart celeryd
+  shell: /etc/init.d/celeryd restart
+  sudo: yes
+  tags:
+    - update
+    - bounce
+
+- name: restart celerybeat
+  shell: /etc/init.d/celerybeat restart
+  sudo: yes
+  tags:
+    - update
+    - bounce

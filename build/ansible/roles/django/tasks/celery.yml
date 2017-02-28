@@ -1,0 +1,12 @@
+---
+- name: Celery | install celery config
+  template: >
+      dest="{{celery.app_path}}"
+      src=roles/django/templates/celery.py.j2
+      owner="{{devops.app_user}}"
+      group=www-data
+      mode=775
+  sudo: yes
+  tags:
+     - update
+

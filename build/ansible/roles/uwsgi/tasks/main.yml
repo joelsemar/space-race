@@ -1,0 +1,72 @@
+---
+- name: uwsgi | main | Install required uwsgi apt packages
+  apt: pkg={{item}} state=installed update_cache=yes
+  with_items:
+    - uwsgi
+    - uwsgi-plugin-python
+  sudo: yes
+
+  
+- name: uwsgi | main | Create needed directories
+  file: >
+      dest={{item.dest}}
+      owner={{item.owner}}
+      group={{item.group}}
+      mode={{item.mode}}
+      state=directory
+  with_items:
+    - dest: /etc/uwsgi
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: /etc/uwsgi/apps-available
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: /etc/uwsgi/apps-enabled
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: "{{uwsgi.log_dir}}"
+      owner: "{{devops.app_user}}"
+      group: www-data
+      mode: "0775"
+  sudo: yes
+
+- name: uwsgi | main | Make sure uwsgi log file exists
+  file: >
+      path="/var/log/uwsgi/app/{{project.app_name}}.log"
+      owner="{{devops.app_user}}"
+      group=www-data
+      mode=775
+      state=touch
+  sudo: yes
+     
+
+- name: uwsgi | create {{project.app_name}} ini file
+  template: >
+      src=roles/uwsgi/templates/uwsgi.ini.j2
+      dest=/etc/uwsgi/apps-available/{{project.app_name}}.ini
+      mode=0664
+      owner={{devops.app_user}}
+      group=www-data
+  sudo: yes
+
+- name: uwsgi | enable {{project.app_name}} uwsgi app
+  file: >
+      src=/etc/uwsgi/apps-available/{{app_name}}.ini
+      dest=/etc/uwsgi/apps-enabled/{{app_name}}.ini
+      state=link
+  sudo: yes
+  notify:
+    - restart uwsgi
+
+
+- name: uwsgi | Symlink logfile to {{uwsgi.log_dir}}/{{app_name}}
+  file: >
+      src=/var/log/uwsgi/app/{{app_name}}.log
+      dest={{uwsgi.log_dir}}/{{app_name}}.log
+      state=link
+      mode=0664
+      owner={{devops.app_user}}
+      group=www-data

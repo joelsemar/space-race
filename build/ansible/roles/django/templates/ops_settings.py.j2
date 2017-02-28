@@ -1,0 +1,42 @@
+import os, sys
+
+{% if env == 'prod' %}
+DEBUG = False
+{% else %}
+DEBUG = True
+{% endif %}
+ENV = "{{env.upper()}}"
+
+MEDIA_ROOT = "{{django.media_root}}"
+STATIC_ROOT = "{{django.static_root}}"
+STATIC_URL = "{{django.static_url}}"
+
+
+{% if django_settings is defined %}
+{% for setting in django_settings %}
+{{setting}}
+{% endfor %}
+{% endif %}
+
+
+{% if rds is defined %}
+{% include "roles/django/templates/rds_settings.py.j2" %}
+{% else %}
+{% include "roles/django/templates/db_settings.py.j2" %}
+{% endif %}
+
+{%if 'workers' in group_names %}
+{% include "roles/django/templates/redis_settings.py.j2" %}
+{%endif%}
+
+{% if project.haystack_enabled  is defined %}
+{% include "roles/django/templates/haystack_settings.py.j2" %}
+{% endif %}
+
+{% include "roles/django/templates/logging_settings.py.j2" %}
+
+try:
+    from {{project.app_name}}.{{env}}_settings import *
+except ImportError:
+    pass
+

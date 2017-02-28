@@ -1,0 +1,28 @@
+---
+
+- set_fact: task_header="Code | {{project.app_name}}"
+  tags:
+    - update
+
+- name: "{{task_header}} | create {{project.root}} directory"
+  when: local_mount is not defined
+  file: >
+      dest={{project.root}}
+      mode=0775
+      state=directory
+      owner={{devops.app_user}}
+      group=www-data
+  sudo: yes
+
+- name: "{{task_header}} | build status.html"
+  ignore_errors: True 
+  template: >
+     dest="{{status_path}}"
+     src=roles/django/templates/status.html.j2
+     owner="{{devops.app_user}}"
+     group=www-data
+     mode=775
+  sudo: yes
+  when: current_git_commit.stdout is defined
+  tags:
+     - update

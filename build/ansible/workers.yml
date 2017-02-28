@@ -1,0 +1,14 @@
+---
+- hosts: workers
+  sudo: yes
+  roles:
+     - django
+     - celery
+
+  vars_files:
+    -  group_vars/default.yml
+    -  group_vars/secrets.yml
+    -  group_vars/{{env}}.yml
+    -  group_vars/encast/default.yml
+    -  group_vars/encast/{{env}}.yml
+    

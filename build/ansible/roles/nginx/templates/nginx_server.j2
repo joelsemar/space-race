@@ -1,0 +1,24 @@
+ server {
+    {% if nginx.ssl_cert is defined%}
+        listen 443;
+        ssl on;
+        ssl_certificate /etc/nginx/ssl/server.crt;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+    {% else %}
+        listen   80;                          ## default: listen for ipv4
+    {% endif %}
+
+
+
+    # Make site accessible from http://localhost/
+    server_name             {% for name in nginx.server_names %}{{name}} {%endfor%};
+
+
+    access_log              {{ nginx.log_dir}}/nginx.access.{{ ansible_fqdn }}.log;
+    error_log               {{ nginx.log_dir}}/nginx.error.{{ ansible_fqdn }}.log;
+
+
+    include /etc/nginx/sites-available/location_includes/{{project.app_name}};
+
+}
+

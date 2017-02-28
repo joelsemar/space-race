@@ -1,9 +1,0 @@
----
-- hosts: taskservers
-  tasks:
-    - include: roles/task/tasks/main.yml
-  handlers:
-    - include: roles/task/handlers/main.yml
-
-  vars_files:
-    -  env_vars/${env}.yml

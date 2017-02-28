@@ -1,9 +1,22 @@
+---
 
 - hosts: dbservers
-  tasks:
-    - include: roles/db/tasks/main.yml
-  handlers:
-    - include: roles/db/handlers/main.yml
-  vars_files:
-    -  env_vars/${env}.yml
+  sudo: yes
+  roles:
+     - db
 
+  vars_files:
+    -  group_vars/encast/default.yml
+    -  group_vars/encast/{{env}}.yml
+
+    
+- hosts: rds 
+  roles:
+     - rds_postgres
+
+  vars_files:
+    -  group_vars/default.yml
+    -  group_vars/secrets.yml
+    -  group_vars/{{env}}.yml
+    -  group_vars/encast/default.yml
+    -  group_vars/encast/{{env}}.yml

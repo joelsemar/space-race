@@ -1,0 +1,33 @@
+---
+git_branch: master
+
+nginx:
+   enable_cors: true
+   log_dir: "{{log_root}}/nginx"
+   ssl_redirect: true
+   server_names:
+       - localhost
+       - api.encast.gives
+
+django_settings:
+   - "AWS_ACCESS_KEY_ID = '{{AWS_ACCESS_KEY_ID}}'"
+   - "AWS_SECRET_ACCESS_KEY = '{{AWS_SECRET_ACCESS_KEY}}'"
+   - "CN_APP_KEY = '{{CN_APP_KEY}}'"
+   - "CN_APP_ID = '{{CN_APP_ID}}'"
+   - "DWOLLA_API_KEY = '{{DWOLLA_API_KEY}}'"
+   - "DWOLLA_SECRET = '{{DWOLLA_SECRET}}'"
+   - "HOST = 'hero.encast.gives'"
+
+rds:
+  instance: encast
+  host: encast-prod.cxnhks5re4go.us-east-1.rds.amazonaws.com
+  port: 5432
+  region: us-east-1
+  master_pass: "{{RDS_MASTER_PASS}}"
+  master_user: encast_admin
+  
+message_queue:
+  redis_port: 6379
+  redis_id: 2 
+  host: ip-172-31-22-50.ec2.internal
+

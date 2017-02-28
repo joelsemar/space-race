@@ -1,0 +1,26 @@
+---
+devops:
+  user: devops
+  group: devops
+  key: ~/.ssh/encast-devops
+  public_key: ~/.ssh/encast-devops.pub
+  app_user: encast
+
+es_instance_name: es-node1
+es_version: 2.4.0
+
+es_config: 
+     network.host: 0.0.0.0,
+     http.port: 9201
+     
+builds:
+    - repo: git@github.com:encast/encast-build.git
+      branch: master
+      scm_provider: github.com
+      project_name: encast-build
+      # this MUST match devops.key
+      build_key_name: encast_build_deploy_key_ro
+      devops_key: "{{devops.key}}"
+      devops_key_name: encast-devops
+      devops_public_key: "{{devops.public_key}}"
+

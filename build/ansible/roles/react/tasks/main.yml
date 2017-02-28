@@ -1,0 +1,26 @@
+---
+- name: get current git commit
+  shell: git rev-parse HEAD chdir={{react_app_location}}
+  register: current_git_commit
+  delegate_to: 127.0.0.1
+  tags:
+     - update
+
+- name: locate current build
+  delegate_to: 127.0.0.1
+  stat: path="{{react_app_location}}/build_{{current_git_commit.stdout}}.tgz"
+  register: current_build
+  tags:
+     - update
+
+- name: fail if no build available
+  fail:
+    msg: "No build for the current commit {{current_git_commit.stdout}} found."
+  when: not current_build.stat.exists
+  tags:
+     - update
+
+- include: deploy_build.yml
+  when: current_build.stat.exists
+  tags: 
+    - update

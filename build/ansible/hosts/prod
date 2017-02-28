@@ -1,0 +1,26 @@
+[appservers]
+172.31.30.11 db_manager=true
+172.31.23.39
+172.31.22.50
+
+[brokers]
+172.31.22.50
+
+[buildserver]
+build.encast.gives
+
+[workers]
+172.31.30.11
+172.31.23.39
+172.31.22.50
+
+[staticwebservers]
+172.31.30.11
+172.31.23.39
+172.31.22.50
+
+[rds]
+localhost ansible_connection=local ansible_python_interpreter=python
+
+[local]
+localhost ansible_connection=local ansible_python_interpreter=python

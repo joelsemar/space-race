@@ -1,0 +1,10 @@
+---
+- include: packages.yml
+  become_user: root
+  become: yes
+- include: directories.yml
+  become_user: root
+  become: yes
+- include: server.yml
+  become_user: root
+  become: yes

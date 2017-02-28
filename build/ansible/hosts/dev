@@ -1,0 +1,40 @@
+[encast-appservers]
+api-dev.encast.gives db_manager=true
+
+[encast-rds]
+localhost ansible_connection=local ansible_python_interpreter=python
+
+[encast-dbservers]
+
+[searchservers]
+
+[brokers]
+api-dev.encast.gives
+
+[buildserver]
+build.encast.gives
+
+
+[encast-workers]
+api-dev.encast.gives
+
+[staticwebservers]
+api-dev.encast.gives
+
+[rds:children]
+encast-rds
+
+[workers:children]
+encast-workers
+
+[appservers:children]
+encast-appservers
+
+[dbservers:children]
+encast-dbservers
+
+[localhost:children]
+rds
+
+[local]
+localhost ansible_connection=local ansible_python_interpreter=python

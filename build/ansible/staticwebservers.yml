@@ -1,0 +1,24 @@
+---
+- hosts: local
+  roles:
+    - react_build
+    
+  vars_files:
+    -  group_vars/default.yml
+    -  group_vars/secrets.yml
+    -  group_vars/{{env}}.yml
+    -  group_vars/myhero/default.yml
+    -  group_vars/myhero/{{env}}.yml
+
+- hosts: staticwebservers
+  roles:
+     - nginx
+     - staticweb
+     - react
+
+  vars_files:
+    -  group_vars/default.yml
+    -  group_vars/secrets.yml
+    -  group_vars/{{env}}.yml
+    -  group_vars/myhero/default.yml
+    -  group_vars/myhero/{{env}}.yml

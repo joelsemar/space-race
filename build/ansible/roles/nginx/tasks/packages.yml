@@ -1,0 +1,9 @@
+---
+- name: Install required system packages.
+  apt: >
+    pkg={{item}}
+    state=installed
+    update-cache=yes
+  with_items:
+    - build-essential
+    - nginx

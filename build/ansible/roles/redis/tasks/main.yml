@@ -1,0 +1,23 @@
+---
+- name: Commmon | Install required system packages.
+  apt: >
+    pkg={{item}}
+    state=installed
+    update-cache=yes
+  with_items:
+    - redis-server
+  tags:
+      -update
+
+- name: Listen on public interface
+  lineinfile: >
+    dest=/etc/redis/redis.conf
+    regexp="^bind"
+    line="#bind"
+  notify: restart redis
+  tags:
+      -update
+
+- name: start redis
+  service: name=redis-server state=started
+  sudo_user: root

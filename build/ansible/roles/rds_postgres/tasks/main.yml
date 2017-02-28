@@ -1,0 +1,21 @@
+---
+- name: create {{project.app_name}} database
+  postgresql_db: >
+      login_host={{rds.host}}
+      login_password={{rds.master_pass}}
+      login_user={{rds.master_user}}
+      name={{db.name}}
+      state=present
+      encoding=utf-8
+
+
+- name: create {{project.app_name}} database user
+  postgresql_user: >
+      login_host={{rds.host}}
+      login_password={{rds.master_pass}}
+      login_user={{rds.master_user}}
+      db={{db.name}}
+      name={{db.user}}
+      no_password_changes=yes
+      password={{db.password}}
+      role_attr_flags=CREATEDB

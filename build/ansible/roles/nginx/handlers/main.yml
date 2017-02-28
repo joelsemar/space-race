@@ -1,0 +1,12 @@
+---
+- name: restart nginx
+  service: name=nginx state=restarted
+  become: yes
+  become_user: root
+
+- name: reload nginx
+  service: name=nginx state=reloaded
+  become: yes
+  become_user: root
+  tags: 
+     - bounce

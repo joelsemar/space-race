@@ -1,0 +1,17 @@
+---
+- name: restart celeryd
+  shell: /etc/init.d/celeryd restart
+  sudo_user: root
+  tags:
+    - update
+
+- name: restart celerybeat
+  shell: /etc/init.d/celerybeat restart
+  sudo_user: root
+  tags:
+    - update
+
+- name: start celeryd
+  service: name=celeryd state=started
+  sudo_user: root
+

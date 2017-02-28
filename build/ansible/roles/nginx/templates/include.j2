@@ -1,0 +1,64 @@
+{% if django is defined %}
+	{% if django.static_url is defined %}
+
+location {{ django.static_url }}{
+    alias {{django.static_root}};
+}
+	{% endif %}
+
+  {% if django.media_url is defined %}
+location /media/{
+    alias {{django.media_root}};
+}
+  {% endif %}
+
+location ~ /alive$ {
+    uwsgi_pass unix://run/uwsgi/app/{{ project.app_name }}/socket;
+    include uwsgi_params;
+    include /etc/nginx/sites-available/includes/cors_include;
+}
+
+
+{% endif %}
+
+location /status.html {
+   alias {{status_path}};
+}
+
+location / {
+  {% if nginx.ssl_redirect is defined %}
+    if ($http_x_forwarded_proto = 'http') {
+        return 301 https://$host$request_uri;
+    }
+  {% endif %}
+
+
+{% if django is defined %}
+    uwsgi_pass unix://run/uwsgi/app/{{ project.app_name }}/socket;
+    include uwsgi_params;
+    include /etc/nginx/sites-available/includes/cors_include;
+{% endif %}
+{% if nginx.static_root is defined %}
+   root {{ nginx.static_root }};
+{% endif %}
+}
+
+
+{% if nginx.proxy is defined %}
+  location /{{nginx.proxy.path}} {
+       {% if not nginx.proxy.direct %}
+       rewrite /{{nginx.proxy.path}}/(.*) /$1  break;
+       {% endif %}
+       proxy_redirect off;
+       proxy_pass {{ nginx.proxy.target }};
+  }
+{% endif %}
+
+{% if cdn is defined %}
+location  /{{cdn.path}} {
+    if ($http_x_forwarded_proto) {
+     return 301 $http_x_forwarded_proto://{{cdn.domain}}$request_uri;
+    }
+   return 301 $scheme://{{cdn.domain}}$request_uri;
+}
+{% endif %}

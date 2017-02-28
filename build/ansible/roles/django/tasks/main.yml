@@ -1,0 +1,14 @@
+---
+- include: packages.yml
+  when: ansible_host != '127.0.0.1'
+- include: encryption.yml
+  when: encryption is defined
+- include: directories.yml
+  when: ansible_host != '127.0.0.1'
+- include: code.yml
+- include: celery.yml
+  when: "'workers' in group_names"
+- include: database.yml
+  when: db_manager is defined
+- include: post_build.yml
+

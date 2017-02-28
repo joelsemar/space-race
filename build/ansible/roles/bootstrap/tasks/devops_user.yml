@@ -1,0 +1,55 @@
+---
+- name: create group {{devops.group}}
+  group: name={{devops.group}} gid=777 state=present
+  sudo: yes
+
+- name: create user {{devops.user}}
+  user: name={{devops.user}} group={{devops.group}} uid=777 shell=/bin/bash state=present
+  sudo: yes
+
+- name: add {{devops.user}} to sudo group
+  user: >
+      name={{devops.user}}
+      groups=sudo
+      append=yes
+  sudo: yes
+
+- name: add {{devops.user}} to group {{devops.group}} 
+  user: >
+      name={{devops.user}}
+      groups=www-data
+      append=yes
+  sudo: yes
+
+- name: add authorized keys for user {{devops.user}}
+  authorized_key: user={{devops.user}} key='{{ lookup('file', devops.public_key)}}'
+  sudo: yes
+
+- name: Copy sudoers file for safety
+  command: cp -f /etc/sudoers /etc/sudoers.tmp
+  sudo: yes
+
+- name: Create sudoers file backup
+  command: cp -f /etc/sudoers /etc/sudoers.{{ansible_date_time.date}}.bak
+  sudo: yes
+
+- name: give devops passwordless sudo
+  lineinfile: >
+      dest=/etc/sudoers.tmp
+      state=present
+      regexp="^devops ALL=(ALL) NOPASSWD: ALL$"
+      line="devops ALL=(ALL) NOPASSWD: ALL"
+  sudo: yes
+
+- name: sudoers file check
+  shell: visudo -q -c -f /etc/sudoers.tmp && cp -f /etc/sudoers.tmp /etc/sudoers
+  sudo: yes
+
+- name: create .ssh directory for  user {{devops.user}}
+  file: >
+      dest=/home/{{devops.user}}/.ssh
+      mode=0700
+      owner={{devops.user}}
+      group={{devops.group}}
+      state=directory
+  sudo: yes

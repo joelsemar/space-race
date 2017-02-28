@@ -1,0 +1,14 @@
+[encast-appservers]
+127.0.0.1
+
+[encast-dbservers]
+54.186.71.75
+
+[searchservers]
+54.186.71.75
+
+[appservers:children]
+encast-appservers
+
+[dbservers:children]
+encast-dbservers

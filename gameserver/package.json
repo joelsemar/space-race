@@ -1,0 +1,25 @@
+{
+  "name": "space-race",
+  "version": "1.0.0",
+  "description": "javascript game",
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelsemar/space-race.git"
+  },
+  "author": "Joel Semar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joelsemar/space-race/issues"
+  },
+  "homepage": "https://github.com/joelsemar/space-race#readme",
+  "dependencies": {
+    "express": "4.14.1",
+    "request": "2.79.0",
+    "socket.io": "1.7.3",
+    "underscore": "1.8.3"
+  },
+  "engines": {
+    "node": "6.2.0"
+  }
+}

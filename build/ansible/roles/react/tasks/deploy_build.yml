@@ -1,0 +1,25 @@
+---
+- name: remove old build
+  become: yes
+  become_user: root
+  file: > 
+     dest="{{project.root}}/build"
+     state=absent
+
+- name: setup empty build/ dir
+  become_user: root
+  become: yes
+  file: >
+      dest="{{project.root}}/build"
+      owner="{{devops.app_user}}"
+      group=www-data
+      mode="0755"
+      state=directory
+
+
+- name: unzip build artifact
+  become: true
+  become_user: "{{devops.app_user}}"
+  unarchive:
+     src: "{{react_app_location}}/build_{{current_git_commit.stdout}}.tgz"
+     dest: "{{project.root}}"

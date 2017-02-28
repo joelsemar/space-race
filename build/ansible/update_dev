@@ -1,3 +1,0 @@
-#!/bin/bash
-
-ansible-playbook -v  -u root -i inventories/dev site.yml --private-key=~/.ssh/peppered_devops --tags="update" -e "env=dev"

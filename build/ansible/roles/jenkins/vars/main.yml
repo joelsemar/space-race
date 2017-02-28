@@ -1,0 +1,40 @@
+---
+jenkins_dest: /opt/jenkins
+jenkins_lib: /var/lib/jenkins
+jenkins:
+  deb:
+    repo: 'deb http://pkg.jenkins-ci.org/debian binary/' # Jenkins repository
+    dependencies: # Jenkins dependencies
+      - 'python-pip'
+      - 'openjdk-8-jre'
+      - 'openjdk-8-jdk'
+      - 'git'
+      - 'curl'
+  redhat:
+    dependencies:
+      - 'java'
+      - 'git'
+      - 'curl'
+  cli_dest: '{{ jenkins_dest }}/jenkins-cli.jar' # Jenkins CLI destination
+  updates_dest: '{{ jenkins_dest }}/updates_jenkins.json' # Jenkins updates file
+
+placeholder: 'placeholder'
+port: 9090
+plugins:
+  - 'github'
+#   - 'ldap'
+#   - 'translation'
+#   - 'preSCMbuildstep'
+#   - 'gravatar'
+
+proxy: no
+proxy_host: localhost
+proxy_port: 3128
+proxy_login: login
+proxy_password: password
+proxy_url: "http://{{proxy_login}}:{{proxy_password}}@{{proxy_host}}:{{proxy_port}}"
+__no_proxy: "localhost"
+proxy_env:
+  http_proxy: "{{proxy_url}}"
+  https_proxy: "{{proxy_url}}"
+  no_proxy: "{{__no_proxy}}"

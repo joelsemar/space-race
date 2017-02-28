@@ -1,0 +1,37 @@
+{% set celeryd_nodes = "" %}
+{% for worker in range(celery.workers) %}
+{% set celeryd_nodes = celeryd_nodes ~ "worker" ~ worker ~ " " %}
+{% endfor %}
+
+CELERYD_NODES="{{celeryd_nodes}}"
+#CELERYD_NODES="worker1 worker2 worker3"
+
+# Absolute or relative path to the 'celery' command:
+CELERY_BIN="{{project.virtualenv}}/bin/celery"
+
+# App instance to use
+# comment out this line if you don't use an app
+CELERY_APP="{{project.app_name}}"
+# or fully qualified:
+#CELERY_APP="proj.tasks:app"
+
+# Where to chdir at start.
+CELERYD_CHDIR="{{django.root}}"
+
+# Extra command-line arguments to the worker
+CELERYD_OPTS="--time-limit=300 --concurrency={{ celery.concurrency }}"
+
+# %N will be replaced with the first part of the nodename.
+CELERYD_LOG_FILE="{{celery.log_dir}}/%N.log"
+CELERYBEAT_LOG_FILE="{{celery.log_dir}}/beat.log"
+CELERYD_PID_FILE="/var/run/celery/%N.pid"
+
+# Workers should run as an unprivileged user.
+#   You need to create this user manually (or you can choose
+#   a user/group combination that already exists, e.g. nobody).
+CELERYD_USER="{{devops.app_user}}"
+CELERYD_GROUP="www-data"
+
+# If enabled pid and log directories will be created if missing,
+# and owned by the userid/group configured.
+CELERY_CREATE_DIRS=1    

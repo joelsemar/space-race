@@ -1,0 +1,36 @@
+---
+- name: determine if node is installed
+  stat: 
+    path: /usr/bin/node
+  register: node
+
+- include: install_npm.yml
+  when: not node.stat.exists
+
+- name: get current git commit
+  shell: git rev-parse HEAD chdir={{react_app_location}}
+  register: current_git_commit
+  tags:
+     - update
+
+- name: locate existing build
+  stat: path="{{react_app_location}}/build_{{current_git_commit.stdout}}.tgz"
+  register: existing_build
+  tags:
+     - update
+
+- name: create list of static assets to be uploaded to s3
+  command: python -c 'import os, json; print json.dumps([os.path.join(dp, f)[2:] for dp, dn, fn in os.walk(os.path.expanduser(".")) for f in fn])'
+  args:
+     chdir: "{{react_app_location}}/build/static"
+  register: static_files_cmd
+  tags:
+     - update
+  
+
+- include: build.yml
+  when: not existing_build.stat.exists
+  tags:
+     - update
+
+

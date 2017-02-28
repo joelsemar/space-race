@@ -10,24 +10,51 @@ var Island = Entity.extend({
   resources: 0,
   maxResources: 500,
   productionInterval: 2000,
-  lastProductionTick: 0,
+  timeSinceLastResource: 0,
+  possibleUpgrades: ["growth", "attack", "defense"],
+  productionMultiplier: 1,
+  growthProductionMultiplier: 2,
   upgrade: null,
+
+
   update: function(delta){
-    this.lastProductionTick += delta;
-    var newResources;
-    if(this.lastProductionTick >= this.productionInterval && this.player_id !== 'neutral'){
-      //players still get credit for resources gathered over max, just not ships
-      newResources = Math.floor(this.radius/20);
-      this.getPlayer().resourcesGathered += newResources;
-      if(this.resources < this.maxResources){
-        this.resources += newResources;
-        if(this.resources > this.maxResources){
-            this.resources = this.maxResources;
-        }
-      }
-      
-      this.lastProductionTick = 0;
+    this.timeSinceLastResource += delta;
+    if (this.shouldProduceResources()){
+      this.produceResources();
     }
+  },
+
+  produceResources: function(){
+      //players still get credit for resources gathered over max, just not ships
+      var newResources = Math.floor(this.radius/20) * this.productionMultiplier;
+      this.getPlayer().resourcesGathered += newResources;
+      this.addResources(newResources);
+      this.timeSinceLastResource = 0;
+  },
+
+  addUpgrade: function(upgradeName){
+    if( upgradeName == "growth"){
+      this.productionMultiplier = this.growthProductionMultiplier;
+    }
+
+  },
+
+  addResources: function(resources){
+    this.resources += resources;
+
+    if (this.resources > this.maxResources){
+        this.resources = this.maxResources;
+    }
+  },
+
+  shouldProduceResources: function(){
+    if (this.playerId === "neutral"){
+      return false;
+    }
+    if (this.timeSinceLastResource < this.productionInterval){
+      return false;
+    }
+    return true;
   },
 
   draw: function(){
@@ -43,7 +70,7 @@ var Island = Entity.extend({
     ctx.drawImage(Game.world.islandImage, x, y, this.size.x, this.size.y);
     ctx.font = '22px Helvetica';
 
-    if (this.player_id !== 'neutral'){
+    if (this.playerId !== 'neutral'){
        color = this.getPlayer().color;
     }
 
@@ -64,7 +91,7 @@ var Island = Entity.extend({
 
 
   getPlayer: function(){
-    return Game.entityManager.entityById(this.player_id);
+    return Game.entityManager.entityById(this.playerId);
   },
 
   attack: function(target){
@@ -76,7 +103,7 @@ var Island = Entity.extend({
 
      if(!RUNNING_ON_CLIENT){
          s = new Ship({targetID: target.id, pos: this.pos, resources: shipSize,
-                       player_id: this.player_id, homeIslandId: this.id});
+                       playerId: this.playerId, homeIslandId: this.id});
      }
 
   },
@@ -86,6 +113,3 @@ var Island = Entity.extend({
 if(module){
    module.exports = Island;
 }
-
-
-

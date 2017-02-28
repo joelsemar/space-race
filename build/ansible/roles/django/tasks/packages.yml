@@ -1,0 +1,15 @@
+---
+- name: Packages | Install required webserver apt packages
+  apt: pkg={{item}} state=installed update_cache=yes
+  with_items:
+    - gdal-bin
+    - libmemcached-dev
+    - libmemcached-tools
+    - libpq-dev
+    - pgbouncer
+    - python-pylibmc
+    - curl
+    - libffi-dev
+    - libjpeg-dev
+    - wkhtmltopdf
+  sudo: yes

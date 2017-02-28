@@ -1,0 +1,19 @@
+---
+- name: Encryption | ensure directory exists for keys
+  file: >
+      dest={{encryption.key_destination}}
+      owner={{devops.app_user}}
+      group={{project.group}}
+      mode="0755"
+      state=directory
+
+- name: Encryption | copy field encryption keys
+  copy: 
+      src={{item}}
+      dest={{encryption.key_destination}}
+      owner={{devops.app_user}}
+      group={{project.group}}
+      mode="0755"
+  with_fileglob:
+         - "{{encryption.key_source_path}}/*"
+

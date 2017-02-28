@@ -133,8 +133,8 @@ var MiniMap = UIElement.extend({
     _.each(Game.entityManager.entitiesByType('island'), function(island){
         var pos = {x: island.pos.x * this.xRatio, y: island.pos.y * this.yRatio};
         var radius = island.radius / this.radiusRatio;
-        if(island.player_id !== 'neutral'){
-          ctx.fillStyle = Game.entityManager.entityById(island.player_id).color;
+        if(island.playerId !== 'neutral'){
+          ctx.fillStyle = Game.entityManager.entityById(island.playerId).color;
         }
         else{
           ctx.fillStyle = 'gray';
@@ -142,7 +142,7 @@ var MiniMap = UIElement.extend({
         ctx.beginPath();
         ctx.arc(pos.x + radius, pos.y + radius, radius, 0, Math.PI *2);
         ctx.fill();
-        if(island.selected && island.player_id === Game.getCurrentPlayer().id){
+        if(island.selected && island.playerId === Game.getCurrentPlayer().id){
           ctx.strokeStyle = Game.getCurrentPlayer().color;
           ctx.arc(pos.x + radius, pos.y + radius, radius + 2, 0, Math.PI *2);
           ctx.stroke();
@@ -151,7 +151,7 @@ var MiniMap = UIElement.extend({
 
     _.each(Game.entityManager.entitiesByType('ship'), function(ship){
         var pos = {x: ship.pos.x * this.xRatio + this.scale(ship.size).x/2, y: ship.pos.y * this.yRatio + this.scale(ship.size).y/2};
-        ctx.fillStyle = Game.entityManager.entityById(ship.player_id).color;
+        ctx.fillStyle = Game.entityManager.entityById(ship.playerId).color;
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 2, 0, Math.PI *2);
         ctx.closePath();

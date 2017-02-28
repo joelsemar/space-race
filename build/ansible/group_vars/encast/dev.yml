@@ -1,0 +1,26 @@
+---
+nginx:
+   enable_cors: true
+   log_dir: "{{log_root}}/nginx"
+   ssl_redirect: true
+   server_names:
+       - api-dev.encast.gives
+       
+django_settings:
+   - "AWS_ACCESS_KEY_ID = '{{AWS_ACCESS_KEY_ID}}'"
+   - "AWS_SECRET_ACCESS_KEY = '{{AWS_SECRET_ACCESS_KEY}}'"
+   - "CN_APP_KEY = '{{CN_APP_KEY}}'"
+   - "CN_APP_ID = '{{CN_APP_ID}}'"
+   - "DWOLLA_API_KEY = '{{DWOLLA_SANDBOX_API_KEY}}'"
+   - "DWOLLA_SECRET = '{{DWOLLA_SANDBOX_SECRET}}'"
+   - "HOST = 'hero-dev.encast.gives'"
+   - "SENDGRID_KEY = '{{SENDGRID_KEY}}'"
+
+rds:
+  instance: encast-dev
+  host:  encast-dev.corruqi73pqy.us-west-2.rds.amazonaws.com
+  port: 5432
+  region: us-west-2
+  master_pass: "{{RDS_MASTER_PASS_DEV}}"
+  master_user: encast_admin
+

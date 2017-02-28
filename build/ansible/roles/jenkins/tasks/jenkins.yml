@@ -1,0 +1,20 @@
+---
+
+- include: repo.yml
+
+- name: Install Debian dependencies
+  apt: name={{ item }} state=installed
+  with_items: '{{jenkins.deb.dependencies}}'
+
+- name: Install Jenkins for Debian
+  apt: name=jenkins state=latest
+  register: jenkins_install
+  when: ansible_os_family == "Debian"
+
+- include: config.yml
+
+- include: cli.yml
+
+- include: plugins.yml
+
+- include: ansible.yml

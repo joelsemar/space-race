@@ -1,0 +1,84 @@
+---
+- set_fact: task_header="Post Build | {{project.app_name}}"
+  tags:
+     - update
+- name: "{{task_header}}| get previous git commit"
+  shell: git rev-parse HEAD~1 chdir=/home/{{devops.app_user}}/{{project.name}}
+  register: previous_git_commit
+  ignore_errors: True 
+  sudo_user: "{{devops.app_user}}"
+  sudo: yes
+  tags:
+     - update
+
+
+#- block:
+#  - name: "{{task_header}} |  run tests"
+#    django_manage: >
+#        command=test
+#        app_path={{django.root}}
+#        settings={{django.settings}}
+#        virtualenv={{project.virtualenv}}
+#    sudo_user: "{{devops.app_user}}"
+#    register: test_results
+#    tags:
+#       - update
+#    notify:
+#       - restart nginx
+#  - debug: msg={{test_results.out.split('\n')}}
+#    when: db_manager is defined
+#    tags:
+#      - update
+#  rescue:
+#  - debug: msg="{{project.app_name}} - Tests failed, reverting to {{previous_git_commit}}"
+#  - name: "{{task_header}} | Revert to previous commit"
+#    when: local_mount is not defined
+#    git: >
+#      dest=/home/{{devops.app_user}}/{{project.name}}
+#      repo={{git.repo}}
+####      version={{previous_git_commit}}
+#      force=yes
+#      accept_hostkey=yes
+#    sudo: yes
+#    sudo_user: "{{devops.app_user}}"
+#    tags:
+#      - update
+
+
+- name: "{{task_header}}| get current git commit"
+  shell: git rev-parse HEAD chdir=/home/{{devops.app_user}}/{{project.name}}
+  register: current_git_commit
+  ignore_errors: True 
+  sudo_user: "{{devops.app_user}}"
+  sudo: yes
+  tags:
+     - update
+
+- name: "{{task_header}} | build status.html"
+  ignore_errors: True 
+  template: >
+     dest="{{status_path}}"
+     src=roles/django/templates/status.html.j2
+     owner="{{devops.app_user}}"
+     group=www-data
+     mode=775
+  sudo: yes
+  when: current_git_commit.stdout is defined
+  tags:
+     - update
+
+- name: "{{task_header}} |   Run manage commands"
+  become_user: "{{devops.app_user}}"
+  django_manage: >
+    command={{item}}
+    app_path={{django.root}}
+    settings={{django.settings}}
+    virtualenv={{project.virtualenv}}
+  with_items: "{{manage_commands}}"
+  when: 
+      - manage_commands is defined
+      - db_manager is defined
+  tags:
+    - update
+  notify:
+    - restart nginx

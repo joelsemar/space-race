@@ -1,0 +1,62 @@
+---
+- name: Server | Create log directory
+  file: >
+    dest={{project.root}}/logs/
+    state=directory
+  tags:
+    - webserver
+
+- name: Server | copy nginx.conf
+  template: >
+      src=roles/nginx/templates/nginx.conf.j2
+      dest=/etc/nginx/nginx.conf
+      mode=0664
+      owner=root
+      group=root
+  notify:
+    - restart nginx
+
+- name: Server | Remove default nginx site
+  notify: restart nginx
+  file: >
+    path=/etc/nginx/sites-available/default
+    state=absent
+
+
+- name: Server| Install cors includes file
+  copy : >
+     src=roles/nginx/files/cors_include
+     dest=/etc/nginx/sites-available/includes/cors_include
+     owner=root 
+     group=root
+     mode="0755"
+
+
+- name: Server | Install nginx configuration file.
+  notify: restart nginx
+  template: >
+    src=nginx_server.j2
+    dest=/etc/nginx/sites-available/{{project.app_name}}
+  tags:
+    - configuration
+    - nginx
+    - webserver
+
+
+- name: Server | Install app specific location includes
+  notify: restart nginx
+  template: >
+    src=include.j2
+    dest=/etc/nginx/sites-available/location_includes/{{project.app_name}}
+  tags:
+    - configuration
+    - nginx
+    - webserver
+
+- name: Server | Enable {{project.app_name}} server
+  file: >
+      src=/etc/nginx/sites-available/{{project.app_name}}
+      dest=/etc/nginx/sites-enabled/{{project.app_name}}
+      state=link
+  notify:
+    - restart nginx

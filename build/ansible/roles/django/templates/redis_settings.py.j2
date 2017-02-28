@@ -1,0 +1,2 @@
+BROKER_URL = "redis://{{ message_queue.get('host', "localhost") }}:{{ message_queue.get('redis_port', 6379) }}/{{ message_queue.get('redis_id', 2) }}"
+

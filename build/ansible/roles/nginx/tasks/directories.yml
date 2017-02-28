@@ -1,0 +1,33 @@
+---
+- name: create needed directories
+  file: >
+      dest={{item.dest}}
+      owner={{item.owner}}
+      group={{item.group}}
+      mode={{item.mode}}
+      state=directory
+  with_items:
+    - dest: /etc/nginx
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: /etc/nginx/sites-available
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: /etc/nginx/sites-available/includes
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: /etc/nginx/sites-available/location_includes
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: /etc/nginx/sites-enabled
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: "{{nginx.log_dir}}"
+      owner: "{{devops.app_user}}"
+      group: www-data
+      mode: "0775"

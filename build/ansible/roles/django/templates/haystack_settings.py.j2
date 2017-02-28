@@ -1,0 +1,36 @@
+
+{% if aws_ess is defined %}
+
+HAYSTACK_LOCATION = '{{aws_ess.endpoint}}';
+from requests_aws4auth import AWS4Auth
+import elasticsearch
+awsauth = AWS4Auth("{{aws_ess.access_key}}","{{aws_ess.secret}}", "{{aws_ess.region}}",'es')
+
+KWARGS = {
+  'port': 443,
+  'http_auth': awsauth,
+  'use_ssl': True,
+  'verify_certs': True,
+  'connection_class': elasticsearch.RequestsHttpConnection
+}
+{%else %}
+{% if 'searchservers' in group_names %}
+HAYSTACK_LOCATION = 'http://127.0.0.1:9201/';
+{% elif groups.get('searchservers') %}
+HAYSTACK_LOCATION =  "http://{{ groups.get('searchservers')[0] }}:9201";
+{% endif %}
+KWARGS = {}
+{% endif %}
+
+
+
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': HAYSTACK_LOCATION,
+        'INDEX_NAME': 'haystack',
+        'KWARGS': KWARGS
+    },
+}
+

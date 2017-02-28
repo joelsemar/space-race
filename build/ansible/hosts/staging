@@ -1,0 +1,25 @@
+[appservers]
+54.191.255.59 db_manager=true
+54.214.195.176
+
+[rds]
+localhost ansible_connection=local ansible_python_interpreter=python
+
+[dbservers]
+
+[buildserver]
+build.encast.gives
+
+[brokers]
+54.213.193.246
+
+[workers]
+54.191.255.59 
+54.214.195.176
+
+[staticwebservers]
+54.191.255.59 
+54.214.195.176
+
+[local]
+localhost ansible_connection=local ansible_python_interpreter=python

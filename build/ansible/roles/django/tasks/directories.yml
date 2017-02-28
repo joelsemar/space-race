@@ -1,0 +1,50 @@
+---
+- name: Directories | Create needed directories
+  file: >
+      dest={{item.dest}}
+      owner={{item.owner}}
+      group={{item.group}}
+      mode={{item.mode}}
+      state=directory
+  with_items:
+    - dest: "{{project.virtualenv}}"
+      owner: "{{devops.app_user}}"
+      group: www-data
+      mode: "0755"
+    - dest: "{{django.log_dir}}"
+      owner: "{{devops.app_user}}"
+      group: www-data
+      mode: "0775"
+    - dest: /etc/uwsgi
+      owner: root
+      group: root
+      mode: "0755"
+    - dest: "{{django.media_root}}"
+      owner: "{{devops.app_user}}"
+      group: www-data
+      mode: "0774"
+    - dest: "{{django.static_root}}"
+      owner: "{{devops.app_user}}"
+      group: www-data
+      mode: "0774"
+  sudo: yes
+
+
+- name: Directories | Make sure django log file exists
+  file: >
+      path="{{project.root}}/logs/{{project.app_name}}/{{project.app_name}}.log"
+      owner="{{devops.app_user}}"
+      group=www-data
+      mode=775
+      state=touch
+  sudo: yes
+
+- name: Directories | Change permissions
+  sudo: yes
+  shell: chown -R {{devops.app_user}}:www-data {{project.root}} -R
+  tags:
+     - base
+     - user
+     - provision
+     - app
+     
