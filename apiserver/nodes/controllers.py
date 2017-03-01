@@ -1,12 +1,11 @@
 from datetime import datetime
 from services.controller import BaseController
-from services.view import BaseView, ModelView
-from services.decorators import entity, body, unauthenticated
+from services.view import BaseView
+from services.decorators import body, unauthenticated
 from services.utils import str_to_bool
 
 from nodes.models import GameNode
 from main.models import Game
-from main.views import GameView
 from views import NodeGameView
 
 from django.conf import settings
@@ -47,7 +46,14 @@ class GameNodeController(BaseGameNodeController):
         try:
             game = Game.objects.get(node=request.node)
         except Game.DoesNotExist:
-            return response.not_found()
+            game = Game.objects.filter(ready=True, node=None).order_by("created_date").first()
+            if not game:
+                return response.not_found()
+
+            game.node = request.node
+            game.save()
+            request.node.available = False
+            request.node.save()
 
         response.set(current_game=NodeGameView.render_instance(game, request))
 

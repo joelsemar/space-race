@@ -11,4 +11,6 @@ class GameView(ModelView):
         players = Player.objects.filter(game=self.instance)
         ret["players"] = QuerySetView.inline_render(players, request)
         ret["state"] = self.instance.state
+        if self.instance.node:
+            ret["node"] = self.instance.node.destination
         return ret

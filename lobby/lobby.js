@@ -9,7 +9,8 @@ var express = require('express'),
     request = require("request");
 
 var port = 7001;
-var api_host = "http://127.0.0.1:8000";
+var apiHost = "http://127.0.0.1:8000";
+var tokenMap = {};
 
 io.sockets.on('connection', function(socket) {
     socket.on('join_game_chat', function(data) {
@@ -19,8 +20,24 @@ io.sockets.on('connection', function(socket) {
     });
 
     socket.on("message", function(data) {
-        var chat_id = "game_" + data.game_id;
-        io.sockets.in(chat_id).emit("message", data.message);
+        console.log("Received chat message: " + JSON.stringify(data));
+        var chatId = "game_" + data.gameId;
+        var payload = {
+            message: data.message
+        }
+
+        if (!tokenMap[data.playerToken]) {
+            request.get(apiHost + "/player?token=" + data.playerToken, function(err, response, body) {
+                body = JSON.parse(body);
+                payload.sender = body.nickname;
+                tokenMap[data.playerToken] = body.nickname;
+                console.log("Sending message: " + JSON.stringify(payload));
+                io.sockets.in(chatId).emit("message", payload);
+            })
+        } else {
+            payload.sender = tokenMap[data.playerToken];
+            io.sockets.in(chatId).emit("message", payload);
+        }
     })
 });
 
@@ -34,7 +51,7 @@ function getLobbyInfo() {
             setTimeout(getLobbyInfo, LOBBY_PING_INTERVAL);
             return;
         } else {
-            request.get(api_host + "/games", function(err, response, body) {
+            request.get(apiHost + "/games", function(err, response, body) {
                 if (err || response.statusCode > 399) {
                     console.log(err);
                     console.log(body);
@@ -43,18 +60,13 @@ function getLobbyInfo() {
                 }
                 setTimeout(getLobbyInfo, LOBBY_PING_INTERVAL);
             });
-
         }
-
-    })
-
+    });
 }
 
 function updateLobby(data) {
     io.sockets.emit("lobby_update", data);
 }
-
-
 
 app.get('/', function(req, res) {
     res.sendfile(path.resolve('./static/index.html'));

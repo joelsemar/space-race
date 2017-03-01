@@ -12,8 +12,8 @@ var express = require('express'),
     ApiClient = require("./api.js");
 
 RUNNING_ON_CLIENT = false;
-var port = 8001;
-var apiClient = ApiClient("http://127.0.0.1:8000");
+PORT = 8001;
+var apiClient = new ApiClient("http://127.0.0.1:8000");
 Game = require('./game.js');
 Game.apiClient = apiClient;
 
@@ -68,5 +68,5 @@ app.get('/', function(req, res) {
 app.use(express.static(path.resolve('../client')));
 
 
-console.log("Listening on port " + port);
-server.listen(port);
+server.listen(PORT);
+console.log("Listening on port " + PORT);

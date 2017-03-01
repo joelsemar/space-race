@@ -9,13 +9,6 @@ from main.models import Player
 logger = logging.getLogger("default")
 
 
-@receiver(post_save, sender=Player)
-def handle_player_state_change(sender, instance=None, **kwargs):
-    print "handling player update"
-    if instance.ready and all(instance.game.players.values_list('ready', flat=True)):
-
-        assign_to_node(instance.game)
-
 
 def assign_to_node(game):
     node = GameNode.objects.filter(active=True, available=True).first()

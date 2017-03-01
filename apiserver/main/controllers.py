@@ -11,10 +11,10 @@ class AnonymousController(BaseController):
     def auth_check(self, request, method):
         return None
 
-    def join_game(self, game, nickname, current_token=None):
+    def join_game(self, game, nickname, current_token=None, creator=False):
         if current_token:
             Player.objects.filter(token=current_token).delete()
-        return Player.objects.create(nickname=nickname, game=game)
+        return Player.objects.create(nickname=nickname, game=game, creator=creator)
 
 
 class GameListController(AnonymousController):
@@ -38,7 +38,6 @@ class GameJoinDto(object):
     nickname = "nickname"
 
 
-
 class GameController(AnonymousController):
     view = GameView
 
@@ -49,7 +48,7 @@ class GameController(AnonymousController):
         API Handler: POST /game
         """
         game = Game.objects.create(num_players=game_dto.num_players, name=game_dto.name)
-        player = self.join_game(game, game_dto.nickname, request.session.get("player_token"))
+        player = self.join_game(game, game_dto.nickname, request.session.get("player_token"), creator=True)
         request.session["player_token"] = str(player.token)
         response.set(instance=game)
 
@@ -66,8 +65,40 @@ class GameController(AnonymousController):
 
         response.set(instance=player.game)
 
+    def update(self, request, response):
+        """
+        Update the game state, only usable by the creator of the game.
+        API Handler: POST /game
+        """
+        player_token = request.session.get("player_token")
+        try:
+            player = Player.objects.get(token=player_token, creator=True)
+        except Player.DoesNotExist:
+            return response.not_found()
+
+        game = player.game
+        if not game.players_ready:
+            return response.bad_request("All players must be ready before beginning")
+
+        game.ready = True
+        game.save()
+
 
 class PlayerController(AnonymousController):
+
+    def read(self, request, response, token=None):
+        """
+        Fetch the current player object for the user
+        API Handler: GET /player
+        """
+        if not token:
+            token = request.session.get("player_token")
+        try:
+            player = Player.objects.get(token=token)
+        except Player.DoesNotExist:
+            return response.not_found()
+
+        response.set(token=player.token, nickname=player.nickname, creator=player.creator)
 
     @entity(Game, arg="game")
     @body(GameJoinDto, arg="join")

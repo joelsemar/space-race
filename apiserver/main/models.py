@@ -18,10 +18,16 @@ class Game(BaseModel):
     start_time = models.DateTimeField(null=True, default=None)
     end_time = models.DateTimeField(null=True, default=None)
     node = models.ForeignKey("nodes.GameNode", null=True, blank=True)
+    ready = models.BooleanField(default=True)
 
     @property
     def players(self):
         return Player.objects.filter(game=self)
+
+    @property
+    def players_ready(self):
+        return all([p.ready for p in self.players])
+
 
     @property
     def state(self):
@@ -42,6 +48,7 @@ class Player(BaseModel):
     nickname = models.CharField(max_length=32)
     user = models.ForeignKey(User, null=True)
     ready = models.BooleanField(default=False)
+    creator = models.BooleanField(default=False)
 
     @property
     def dict(self):

@@ -13,8 +13,6 @@ var ApiClient = Class.extend({
     },
 
     getCurrentNodeInfo: function(success, error) {
-        debugger;
-
         var retry = this.getCurrentNodeInfo.bind(this);
 
         function callback(err) {
@@ -28,7 +26,7 @@ var ApiClient = Class.extend({
     registerNode: function(success) {
         var payload = {
             host: "127.0.0.1",
-            port: "8001"
+            port: PORT
         }
 
         function callback(body) {

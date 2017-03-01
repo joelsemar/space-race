@@ -4,3 +4,14 @@ body {
 .appcontainer {
   padding: 10px 15px;
 }
+#chatLogInner {
+	overflow-y: scroll;
+	height: 100%;
+    padding: 3px;
+}
+#chatLogWrapper{
+	height: 300px;
+	margin-top: 4px;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
