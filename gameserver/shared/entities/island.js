@@ -13,7 +13,7 @@ var Island = Entity.extend({
     timeSinceLastResource: 0,
     possibleUpgrades: ["growth", "attack", "defense"],
     productionMultiplier: 1,
-    growthProductionMultiplier: 2,
+    growthProductionMultiplier: 1,
     upgrade: null,
 
 

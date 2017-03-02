@@ -3,22 +3,68 @@ _.templateSettings = {
     interpolate: /\{\{(.+?)\}\}/g
 };
 var socket;
+var CURRENT_PLAYER;
+
 $(function() {
+    var authSuccess = (player) => {
+        CURRENT_PLAYER = player;
+        $("#nicknameTitle").html("Hello, " + player.nickname);
+        $.get("game", function(game) {
+            window.location.href = "/gamelobby"
+        })
+        begin();
+    }
+
+    var authError = () => {
+        $("#nicknameModal").modal('show');
+        $("#nicknameSubmit").click(() => {
+            $("#nicknameModal").modal('hide');
+            var nickname = $("#nicknameInput").val();
+            if (!nickname) {
+                return;
+            }
+            $.ajax({
+                url: "player",
+                success: authSuccess,
+                error: authError,
+                data: JSON.stringify({
+                    nickname: nickname
+                }),
+                contentType: "application/json",
+                method: "POST"
+            });
+        })
+    }
+    $.ajax({
+        url: "player",
+        success: authSuccess,
+        error: authError,
+    });
+});
+
+function begin() {
+
     $.get("/games", function(body) {
         populateGamesTable(body)
+    });
 
-    })
     socket = io.connect('http://127.0.0.1:7000');
     socket.on("serverUpdate", function(data) {
         populateGamesTable(data);
     });
+    // subscribe to the lobby updates
+    socket.emit("subscribe", {
+        tok: CURRENT_PLAYER.token
+    })
     $('#gameName').keypress(function(e) {
         if (e.which == 13) {
             $(this).blur();
             createGame();
         }
     });
-})
+    bindChatUi("#chatLogInner", "#chatInput", "#chatSend");
+    joinChat("main");
+}
 
 function populateGamesTable(data) {
     var template = _.template("<tr><td>{{name}}</td><td>{{players}}</td><td>{{state}}</td><td><button onclick='joinGame({{id}})'>Join</button></td></tr>")
@@ -36,17 +82,9 @@ function populateGamesTable(data) {
 }
 
 function joinGame(id) {
-    var nickname = $("#nickname").val();
-    if (!nickname) {
-        alert("Please provide a nickname");
-        return;
-    }
     $.ajax({
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify({
-            "nickname": nickname
-        }),
         url: "/game/" + id + "/player",
         success: function(data) {
             window.location.href = "gamelobby";
@@ -57,20 +95,14 @@ function joinGame(id) {
 
 function createGame() {
     var gameName = $("#gameName").val();
-    var nickname = $("#nickname").val();
     if (!gameName) {
         alert("Please provide a name for your game");
-        return;
-    }
-    if (!nickname) {
-        alert("Please provide a nickname");
         return;
     }
     $.ajax({
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify({
-            "nickname": nickname,
             "name": gameName,
             "num_players": 2
         }),
@@ -79,5 +111,4 @@ function createGame() {
             window.location.href = "gamelobby";
         }
     })
-
 }

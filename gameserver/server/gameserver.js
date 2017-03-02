@@ -44,10 +44,10 @@ var GameServer = BaseServer.extend({
     },
 
 
-    register: function(playerData, socket) {
-        console.log("Attempting to register: " + JSON.stringify(playerData));
+    register: function(data, socket) {
+        console.log("Attempting to register: " + JSON.stringify(data));
 
-        var player = this.game.addPlayer(playerData);
+        var player = this.game.connectPlayer(data);
         if (!player) {
             socket.emit('tokenFail');
             return;
@@ -61,6 +61,8 @@ var GameServer = BaseServer.extend({
         this.apiClient.updateNode({
             action: "start"
         });
+        // gameserver clients *must* be subscribed to channel updates
+        this.subscribe(data, socket)
 
     },
 
@@ -83,7 +85,7 @@ var GameServer = BaseServer.extend({
     },
 
     upgradePurchase: function(data) {
-        var player = this.game.playerByToken(data.t);
+        var player = this.game.playerByToken(data.tok);
         if (!player) {
             return;
         }

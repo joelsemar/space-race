@@ -9,7 +9,9 @@ var express = require('express'),
 
 var BaseServer = Class.extend({
     name: "BaseServer",
+    tokenMap: {},
     remoteMethods: [],
+    updatesChannel: "updates",
     init: function(apiClient) {
         this.apiClient = apiClient;
         this.app = express();
@@ -27,7 +29,9 @@ var BaseServer = Class.extend({
                     socket.on(methodName, callback);
                 }
             });
-
+            socket.on("disconnect", () => {
+                this.disconnect(socket);
+            })
         })
     },
 
@@ -37,9 +41,31 @@ var BaseServer = Class.extend({
     },
 
     updateClients: function(data) {
-        this.io.sockets.emit('serverUpdate', data);
-    }
+        this.io.sockets.in(this.updatesChannel).emit('serverUpdate', data);
+    },
 
-})
+    auth: function(data, cb) {
+        var token = data.tok;
+        if (this.tokenMap[token]) {
+            return this.tokenMap[token];
+        }
+        if (cb) {
+            this.apiClient.getPlayerForToken(token, (player) => {
+                this.tokenMap[token] = player;
+                cb()
+            });
+        }
+    },
 
+    // subscribes the client to the "updates" channel for the server
+    subscribe: function(data, socket) {
+        var player = this.auth(data, () => {
+            // this only gets called if api auth is successful
+            this.subscribe(data, socket);
+        })
+        socket.join(this.updatesChannel);
+    },
+    disconnect: function() {},
+
+});
 module.exports = BaseServer;

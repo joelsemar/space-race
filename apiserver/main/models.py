@@ -41,12 +41,13 @@ class Game(BaseModel):
 
 
 class Player(BaseModel):
-    game = models.ForeignKey(Game)
+    game = models.ForeignKey(Game, null=True)
     token = models.CharField(max_length=128, default=uuid4)
     nickname = models.CharField(max_length=32)
     user = models.ForeignKey(User, null=True)
     ready = models.BooleanField(default=False)
     creator = models.BooleanField(default=False)
+    expired = models.BooleanField(default=False)
 
     @property
     def dict(self):
@@ -55,5 +56,10 @@ class Player(BaseModel):
             "ready": self.ready,
             "id": self.id
         }
+
+    def join_game(self, game, creator=False):
+        self.game = game
+        self.creator = creator
+        self.save()
 
 from signals import *

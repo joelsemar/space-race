@@ -7,27 +7,39 @@ var socket;
 var CURRENT_GAME;
 var CURRENT_PLAYER;
 $(function() {
-    socket = io.connect('http://127.0.0.1:7000');
-    $.ajax({
-        url: '/game',
-        success: function(game) {
-            CURRENT_GAME = game;
-            populatePlayerList();
-            socket.emit("joinGameChat", game)
-            $("#gameName").html(game.name);
-        },
-        error: function() {
-            window.location.href = '/';
-        }
-
-    })
-
-    $.get("/player", function(player) {
+    var authSuccess = (player) => {
         CURRENT_PLAYER = player;
-        if (player.creator) {
-            $("#goButton").show();
-        }
+        $.ajax({
+            url: '/game',
+            success: function(game) {
+                CURRENT_GAME = game;
+                populatePlayerList();
+                begin();
+            },
+            error: function() {
+                window.location.href = '/';
+            }
+
+        });
+    }
+
+    var authError = () => {
+        window.location.href = '/';
+    }
+
+    $.ajax({
+        url: "player",
+        success: authSuccess,
+        error: authError,
     });
+
+});
+
+function begin() {
+    socket = io.connect('http://127.0.0.1:7000');
+    if (CURRENT_PLAYER.creator) {
+        $("#goButton").show();
+    }
 
     socket.on("serverUpdate", function(data) {
         var updatedGame;
@@ -49,20 +61,14 @@ $(function() {
         }
     });
 
-    socket.on("message", function(data) {
-        var line = "<span><b>"
-        $("#chatLogInner").append(chatLineTemplate(data));
-        $("#chatLogInner").scrollTop($("#chatLogInner")[0].scrollHeight);
-
-    })
-
-    $('#chatInput').keypress(function(e) {
-        if (e.which == 13) {
-            $(this).blur();
-            sendChatMessage();
-        }
+    // subscribe to the lobby updates
+    socket.emit("subscribe", {
+        tok: CURRENT_PLAYER.token
     });
-})
+    bindChatUi("#chatLogInner", "#chatInput", "#chatSend");
+    joinChat("game-" + CURRENT_GAME.id);
+
+}
 
 
 function populatePlayerList() {

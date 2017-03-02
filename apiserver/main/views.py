@@ -22,6 +22,6 @@ class PlayerView(ModelView):
         ret = super(PlayerView, self).render(request)
         ret["token"] = self.instance.token
         ret["creator"] = self.instance.creator
-        if self.instance.game.node:
+        if self.instance.game and self.instance.game.node:
             ret["node"] = self.instance.game.node.destination
         return ret

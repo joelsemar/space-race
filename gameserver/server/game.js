@@ -25,9 +25,9 @@ var Game = BaseGame.extend({
         }
     },
 
-    addPlayer: function(playerData) {
+    connectPlayer: function(playerData) {
         var player = _.findWhere(this.players, {
-            token: playerData.token
+            token: playerData.tok
         });
         if (!player) {
             console.log("No players found in: " + JSON.stringify(this.players) + " for token: " + token);

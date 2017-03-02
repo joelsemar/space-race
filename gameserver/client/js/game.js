@@ -20,7 +20,7 @@ var Game = BaseGame.extend({
 
         console.log("Registering with token: " + player.token)
         this.socket.emit('register', {
-            'token': player.token,
+            'tok': player.token,
             'id': player.id
         });
         new ScoreBoard();
