@@ -14,3 +14,14 @@ class GameView(ModelView):
         if self.instance.node:
             ret["node"] = self.instance.node.destination
         return ret
+
+
+class PlayerView(ModelView):
+
+    def render(self, request):
+        ret = super(PlayerView, self).render(request)
+        ret["token"] = self.instance.token
+        ret["creator"] = self.instance.creator
+        if self.instance.game.node:
+            ret["node"] = self.instance.game.node.destination
+        return ret

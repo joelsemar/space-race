@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <script src="static/js/app.js"></script>
+    <script src="static/js/gamelobby.js"></script>
 
     <link rel="stylesheet" type="text/css" href="static/css/reset.css">
     <link rel="stylesheet" type="text/css" href="static/css/app.css">
@@ -21,28 +21,32 @@
 <body>
     <div class="container">
         <div class="appcontainer">
-            <label for "nickname">Nickname: <input type="text" id="nickname" name="nickname" ></input></label>
+            <h2 id="gameName"></h2>
 
-            <h1>Create a new Game</h1>
-
-            <label for "gameName"> Game Name: <input type="text" id="gameName" name="gameName" ></input></label>
-            <button class="btn btn-primary" type="button" onclick="createGame()">Create</button>
-
-            <h1>Current Games</h1>
             <table class="table">
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Players</th>
-                        <th>State</th>
-                        <th></th>
+                        <th>Ready</th>
                     </tr>
                 </thead>
                 <tbody id="gametable">
                 </tbody>
             </table>
+            <button class="btn btn-primary" type="button" onclick="toggleReady()">Ready</button>
+            <button class="btn btn-danger" type="button" onclick="leaveGame()">Leave</button>
+            <button class="btn btn-success" type="button" id="goButton" onclick="go()" style='display:none;'>Go!</button>
+            <h2>Chat</h2>
+            <div id="chatForm" class='baseContainer'>
+                <div id='chatBox'>
+                    <input type='text' id='chatInput' size='65' />
+                    <button class="btn btn-primary" type="button" onclick="sendChatMessage()" id="chatSend">Send</button>
+                </div>
+            </div>
+            <div id='chatLogWrapper'>
+                <div id='chatLogInner'>
+                </div>
+            </div>
         </div>
     </div>
-
-
 </body>

@@ -3,7 +3,6 @@ from services.models import BaseModel
 from uuid import uuid4
 
 
-
 from django.contrib.auth.models import AbstractUser
 
 
@@ -18,7 +17,7 @@ class Game(BaseModel):
     start_time = models.DateTimeField(null=True, default=None)
     end_time = models.DateTimeField(null=True, default=None)
     node = models.ForeignKey("nodes.GameNode", null=True, blank=True)
-    ready = models.BooleanField(default=True)
+    ready = models.BooleanField(default=False)
 
     @property
     def players(self):
@@ -26,8 +25,7 @@ class Game(BaseModel):
 
     @property
     def players_ready(self):
-        return all([p.ready for p in self.players])
-
+        return self.players.count() == self.num_players and all([p.ready for p in self.players])
 
     @property
     def state(self):
@@ -54,7 +52,8 @@ class Player(BaseModel):
     def dict(self):
         return {
             "nickname": self.nickname,
-            "ready": self.ready
+            "ready": self.ready,
+            "id": self.id
         }
 
 from signals import *

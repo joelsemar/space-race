@@ -7,7 +7,7 @@ if (require) {
         _ = require('underscore');
 }
 
-var BaseWorld = Class.extend({
+var BaseGame = Class.extend({
     fps: 12,
     lastFrame: new Date(),
     players: [],
@@ -16,10 +16,6 @@ var BaseWorld = Class.extend({
         y: 3500
     },
 
-    init: function(players) {
-        console.log('game initialized with ' + JSON.stringify(players));
-        this.players = players;
-    },
 
     run: function() {
         this.lastFrame = new Date();
@@ -38,7 +34,7 @@ var BaseWorld = Class.extend({
         if (delta < 0) {
             delta = 1
         }
-        Game.entityManager.updateEntities(delta);
+        this.entityManager.updateEntities(delta);
         this.lastFrame = now;
         this.currentTick = delta;
     },
@@ -49,5 +45,5 @@ var BaseWorld = Class.extend({
 
 
 if (module) {
-    module.exports = BaseWorld;
+    module.exports = BaseGame;
 }

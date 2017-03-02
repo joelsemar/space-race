@@ -68,7 +68,10 @@ function createGame() {
             "name": gameName,
             "num_players": 2
         }),
-        url: "/game/"
+        url: "/game/",
+        succes: function() {
+            window.location.href = "gamelobby";
+        }
     })
 
 }

@@ -2,7 +2,7 @@ from services.controller import BaseController
 from services.views import QuerySetView
 from services.decorators import render_with, body, entity
 from main.models import Game, Player
-from views import GameView
+from views import GameView, PlayerView
 from services.utils import str_to_bool
 
 
@@ -25,7 +25,7 @@ class GameListController(AnonymousController):
         Fetch a list of open games
         API Handler: GET /games
         """
-        response.set(queryset=Game.objects.filter(start_time=None))
+        response.set(queryset=Game.objects.filter(end_time=None))
 
 
 class GameDto(object):
@@ -68,7 +68,7 @@ class GameController(AnonymousController):
     def update(self, request, response):
         """
         Update the game state, only usable by the creator of the game.
-        API Handler: POST /game
+        API Handler: PUT /game
         """
         player_token = request.session.get("player_token")
         try:
@@ -85,6 +85,7 @@ class GameController(AnonymousController):
 
 
 class PlayerController(AnonymousController):
+    view = PlayerView
 
     def read(self, request, response, token=None):
         """
@@ -98,7 +99,7 @@ class PlayerController(AnonymousController):
         except Player.DoesNotExist:
             return response.not_found()
 
-        response.set(token=player.token, nickname=player.nickname, creator=player.creator)
+        response.set(instance=player)
 
     @entity(Game, arg="game")
     @body(GameJoinDto, arg="join")
@@ -115,7 +116,7 @@ class PlayerController(AnonymousController):
 
         player = self.join_game(game, join.nickname, request.session.get("player_token"))
         request.session["player_token"] = str(player.token)
-        response.set(**player.dict)
+        response.set(instance=player)
 
     @entity(Game, arg="game")
     @render_with(GameView)
@@ -147,4 +148,12 @@ class PlayerController(AnonymousController):
             return response.bad_request("Game has already started")
 
         player_token = request.session.get("player_token")
-        Player.objects.filter(token=player_token, game=game).delete()
+        try:
+            player = Player.objects.get(token=player_token, game=game)
+        except Player.DoesNotExist:
+            return
+        if player.creator:
+            player.game.players.delete()
+            game.delete()
+        else:
+            player.delete()

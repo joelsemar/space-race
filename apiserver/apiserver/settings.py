@@ -106,6 +106,6 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = ["/home/joel/space-race/lobby/static/"]
+STATICFILES_DIRS = ["/home/joel/space-race/gameserver/client/"]
 
 GAME_NODE_HOSTS = ["127.0.0.1"]

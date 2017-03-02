@@ -7,13 +7,13 @@ var socket;
 var CURRENT_GAME;
 var CURRENT_PLAYER;
 $(function() {
-    socket = io.connect('http://127.0.0.1:7001');
+    socket = io.connect('http://127.0.0.1:7000');
     $.ajax({
         url: '/game',
         success: function(game) {
             CURRENT_GAME = game;
             populatePlayerList();
-            socket.emit("join_game_chat", game)
+            socket.emit("joinGameChat", game)
             $("#gameName").html(game.name);
         },
         error: function() {
@@ -22,7 +22,6 @@ $(function() {
 
     })
 
-
     $.get("/player", function(player) {
         CURRENT_PLAYER = player;
         if (player.creator) {
@@ -30,24 +29,29 @@ $(function() {
         }
     });
 
-    socket.on("lobby_update", function(data) {
-        data = JSON.parse(data);
+    socket.on("serverUpdate", function(data) {
+        var updatedGame;
         for (var i = 0; i < data.results.length; i++) {
             if (data.results[i].id === CURRENT_GAME.id) {
-                CURRENT_GAME = data.results[i];
+                updatedGame = data.results[i];
                 break;
             }
         }
+        if (!updatedGame) {
+            alert("This game no longer exists...");
+            window.location.href = "/";
+        }
+
+        CURRENT_GAME = updatedGame;
         populatePlayerList();
         if (CURRENT_GAME.node) {
-            window.location.href = CURRENT_GAME.node;
+            window.location.href = "/play";
         }
     });
 
     socket.on("message", function(data) {
         var line = "<span><b>"
         $("#chatLogInner").append(chatLineTemplate(data));
-        console.log(data);
         $("#chatLogInner").scrollTop($("#chatLogInner")[0].scrollHeight);
 
     })
@@ -116,9 +120,6 @@ function go() {
     $.ajax({
         url: url,
         type: "PUT",
-        complete: function(data) {
-            window.location.href = "/";
-        }
     })
 }
 

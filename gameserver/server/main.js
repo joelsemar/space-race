@@ -1,72 +1,19 @@
-var log = false;
-var express = require('express'),
-    app = express(),
-    server = require('http').createServer(app),
-    routing = require('./routing'),
-    routes = require('./routes'),
-    io = require('socket.io').listen(server, {
-        log: log
-    }),
-    _ = require('underscore'),
-    path = require('path'),
-    ApiClient = require("./api.js");
+var GameServer = require("./gameserver.js"),
+    LobbyServer = require("./lobbyserver.js"),
+    ApiClient = require("./api.js"),
+    CONFIG = require("./config.js");
 
-RUNNING_ON_CLIENT = false;
-PORT = 8001;
-var apiClient = new ApiClient("http://127.0.0.1:8000");
-Game = require('./game.js');
-Game.apiClient = apiClient;
+var apiClient = new ApiClient(CONFIG.apiHost);
+var gameServer = new GameServer(apiClient);
+gameServer.run(CONFIG.gameServerPort);
 
-
-io.sockets.on('connection', function(socket) {
-    socket.on('register', function(data) {
-        console.log("Attempting to register: " + JSON.stringify(data));
-
-
-        var player = Game.addPlayer(data.token);
-        if (!player) {
-            socket.emit('token_fail');
-            return;
-        }
-        console.log("Player " + player.id + " connected");
-        socket.emit('game_start', {
-            id: player.id,
-            color: player.color
-        });
-    });
-
-    socket.on('attack_signal', function(data) {
-        console.log('received attack signal ' + JSON.stringify(data));
-        var selectedIslands = Game.entityManager.entitiesByIds(data.i);
-        console.log("Attacking With: " + JSON.stringify(selectedIslands));
-        var player = Game.playerByToken(data.p);
-        var target = Game.entityManager.entityById(data.t);
-        _.map(selectedIslands, function(i) {
-            i.selected = true
-        });
-        player.attack(target);
-        Game.world.updateClient();
-
-    });
-
-    socket.on("upgrade_purchase", function(data) {
-        console.log('received upgrade request: ' + JSON.stringify(data));
-    })
-});
-
-
-
-
-updateClient = function(data) {
-    io.sockets.emit('world_update', data);
+updateClients = function(data) {
+    gameServer.updateClients();
+}
+getGame = function() {
+    return gameServer.game;
 }
 
-app.get('/', function(req, res) {
-    res.sendfile(path.resolve('../client/index.html'));
-});
-
-app.use(express.static(path.resolve('../client')));
-
-
-server.listen(PORT);
-console.log("Listening on port " + PORT);
+if (CONFIG.lobbyServerPort) {
+    new LobbyServer(apiClient).run(CONFIG.lobbyServerPort);
+}

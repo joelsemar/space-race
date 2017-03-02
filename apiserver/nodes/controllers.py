@@ -57,7 +57,7 @@ class GameNodeController(BaseGameNodeController):
 
         response.set(current_game=NodeGameView.render_instance(game, request))
 
-    @body(GameNodeDto)
+    @body(GameNodeDto, arg="node")
     @unauthenticated
     def create(self, request, response, node):
         """
@@ -78,13 +78,15 @@ class GameNodeController(BaseGameNodeController):
         Update node status
         API Handler: PUT /node
         """
-        request.node.available = str_to_bool(info.available)
-        request.node.save()
-        if (info.start_time or info.end_time):
+        if hasattr(info, 'available'):
+            request.node.available = str_to_bool(info.available)
+            request.node.save()
+        if info.action:
             try:
                 game = Game.objects.get(node=request.node)
             except Game.DoesNotExist:
                 pass
+                
             if info.action == 'start' and game.start_time is None:
                 game.start_time = datetime.utcnow()
             if info.action == 'stop' and game.end_time is None:

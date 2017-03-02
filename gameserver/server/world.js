@@ -5,41 +5,19 @@ var Class = require("../shared/lib/class.js"),
     Island = require('../shared/entities/island.js'),
     Ship = require('../shared/entities/ship.js'),
     EntityManager = require('../shared/entities/entitymanager.js'),
-    BaseWorld = require('../shared/lib/baseworld.js'),
     Vector = require('../shared/lib/vector.js'),
     _ = require('underscore');
 
-var World = BaseWorld.extend({
+var World = Class.extend({
 
-    fps: 60,
     numIslands: 50,
-    lastClientUpdate: 0,
-    clientUpdateInterval: 500,
 
-    run: function() {
+    init: function(players, size) {
+        this.players = players;
+        this.size = size;
         this.initializeIslands();
         this.assignStartingIslands();
-        this._super();
     },
-
-    step: function() {
-        this._super();
-        this.lastClientUpdate += this.currentTick;
-        if (this.lastClientUpdate > this.clientUpdateInterval) {
-            this.updateClient();
-            this.lastClientUpdate = 0;
-        }
-    },
-
-    updateClient: function() {
-        updateClient({
-            size: this.size,
-            islands: this.islandSummary(),
-            ships: this.shipSummary(),
-            players: this.playerSummary()
-        });
-    },
-
 
     playerSummary: function() {
         var ret = [];
@@ -47,7 +25,8 @@ var World = BaseWorld.extend({
             ret.push({
                 id: player.id,
                 color: player.color,
-                resourcesGathered: player.resourcesGathered
+                resourcesGathered: player.resourcesGathered,
+                nickname: player.nickname
             });
         })
         return ret;
@@ -69,8 +48,8 @@ var World = BaseWorld.extend({
         return ret;
     },
 
-    shipSummary: function() {
-        var ships = Game.entityManager.entitiesByType('ship');
+    shipSummary: function(entityManager) {
+        var ships = entityManager.entitiesByType('ship');
         var ret = [];
         _.each(ships, function(ship) {
             ret.push({

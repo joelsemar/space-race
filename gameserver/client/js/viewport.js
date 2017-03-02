@@ -13,7 +13,6 @@ var ViewPort = Entity.extend({
 
     update: function() {
         this.checkBounds();
-        //  console.log('viewport at: ' + this.pos.x + ', ' + this.pos.y);
     },
 
 
@@ -74,30 +73,32 @@ var ViewPort = Entity.extend({
     },
 
     checkBounds: function() {
+        var game = getGame();
         if (this.pos.x <= 0) {
             this.pos.x = 0;
         }
-        if (this.pos.x > Game.world.size.x - this.size.x) {
-            this.pos.x = Game.world.size.x - this.size.x;
+        if (this.pos.x > game.size.x - this.size.x) {
+            this.pos.x = game.size.x - this.size.x;
         }
         if (this.pos.y <= 0) {
             this.pos.y = 0;
         }
-        if (this.pos.y > Game.world.size.y - this.size.y) {
-            this.pos.y = Game.world.size.y - this.size.y;
+        if (this.pos.y > game.size.y - this.size.y) {
+            this.pos.y = game.size.y - this.size.y;
         }
     },
 
     bindEvents: function() {
-        var currentPlayer = Game.getCurrentPlayer();
-        this.canvas.onmousedown = function(e) {
-            var coords = utils.getCoords(e);
+        var game = getGame();
+        var currentPlayer = game.getCurrentPlayer();
+        this.canvas.onmousedown = (e) => {
+            var coords = utils.getCoords(e, this);
             currentPlayer.click(coords.x, coords.y);
         };
 
-        this.canvas.onmousemove = function(e) {
-            var coords = utils.getCoords(e);
-            Game.viewport.currMousePos = new Vector(coords.x, coords.y);
+        this.canvas.onmousemove = (e) => {
+            var coords = utils.getCoords(e, this);
+            game.viewport.currMousePos = new Vector(coords.x, coords.y);
             if (!currentPlayer.isSelecting) {
                 return;
             }
@@ -112,7 +113,7 @@ var ViewPort = Entity.extend({
             currentPlayer.stopSelect();
         }
 
-        $(document).mousemove(function(event) {
+        $(document).mousemove((event) => {
             var mousePos = {
                 x: event.pageX,
                 y: event.pageY
@@ -128,17 +129,17 @@ var ViewPort = Entity.extend({
             if (mousePos.x < this.scrollHitBoxWidth && this.pos.x > 0) {
                 this.vel.add(new Vector(-1, 0));
             }
-            if (mousePos.x > (this.size.x - this.scrollHitBoxWidth) && this.pos.x < (Game.world.size.x - this.size.x)) {
+            if (mousePos.x > (this.size.x - this.scrollHitBoxWidth) && this.pos.x < (game.size.x - this.size.x)) {
                 this.vel.add(new Vector(1, 0));
             }
             if (mousePos.y < this.scrollHitBoxWidth && this.pos.y > 0) {
                 this.vel.add(new Vector(0, -1));
             }
-            if (mousePos.y > (this.size.y - this.scrollHitBoxWidth) && this.pos.y < (Game.world.size.y - this.size.y)) {
+            if (mousePos.y > (this.size.y - this.scrollHitBoxWidth) && this.pos.y < (game.size.y - this.size.y)) {
                 this.vel.add(new Vector(0, 1));
             }
             this.setVelocity(this.vel);
 
-        }.bind(this));
+        });
     },
 });

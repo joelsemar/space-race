@@ -1,166 +1,83 @@
-/*jslint node: true */
-"use strict";
-var RUNNING_ON_CLIENT = true;
-
-var World = BaseWorld.extend({
-
-    fps: 24,
-    islandImageSrc: 'img/luna.png',
-    shipImageSrc: 'img/ship.png',
-    players: [],
-    init: function(id, players) {
-        this._super(id, players);
-        this.islandImage = new Image();
-        this.islandImage.src = this.islandImageSrc;
-        this.shipImage = new Image();
-        this.shipImage.src = this.shipImageSrc;
-
-    },
-
-    receiveServerUpdate: function(data) {
-        console.log("Received from server: " + JSON.stringify(data));
-        this.islands = [];
-        _.each(data.islands || [], function(island) {
-            var localIsland = Game.entityManager.entityById(island.id);
-            if (localIsland) {
-                localIsland.loadFromData(island);
-            } else {
-                new Island(island);
-            }
-        }, this);
-
-        if (data.players) {
-
-            _.each(data.players, function(player) {
-                var clientPlayer = Game.entityManager.entityById(player.id);
-                if (clientPlayer) {
-                    clientPlayer.resourcesGathered = player.resourcesGathered;
-                } else {
-                    this.players.push(new Player(player));
-                }
-            }, this);
-        }
-
-        if (data.ships) {
-            _.each(data.ships, function(ship) {
-
-                var localShip = Game.entityManager.entityById(ship.id);
-                if (localShip) {
-                    localShip.loadFromData(ship);
-                } else {
-                    new Ship(ship);
-                }
-            })
-            var localShips = Game.entityManager.entitiesByType('ship');
-            var remoteShipIds = _.pluck(data.ships, 'id');
-            _.each(localShips, function(localShip) {
-                if (!_.contains(remoteShipIds, localShip.id)) {
-                    Game.entityManager.removeEntity(localShip.id);
-                }
-            });
-        }
-        //this.ships = data.ships;
-        this.size = data.size;
-        this.resetFrame();
-    },
-
-});
-
-
-var DrawLoop = Class.extend({
-
-    init: function() {
-        window.requestAnimationFrame = window.requestAnimationFrame ||
-            window.mozRequestAnimationFrame ||
-            window.webkitRequestAnimationFrame ||
-            window.msRequestAnimationFrame;
-    },
-
-    run: function() {
-        requestAnimationFrame(this.draw.bind(this));
-    },
-
-    draw: function() {
-        Game.viewport.clear();
-        Game.entityManager.drawEntities();
-        requestAnimationFrame(this.draw.bind(this));
-    }
-
-});
-
-
-
-var Game = {
-
-    debug: false,
-    running: false,
-    client: true,
-
-    init: function() {
-        //  $("#chat_form").show();
-        var token = utils.parseQueryString()['token'];
-        this.entityManager = new EntityManager();
-        this.world = new World([]);
-        this.viewport = new ViewPort();
-        this.miniMap = new MiniMap();
-        this.drawLoop = new DrawLoop();
-        this.socket = io.connect();
-        this.currentPlayerId = token;
-        this.socket.emit('register', {
-            'token': token
-        });
-        new ScoreBoard();
-
-        this.socket.on('game_start', function(data) {
-            Game.world.players.push(new Player(data));
-            Game.start();
-        });
-
-        this.socket.on('world_update', function(data) {
-            Game.world.receiveServerUpdate(data);
-        });
-
-        this.socket.on("token_fail", function(data) {
-            console.log(data);
-        });
-
-        $(document.body).keypress(function(e) {
-            if (e.shiftKey) {
-                Game.scrollLock = true;
-            }
-        });
-
-        $(document.body).keyup(function(e) {
-            if (e.shiftKey) {
-                Game.scrollLock = false;
-            }
-
-        })
-    },
-
-    start: function() {
-        console.log('starting game');
-        this.world.run();
-        this.viewport.bindEvents();
-        this.drawLoop.run();
-        this.running = true;
-    },
-
-    sendAttackSignal: function(target) {
-        this.socket.emit('attack_signal', {
-            p: this.currentPlayerId,
-            t: target.id,
-            i: this.getCurrentPlayer().selectedIslandIds()
-        });
-    },
-
-    getCurrentPlayer: function() {
-        return this.entityManager.entityById(this.currentPlayerId);
-    },
-
+'use strict';
+_.templateSettings = {
+    interpolate: /\{\{(.+?)\}\}/g
 };
-//Game.debug = true;
-
+var socket;
 $(function() {
-    Game.init();
-});
+    $.get("/games", function(body) {
+        populateGamesTable(body)
+
+    })
+    socket = io.connect('http://127.0.0.1:7000');
+    socket.on("serverUpdate", function(data) {
+        populateGamesTable(data);
+    });
+    $('#gameName').keypress(function(e) {
+        if (e.which == 13) {
+            $(this).blur();
+            createGame();
+        }
+    });
+})
+
+function populateGamesTable(data) {
+    var template = _.template("<tr><td>{{name}}</td><td>{{players}}</td><td>{{state}}</td><td><button onclick='joinGame({{id}})'>Join</button></td></tr>")
+    var html = "";
+    _.each(data.results, function(item) {
+        var players = item.players.length + "/" + item.num_players
+        html += template({
+            name: item.name,
+            state: item.state,
+            players: players,
+            id: item.id
+        })
+    })
+    $("#gametable").html(html);
+}
+
+function joinGame(id) {
+    var nickname = $("#nickname").val();
+    if (!nickname) {
+        alert("Please provide a nickname");
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            "nickname": nickname
+        }),
+        url: "/game/" + id + "/player",
+        success: function(data) {
+            window.location.href = "gamelobby";
+        }
+
+    })
+}
+
+function createGame() {
+    var gameName = $("#gameName").val();
+    var nickname = $("#nickname").val();
+    if (!gameName) {
+        alert("Please provide a name for your game");
+        return;
+    }
+    if (!nickname) {
+        alert("Please provide a nickname");
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            "nickname": nickname,
+            "name": gameName,
+            "num_players": 2
+        }),
+        url: "/game/",
+        success: function() {
+            window.location.href = "gamelobby";
+        }
+    })
+
+}

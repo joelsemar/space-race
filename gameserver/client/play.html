@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<head>
+    <script>
+        var require = require || false;
+        var module = module || false;
+        CanvasRenderingContext2D.prototype.clear =
+            CanvasRenderingContext2D.prototype.clear || function(preserveTransform) {
+                if (preserveTransform) {
+                    this.save();
+                    this.setTransform(1, 0, 0, 1, 0, 0);
+                }
+
+                this.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (preserveTransform) {
+                    this.restore();
+                }
+            };
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="static/css/app.css">
+    <script src="static/js/lib/class.js"></script>
+    <script src="static/js/lib/vector.js"></script>
+    <script src="static/js/lib/utils.js"></script>
+    <script src="static/js/lib/basegame.js"></script>
+    <script src="static/js/entities/entity.js"></script>
+    <script src="static/js/entities/entitymanager.js"></script>
+    <script src="static/js/entities/island.js"></script>
+    <script src="static/js/entities/ship.js"></script>
+    <script src="static/js/entities/player.js"></script>
+    <script src="static/js/game.js"></script>
+    <script src="static/js/viewport.js"></script>
+    <script src="static/js/minimap.js"></script>
+
+    <style type="text/css">
+        body {
+            background-image: url('static/img/stars.png');
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="miniMapLayer"></canvas>
+    <canvas id="scoreboardLayer"></canvas>
+    <canvas id="mainCanvas"></canvas>
+</body>
+
+</html>
