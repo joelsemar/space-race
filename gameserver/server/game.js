@@ -9,9 +9,11 @@ var Game = BaseGame.extend({
     lastClientUpdate: 0,
     clientUpdateInterval: 500,
     players: [],
-    colors: ['blue', 'red', 'red', 'green'],
+    colors: ['blue', 'red', 'red', 'green', "white", "gray", "yellow"],
 
-    init: function(apiClient) {
+    init: function(data, apiClient) {
+        this.name = data.name;
+        this.id = data.id;
         this.entityManager = new EntityManager();
         this.apiClient = apiClient;
     },
@@ -106,6 +108,7 @@ var Game = BaseGame.extend({
     win: function() {
         this.stop();
         if (!RUNNING_ON_CLIENT) {
+            console.log()
             releaseGameNode();
         }
     },

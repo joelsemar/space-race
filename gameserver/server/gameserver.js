@@ -27,7 +27,7 @@ var GameServer = BaseServer.extend({
         var getNodeInfo = () => {
             this.apiClient.getCurrentNodeInfo((game) => {
                 this.log("Found game: " + game.name)
-                this.game = new Game(this.apiClient);
+                this.game = new Game(game, this.apiClient);
                 this.game.setPlayers(game.players);
             });
         }
@@ -49,6 +49,9 @@ var GameServer = BaseServer.extend({
 
     register: function(data, socket) {
         this.log("Attempting to register: " + JSON.stringify(data));
+        if (!this.game) {
+            return;
+        }
 
         var player = this.game.connectPlayer(data);
         if (!player) {
@@ -105,11 +108,12 @@ var GameServer = BaseServer.extend({
     },
 
     disconnect: function(socket) {
-        this.log("Player " + socket.nickname + " disconnected.")
         if (!this.game) {
             return;
         }
         this.game.disconnectPlayer(socket.token);
+        this.log("Player " + socket.nickname + " disconnected.")
+        this.log("Remaining players: " + JSON.stringify(this.game.players));
         if (!this.game.allPlayersConnected()) {
             setTimeout(this.abandonGame.bind(this), this.abandonGameAfter)
         }
