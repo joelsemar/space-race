@@ -14,10 +14,6 @@ _.templateSettings = {
     interpolate: /\{\{(.+?)\}\}/g
 };
 
-var port = 7001;
-var apiHost = "http://127.0.0.1:8000";
-var tokenMap = {};
-
 var LOBBY_PING_INTERVAL = 2000;
 
 var LobbyServer = BaseServer.extend({
@@ -27,16 +23,16 @@ var LobbyServer = BaseServer.extend({
     systemNick: "SYSTEM",
     remoteMethods: ["message", "joinChat", "subscribe"],
 
-    run: function(host, port) {
-        this._super(port);
+    run: function() {
+        this._super();
 
         var getNodeInfo = this.apiClient.getChatNodeInfo.bind(this.apiClient);
 
         if (!this.apiClient.token) {
             this.log("no token stored, registering a new node...")
             var nodePayload = {
-                host: host,
-                port: port
+                host: this.host,
+                port: this.port
             }
             this.apiClient.registerNode(nodePayload, getNodeInfo, "chatnode");
         } else {

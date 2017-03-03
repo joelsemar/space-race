@@ -29,7 +29,6 @@ var Game = BaseGame.extend({
         });
         if (alivePlayers.length === 1) {
             this.win();
-
         }
     },
 
@@ -105,6 +104,7 @@ var Game = BaseGame.extend({
     },
 
     win: function() {
+        this.stop();
         if (!RUNNING_ON_CLIENT) {
             releaseGameNode();
         }

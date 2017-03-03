@@ -149,6 +149,7 @@ var Game = BaseGame.extend({
         $("#gameOverExit").click(() => {
             this.exit();
         })
+
         $("#gameOverKeepWatching").click(() => {
             this.spectate = true;
             $("#gameOverModal").modal('hide');

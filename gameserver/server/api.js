@@ -41,15 +41,14 @@ var ApiClient = Class.extend({
         success = success || function() {};
 
         var callback = (body) => {
-            console.log("Successfully registered node. with token: " + body.token);
             this.storeToken(body.token);
             success();
         }
         this.post(endpoint, payload, callback);
     },
 
-    updateNode: function(payload) {
-        this.put("node", payload)
+    updateNode: function(payload, success) {
+        this.put("node", payload, success)
     },
 
     getGames: function(success) {
@@ -96,7 +95,7 @@ var ApiClient = Class.extend({
         console.log("calling " + method + "/" + endpoint)
         request[method](options, (err, response, body) => {
             if (!response) {
-                console.log("Null response returned: " + err + ", " + respnse + ", " + body)
+                console.log("Null response returned: " + err + ", " + response + ", " + body)
                 return;
             }
             if (err || response.statusCode > 399) {
@@ -121,7 +120,7 @@ var ApiClient = Class.extend({
             }
         } catch (e) {
             console.log("Error reading token file: " + this.tokenFile)
-            console.log(e);
+            this.token = null;
             return;
         }
     },

@@ -17,13 +17,8 @@ var GameServer = BaseServer.extend({
     abandonGameAfter: 10000,
     remoteMethods: ["register", "attack", "upgradePurchase"],
 
-    init: function(apiClient) {
-        this._super(apiClient);
-        this.game = new Game(this.apiClient);
-    },
-
-    run: function(host, port) {
-        this._super(port);
+    run: function() {
+        this._super();
         this.findNewGame();
     },
 
@@ -32,6 +27,7 @@ var GameServer = BaseServer.extend({
         var getNodeInfo = () => {
             this.apiClient.getCurrentNodeInfo((game) => {
                 this.log("Found game: " + game.name)
+                this.game = new Game(this.apiClient);
                 this.game.setPlayers(game.players);
             });
         }
@@ -39,8 +35,8 @@ var GameServer = BaseServer.extend({
         if (!this.apiClient.token) {
             this.log("no token stored, registering a new node...")
             var nodePayload = {
-                host: host,
-                port: port
+                host: this.host,
+                port: this.port
             }
             this.apiClient.registerNode(nodePayload, getNodeInfo);
         } else {
@@ -66,7 +62,7 @@ var GameServer = BaseServer.extend({
             nickname: player.nickname,
             alive: true
         });
-        socket.token = data.tok;
+        socket.playerToken = data.tok;
         socket.nickname = player.nickname;
         this.apiClient.updateNode({
             action: "start"
@@ -110,6 +106,9 @@ var GameServer = BaseServer.extend({
 
     disconnect: function(socket) {
         this.log("Player " + socket.nickname + " disconnected.")
+        if (!this.game) {
+            return;
+        }
         this.game.disconnectPlayer(socket.token);
         if (!this.game.allPlayersConnected()) {
             setTimeout(this.abandonGame.bind(this), this.abandonGameAfter)
@@ -127,8 +126,7 @@ var GameServer = BaseServer.extend({
         this.apiClient.updateNode({
             action: "stop",
             available: "true"
-        });
-        this.findNewGame();
+        }, this.findNewGame.bind(this));
 
     },
 

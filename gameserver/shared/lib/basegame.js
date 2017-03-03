@@ -23,8 +23,7 @@ var BaseGame = Class.extend({
     },
 
     resetFrame: function() {
-        this.lastFrame = new Date();
-        clearInterval(this.intervalId);
+        this.stop();
         this.run();
     },
 
@@ -37,6 +36,10 @@ var BaseGame = Class.extend({
         this.entityManager.updateEntities(delta);
         this.lastFrame = now;
         this.currentTick = delta;
+    },
+
+    stop: function() {
+        clearInterval(this.intervalId);
     },
 
 

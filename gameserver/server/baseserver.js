@@ -12,8 +12,10 @@ var BaseServer = Class.extend({
     tokenMap: {},
     remoteMethods: [],
     updatesChannel: "updates",
-    init: function(apiClient) {
-        this.apiClient = apiClient;
+    init: function(config) {
+        this.apiClient = config.apiClient;
+        this.host = config.host;
+        this.port = config.port;
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = io.listen(this.server, {
@@ -35,9 +37,9 @@ var BaseServer = Class.extend({
         })
     },
 
-    run: function(port) {
-        this.server.listen(port);
-        this.log("listening on port " + port);
+    run: function() {
+        this.server.listen(this.port);
+        this.log("listening on port " + this.port);
     },
 
     updateClients: function(data) {
