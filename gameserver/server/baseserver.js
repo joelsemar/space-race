@@ -17,7 +17,7 @@ var BaseServer = Class.extend({
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = io.listen(this.server, {
-            log: this.log
+            log: true
         })
         this.io.sockets.on('connection', (socket) => {
             _.each(this.remoteMethods, (methodName) => {
@@ -37,7 +37,7 @@ var BaseServer = Class.extend({
 
     run: function(port) {
         this.server.listen(port);
-        console.log(this.name + " listening on port " + port);
+        this.log("listening on port " + port);
     },
 
     updateClients: function(data) {
@@ -58,12 +58,17 @@ var BaseServer = Class.extend({
     },
 
     // subscribes the client to the "updates" channel for the server
+    // optionally pass "channelName" to sub to custom channels
     subscribe: function(data, socket) {
         var player = this.auth(data, () => {
             // this only gets called if api auth is successful
             this.subscribe(data, socket);
         })
-        socket.join(this.updatesChannel);
+        var channel = data.channelName || this.updatesChannel;
+        socket.join(channel);
+    },
+    log: function(msg) {
+        console.log(this.name + ": " + msg);
     },
     disconnect: function() {},
 

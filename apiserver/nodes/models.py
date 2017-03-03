@@ -17,3 +17,15 @@ class GameNode(BaseModel):
     @property
     def destination(self):
         return "http://%s:%s" % (self.host, self.port)
+
+
+class ChatNode(BaseModel):
+    host = models.CharField(max_length=64)
+    port = models.CharField(max_length=5)
+    available = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    token = models.CharField(default=uuid4, max_length=128)
+    
+    @property
+    def destination(self):
+        return "http://%s:%s" % (self.host, self.port)

@@ -108,4 +108,4 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATICFILES_DIRS = ["/home/joel/space-race/gameserver/client/"]
 
-GAME_NODE_HOSTS = ["127.0.0.1"]
+NODE_HOSTS = ["127.0.0.1", "192.168.0.2"]

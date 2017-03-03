@@ -26,7 +26,8 @@ var World = Class.extend({
                 id: player.id,
                 color: player.color,
                 resourcesGathered: player.resourcesGathered,
-                nickname: player.nickname
+                nickname: player.nickname,
+                alive: player.alive
             });
         })
         return ret;

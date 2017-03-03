@@ -11,6 +11,10 @@ var Player = Entity.extend({
     selectStart: false,
     resourcesGathered: 0,
 
+    update: function(delta) {
+
+    },
+
 
     draw: function(ctx) {
         if (this.selectStart && this.selectEnd) {
@@ -157,11 +161,12 @@ var Player = Entity.extend({
 
     },
 
-    isDead: function() {
-        var assets = getGame().entityManager.getEntitiesWhere({
+    deathCheck: function() {
+        var assets = getGame().entityManager.entitiesWhere({
             playerId: this.id
         })
-
+        // a bit of a hack, this prevents false positives when the game is getting set up
+        return this.resourcesGathered > 0 && assets.length <= 0;
     }
 
 });

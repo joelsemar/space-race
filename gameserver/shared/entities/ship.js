@@ -32,8 +32,6 @@ var Ship = Entity.extend({
         console.log("ship " + this.id + " created");
     },
 
-
-
     update: function() {
         if (this.resources <= 0) {
             this.destroy();

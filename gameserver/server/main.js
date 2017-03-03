@@ -5,7 +5,7 @@ var GameServer = require("./gameserver.js"),
 
 var apiClient = new ApiClient(CONFIG.apiHost);
 var gameServer = new GameServer(apiClient);
-gameServer.run(CONFIG.gameServerPort);
+gameServer.run(CONFIG.host, CONFIG.gameServerPort);
 
 updateClients = function(data) {
     gameServer.updateClients();
@@ -14,6 +14,11 @@ getGame = function() {
     return gameServer.game;
 }
 
+releaseGameNode = function() {
+    gameServer.nodeReset()
+}
+
 if (CONFIG.lobbyServerPort) {
-    new LobbyServer(apiClient).run(CONFIG.lobbyServerPort);
+    var apiClient = new ApiClient(CONFIG.apiHost, "./chat_node_token");
+    new LobbyServer(apiClient).run(CONFIG.host, CONFIG.lobbyServerPort);
 }

@@ -3,7 +3,7 @@ var request = require("request"),
     Class = require("../shared/lib/class.js");
 
 
-TOKEN_CACHE = "./token"
+DEFAULT_TOKEN_FILE = "./token"
 
 try {
     token = fs.readFileSync(TOKEN_CACHE);
@@ -13,14 +13,16 @@ try {
 
 
 var ApiClient = Class.extend({
-    init: function(apiServer) {
+    init: function(apiServer, tokenFile) {
         this.apiServer = apiServer;
+        this.tokenFile = tokenFile || DEFAULT_TOKEN_FILE;
         this.getToken();
-
     },
 
     getCurrentNodeInfo: function(success, error) {
-        var retry = this.getCurrentNodeInfo.bind(this);
+        var retry = () => {
+            this.getCurrentNodeInfo(success, error);
+        }
 
         function callback(err) {
             console.log(err);
@@ -30,19 +32,24 @@ var ApiClient = Class.extend({
         this.get("node", success, callback);
     },
 
-    updateNode: function(payload) {
-        this.put("node", payload)
+    getChatNodeInfo: function(success, error) {
+        this.get("chatnode", success, error);
     },
 
-    registerNode: function(payload, success) {
-        function callback(body) {
+    registerNode: function(payload, success, endpoint) {
+        endpoint = endpoint || "node";
+        success = success || function() {};
+
+        var callback = (body) => {
             console.log("Successfully registered node. with token: " + body.token);
-            console.log(body)
-            this.token = body.token;
             this.storeToken(body.token);
             success();
         }
-        this.post("node", payload, callback.bind(this));
+        this.post(endpoint, payload, callback);
+    },
+
+    updateNode: function(payload) {
+        this.put("node", payload)
     },
 
     getGames: function(success) {
@@ -66,11 +73,15 @@ var ApiClient = Class.extend({
     },
 
     call: function(endpoint, method, payload, success, error) {
-        var defaultCallback = function(out) {
+        var defaultErrback = function(out) {
             console.log(out);
         }
+        var defaultCallback = function(out) {
+            console.log(out);
+
+        }
         success = success || defaultCallback;
-        error = error || defaultCallback;
+        error = error || defaultErrback;
         payload = payload || {};
         headers = {};
         if (this.token) {
@@ -82,8 +93,16 @@ var ApiClient = Class.extend({
             headers: headers,
             json: payload
         }
-        request[method](options, function(err, response, body) {
+        console.log("calling " + method + "/" + endpoint)
+        request[method](options, (err, response, body) => {
+            if (!response) {
+                console.log("Null response returned: " + err + ", " + respnse + ", " + body)
+                return;
+            }
             if (err || response.statusCode > 399) {
+                if (response.statusCode === 401) {
+                    this.wipeToken();
+                }
                 error(body);
             } else {
                 success(body);
@@ -93,14 +112,37 @@ var ApiClient = Class.extend({
 
     getToken: function() {
         try {
-            this.token = fs.readFileSync(TOKEN_CACHE);
+            token = fs.readFileSync(this.tokenFile);
+            console.log("read from token file: " + token);
+            if (token != null && token.length > 0) {
+                this.token = token;
+            } else {
+                this.token = null;
+            }
         } catch (e) {
+            console.log("Error reading token file: " + this.tokenFile)
+            console.log(e);
             return;
         }
     },
 
     storeToken: function(token) {
-        fs.writeFile(TOKEN_CACHE, token, function() {});
+        console.log("Storing token: " + token);
+        this.token = token;
+        try {
+            fs.writeFile(this.tokenFile, token, function() {});
+        } catch (e) {
+            console.log("Error writing token file: " + this.tokenFile)
+            console.log(e);
+            return;
+
+        }
+
+    },
+
+    wipeToken: function() {
+        this.token = null;
+        fs.writeFile(this.tokenFile, '', function() {});
     }
 
 })

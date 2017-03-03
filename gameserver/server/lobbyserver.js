@@ -27,15 +27,24 @@ var LobbyServer = BaseServer.extend({
     systemNick: "SYSTEM",
     remoteMethods: ["message", "joinChat", "subscribe"],
 
-    run: function(port) {
+    run: function(host, port) {
         this._super(port);
-        this.getLobbyInfo();
-    },
 
-    joinGameChat: function(data, socket) {
-        var chat_id = "game_" + data.id;
-        socket.join(chat_id);
-        console.log("Player joined chat: " + JSON.stringify(data));
+        var getNodeInfo = this.apiClient.getChatNodeInfo.bind(this.apiClient);
+
+        if (!this.apiClient.token) {
+            this.log("no token stored, registering a new node...")
+            var nodePayload = {
+                host: host,
+                port: port
+            }
+            this.apiClient.registerNode(nodePayload, getNodeInfo, "chatnode");
+        } else {
+            this.log("getting node info with token: " + this.apiClient.token);
+            getNodeInfo();
+        }
+
+        this.getLobbyInfo();
     },
 
     joinChat: function(data, socket) {
@@ -46,7 +55,7 @@ var LobbyServer = BaseServer.extend({
         if (!player) {
             return;
         }
-        console.log(_.template("Player {{nickname}} joined chat: {{room}} ")({
+        this.log(_.template("Player {{nickname}} joined chat: {{room}} ")({
             nickname: player.nickname,
             room: data.r
         }));

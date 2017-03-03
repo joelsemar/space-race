@@ -13,7 +13,8 @@ var express = require('express'),
 RUNNING_ON_CLIENT = false;
 var GameServer = BaseServer.extend({
     name: "GameServer",
-    log: false,
+    // how many ms to wait to abandon a game after everyone disconnects
+    abandonGameAfter: 10000,
     remoteMethods: ["register", "attack", "upgradePurchase"],
 
     init: function(apiClient) {
@@ -21,23 +22,29 @@ var GameServer = BaseServer.extend({
         this.game = new Game(this.apiClient);
     },
 
-    run: function(port) {
+    run: function(host, port) {
         this._super(port);
+        this.findNewGame();
+    },
 
+    findNewGame: function() {
+        this.log("Seeking new game.")
         var getNodeInfo = () => {
-            this.apiClient.getCurrentNodeInfo((node) => {
-                this.game.setPlayers(node.current_game.players);
+            this.apiClient.getCurrentNodeInfo((game) => {
+                this.log("Found game: " + game.name)
+                this.game.setPlayers(game.players);
             });
         }
 
         if (!this.apiClient.token) {
+            this.log("no token stored, registering a new node...")
             var nodePayload = {
-                host: "127.0.0.1",
+                host: host,
                 port: port
             }
-            var onRegister = this.apiClient.getCurrentNodeInfo.bind(this.apiClient);
             this.apiClient.registerNode(nodePayload, getNodeInfo);
         } else {
+            this.log("getting node info with token: " + this.apiClient.token);
             getNodeInfo();
         }
 
@@ -45,19 +52,22 @@ var GameServer = BaseServer.extend({
 
 
     register: function(data, socket) {
-        console.log("Attempting to register: " + JSON.stringify(data));
+        this.log("Attempting to register: " + JSON.stringify(data));
 
         var player = this.game.connectPlayer(data);
         if (!player) {
             socket.emit('tokenFail');
             return;
         }
-        console.log("Player " + JSON.stringify(player) + " connected");
+        this.log("Player " + player.nickname + " connected.")
         socket.emit('gameStart', {
             id: player.id,
             color: player.color,
-            nickname: player.nickname
+            nickname: player.nickname,
+            alive: true
         });
+        socket.token = data.tok;
+        socket.nickname = player.nickname;
         this.apiClient.updateNode({
             action: "start"
         });
@@ -71,10 +81,10 @@ var GameServer = BaseServer.extend({
         if (!player) {
             return;
         }
-        console.log('received attack signal ' + JSON.stringify(data));
+        this.log('received attack signal ' + JSON.stringify(data));
         var selectedIslands = this.game.entityManager.entitiesByIds(data.i);
         selectedIslands = _.filter(selectedIslands, (i) => i.playerId == player.id)
-        console.log("Attacking With: " + JSON.stringify(selectedIslands));
+        this.log("Attacking With: " + JSON.stringify(selectedIslands));
         var target = this.game.entityManager.entityById(data.t);
         _.map(selectedIslands, function(i) {
             i.selected = true
@@ -96,6 +106,30 @@ var GameServer = BaseServer.extend({
         this._super(
             this.game.getUpdate()
         );
+    },
+
+    disconnect: function(socket) {
+        this.log("Player " + socket.nickname + " disconnected.")
+        this.game.disconnectPlayer(socket.token);
+        if (!this.game.allPlayersConnected()) {
+            setTimeout(this.abandonGame.bind(this), this.abandonGameAfter)
+        }
+    },
+
+    abandonGame: function() {
+        if (!this.game.allPlayersConnected()) {
+            this.log("All players have been disconnected for " + this.abandonGameAfter / 1000 + " seconds..finding a new game.")
+            this.nodeReset();
+        }
+    },
+
+    nodeReset: function() {
+        this.apiClient.updateNode({
+            action: "stop",
+            available: "true"
+        });
+        this.findNewGame();
+
     },
 
 });

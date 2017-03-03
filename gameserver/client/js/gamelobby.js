@@ -36,7 +36,7 @@ $(function() {
 });
 
 function begin() {
-    socket = io.connect('http://127.0.0.1:7000');
+    socket = io.connect(CURRENT_PLAYER.chatnode);
     if (CURRENT_PLAYER.creator) {
         $("#goButton").show();
     }

@@ -15,10 +15,11 @@ var Game = BaseGame.extend({
         this.viewport = new ViewPort();
         this.miniMap = new MiniMap();
         this.drawLoop = new DrawLoop();
+
         this.socket = io.connect(player.node);
         this.currentPlayerId = player.id;
 
-        console.log("Registering with token: " + player.token)
+        console.log("Registering with token: " + player.token);
         this.socket.emit('register', {
             'tok': player.token,
             'id': player.id
@@ -51,6 +52,26 @@ var Game = BaseGame.extend({
             }
 
         })
+    },
+
+    step: function() {
+        this._super();
+        var currentPlayer = this.getCurrentPlayer();
+
+        if (!currentPlayer.alive && !this.spectate) {
+            this.gameOver();
+        } else {
+            var alivePlayers = this.entityManager.entitiesWhere({
+                type: "player",
+                alive: true
+            });
+            if (this.players.length > 1 && alivePlayers.length === 1 && currentPlayer.alive) {
+                this.win();
+            }
+
+        }
+
+
     },
 
     start: function() {
@@ -90,7 +111,7 @@ var Game = BaseGame.extend({
             _.each(data.players, (player) => {
                 var clientPlayer = this.entityManager.entityById(player.id);
                 if (clientPlayer) {
-                    clientPlayer.resourcesGathered = player.resourcesGathered;
+                    clientPlayer.loadFromData(player);
                 } else {
                     this.players.push(new Player(player));
                 }
@@ -119,6 +140,46 @@ var Game = BaseGame.extend({
         }
         this.size = data.size;
         this.resetFrame();
+    },
+
+    win: function() {
+        $("#gameOverBody").html("Nicely Done!")
+        $("#gameOverModalTitle").html("You Win!")
+        $("#gameOverModal").modal();
+        $("#gameOverExit").click(() => {
+            this.exit();
+        })
+        $("#gameOverKeepWatching").click(() => {
+            this.spectate = true;
+            $("#gameOverModal").modal('hide');
+        })
+
+    },
+
+
+
+    gameOver: function() {
+        $("#gameOverBody").html("Ouch :(")
+        $("#gameOverModalTitle").html("You Lose")
+        $("#gameOverModal").modal();
+        $("#gameOverExit").click(() => {
+            this.exit();
+        })
+        $("#gameOverKeepWatching").click(() => {
+            this.spectate = true;
+            $("#gameOverModal").modal('hide');
+        })
+    },
+
+    exit: function() {
+        console.log("exiting");
+        $.ajax({
+            type: "POST",
+            url: "/player/reset",
+            success: function() {
+                document.location.href = "/";
+            },
+        })
     },
 
 });
@@ -151,6 +212,9 @@ $(function() {
     $.ajax({
         url: "player",
         success: function(player) {
+            if (!player.node) {
+                window.location.href = "/";
+            }
             var game = new Game();
 
             getGame = function() {
@@ -158,7 +222,6 @@ $(function() {
             }
 
             game.setup(player);
-            game.run();
         },
 
         error: function(err) {

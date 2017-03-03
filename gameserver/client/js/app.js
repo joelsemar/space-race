@@ -17,6 +17,16 @@ $(function() {
 
     var authError = () => {
         $("#nicknameModal").modal('show');
+        $("#nicknameModal").on('shown.bs.modal', function() {
+            $("#nicknameInput").focus();
+
+        });
+        $("#nicknameInput").keypress(function(e) {
+            if (e.which == 13) {
+                $(this).blur();
+                $("#nicknameSubmit").click();
+            }
+        });
         $("#nicknameSubmit").click(() => {
             $("#nicknameModal").modal('hide');
             var nickname = $("#nicknameInput").val();
@@ -48,10 +58,12 @@ function begin() {
         populateGamesTable(body)
     });
 
-    socket = io.connect('http://127.0.0.1:7000');
+    socket = io.connect(CURRENT_PLAYER.chatnode);
     socket.on("serverUpdate", function(data) {
         populateGamesTable(data);
     });
+    socket.on("reconnect", console.log("reconnected"))
+
     // subscribe to the lobby updates
     socket.emit("subscribe", {
         tok: CURRENT_PLAYER.token

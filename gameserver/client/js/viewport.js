@@ -8,7 +8,7 @@ var ViewPort = Entity.extend({
     vel: new Vector(0, 0),
     scrollHitBoxWidth: 100,
     lastDebug: 0,
-    size: new Vector($(document).width(), $(document).height()),
+    size: new Vector(0, 0),
     cachedIslands: [],
 
     update: function() {
@@ -18,6 +18,7 @@ var ViewPort = Entity.extend({
 
     init: function(obj) {
         this._super(obj);
+        this.size = new Vector($(document).width(), $(document).height());
         var canvas = document.getElementById('mainCanvas');
         canvas.setAttribute('width', this.size.x);
         canvas.setAttribute('height', this.size.y);

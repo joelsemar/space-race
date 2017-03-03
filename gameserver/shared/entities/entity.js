@@ -94,6 +94,11 @@ var Entity = Rect.extend({
         if (!this.alive) {
             return;
         }
+        if (this.deathCheck()) {
+            this.alive = false;
+            console.log(JSON.stringify(this) + " has died!")
+            return;
+        }
         if (this.vel.x || this.vel.y) {
             this.pos.add(this.vel.mulNew(delta / 1000));
         }
@@ -118,7 +123,7 @@ var Entity = Rect.extend({
     },
 
     destroy: function() {
-        ///this.alive = false;
+        this.alive = false;
         getGame().entityManager.removeEntity(this.id);
     },
 
@@ -158,6 +163,7 @@ var Entity = Rect.extend({
             this.setVelocity(this.vel);
         }
     },
+    deathCheck: function() {},
 
     draw: function() {},
     buildImage: function() {

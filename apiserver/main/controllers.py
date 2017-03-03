@@ -3,7 +3,6 @@ from services.views import QuerySetView
 from services.decorators import render_with, body, entity
 from main.models import Game, Player
 from views import GameView, PlayerView
-from services.utils import str_to_bool
 
 
 class AnonymousController(BaseController):
@@ -30,6 +29,7 @@ class PlayerController(AnonymousController):
         """
         "log in" by providing a nickname
         """
+
         player = Player.objects.create(nickname=player.nickname)
         request.session["player_token"] = str(player.token)
         response.set(instance=player)
@@ -48,6 +48,29 @@ class PlayerController(AnonymousController):
         if not player:
             return response.not_found()
 
+        response.set(instance=player)
+
+
+class PlayerResetDto(object):
+    nickname = "new nickname"
+
+
+class PlayerResetController(AnonymousController):
+    view = PlayerView
+
+    @body(PlayerResetDto, arg="reset")
+    def create(self, request, response, reset=None):
+        """
+        "Reset" a player by creating a new one and giving it to the current session
+        API Handler: POST /player/reset
+        """
+        if not request.player:
+            return
+        request.player.expired = True
+        request.player.save()
+        nickname = getattr(reset, 'nickname', False) or request.player.nickname
+        player = Player.objects.create(nickname=nickname)
+        request.session["player_token"] = str(player.token)
         response.set(instance=player)
 
 
@@ -86,6 +109,9 @@ class GameController(AnonymousController):
         API Handler: GET /game
         """
         if not request.player.game:
+            return response.not_found()
+
+        if request.player.game.end_time:
             return response.not_found()
 
         response.set(instance=request.player.game)

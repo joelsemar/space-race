@@ -216,6 +216,7 @@ var MiniMap = UIElement.extend({
 var ScoreBoard = UIElement.extend({
     type: 'UIElement',
     canvasId: 'scoreboardLayer',
+    playerLineTemplate: _.template(""),
 
     onInit: function() {
         this.pos = {

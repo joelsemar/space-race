@@ -23,6 +23,14 @@ var Game = BaseGame.extend({
             updateClients();
             this.lastClientUpdate = 0;
         }
+        var alivePlayers = this.entityManager.entitiesWhere({
+            type: "player",
+            alive: true
+        });
+        if (alivePlayers.length === 1) {
+            this.win();
+
+        }
     },
 
     connectPlayer: function(playerData) {
@@ -35,21 +43,36 @@ var Game = BaseGame.extend({
         }
         player.connected = true;
 
-        if (!this.running && _.every(_.pluck(this.players, 'connected'))) {
+        if (!this.running && this.allPlayersConnected()) {
             this.start();
         }
 
         return player;
     },
 
+    disconnectPlayer: function(token) {
+        var player = _.findWhere(this.players, {
+            token: token
+        });
+        if (player) {
+            player.connected = false;
+        }
+    },
+
+    allPlayersConnected: function() {
+        return _.every(_.pluck(this.players, 'connected'));
+    },
+
     setPlayers: function(players) {
+        console.log(players)
         _.each(players, (player, idx) => {
             this.players.push(new Player({
                 color: this.colors[idx],
                 id: player.id,
                 token: player.token,
                 nickname: player.nickname,
-                connected: false
+                connected: false,
+                alive: true
             }));
 
         });
@@ -79,6 +102,12 @@ var Game = BaseGame.extend({
 
         }
 
+    },
+
+    win: function() {
+        if (!RUNNING_ON_CLIENT) {
+            releaseGameNode();
+        }
     },
 
 

@@ -1,5 +1,6 @@
 from services.views import ModelView, QuerySetView
 from main.models import Player
+from nodes.models import ChatNode
 
 # Create your views here.
 
@@ -22,6 +23,11 @@ class PlayerView(ModelView):
         ret = super(PlayerView, self).render(request)
         ret["token"] = self.instance.token
         ret["creator"] = self.instance.creator
+        try:
+            ret["chatnode"] = ChatNode.objects.get(active=True).destination
+        except ChatNode.DoesNotExist:
+            pass
+
         if self.instance.game and self.instance.game.node:
             ret["node"] = self.instance.game.node.destination
         return ret

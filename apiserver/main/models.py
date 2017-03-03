@@ -7,7 +7,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    pass
+    nickname = models.CharField(max_length=32, default='', blank=True)
 
 
 class Game(BaseModel):
@@ -41,10 +41,10 @@ class Game(BaseModel):
 
 
 class Player(BaseModel):
-    game = models.ForeignKey(Game, null=True)
+    game = models.ForeignKey(Game, null=True, blank=True)
     token = models.CharField(max_length=128, default=uuid4)
     nickname = models.CharField(max_length=32)
-    user = models.ForeignKey(User, null=True)
+    user = models.ForeignKey(User, null=True, blank=True)
     ready = models.BooleanField(default=False)
     creator = models.BooleanField(default=False)
     expired = models.BooleanField(default=False)
