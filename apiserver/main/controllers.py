@@ -1,6 +1,7 @@
 from services.controller import BaseController
 from services.views import QuerySetView
 from services.decorators import render_with, body, entity
+from services.utils import str_to_bool
 from main.models import Game, Player
 from views import GameView, PlayerView
 
@@ -88,6 +89,10 @@ class GameListController(AnonymousController):
 class GameDto(object):
     name = "name"
     num_players = 2
+    ready = 0
+    num_bots = 2
+    size = 3500
+    density = 5
 
 
 class GameController(AnonymousController):
@@ -116,7 +121,8 @@ class GameController(AnonymousController):
 
         response.set(instance=request.player.game)
 
-    def update(self, request, response):
+    @body(GameDto, arg="game_dto")
+    def update(self, request, response, game_dto):
         """
         Update the game state, only usable by the creator of the game.
         API Handler: PUT /game
@@ -124,11 +130,24 @@ class GameController(AnonymousController):
         game = request.player.game
         if not game or not request.player.creator:
             return response.not_found()
+        if game.state != "lobby":
+            return response.bad_request("Game has already started")
 
         if not game.players_ready:
             return response.bad_request("All players must be ready before beginning")
 
-        game.ready = True
+        dirty = False
+        # if the "ready" value is sent, everything else is ignored
+        if hasattr(game_dto, "ready") and not game.ready:
+            game.ready = str_to_bool(game_dto.ready)
+        else:
+            for field in ["num_players", "num_bots", "size", "density", "name"]:
+                if hasattr(game_dto, field) and getattr(game_dto, field) != getattr(game, field):
+                    dirty = True
+                    setattr(game, field)
+
+        if dirty:
+            Player.objects.filter(game=game).update(ready=False)
         game.save()
 
 

@@ -33,6 +33,15 @@ var ViewPort = Entity.extend({
         this.ctx = canvas.getContext('2d');
     },
 
+    startingPosition: function() {
+        var island = getGame().getCurrntPlayer().getIslands()[0];
+        if (island) {
+            return new Vector(island.pos.x - this.size.x / 2, island.pos.y - this.size.y / 2)
+        }
+    },
+
+
+
     update: function(delta) {
         var spaceX = this.pos.x / 30 * -1;
         var spaceY = this.pos.y / 30 * -1;

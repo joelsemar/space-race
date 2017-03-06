@@ -66,10 +66,13 @@ var LobbyServer = BaseServer.extend({
     },
 
     disconnect: function(socket) {
-        console.log("dicsonnect event")
         if (!socket.nickname || !socket.room) {
             return;
         }
+        this.log(_.template("Player {{nickname}} left chat: {{room}} ")({
+            nickname: socket.nickname,
+            room: socket.room
+        }));
         this.io.sockets.in(socket.room).emit("message", this.buildLeaveMessage(socket.nickname));
 
     },

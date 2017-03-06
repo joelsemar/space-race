@@ -10,16 +10,18 @@ if (require) {
 var BaseGame = Class.extend({
     fps: 12,
     lastFrame: new Date(),
+    running: false,
     players: [],
     size: {
-        x: 3500,
-        y: 3500
+        x: 5000,
+        y: 5000
     },
 
-
     run: function() {
+
         this.lastFrame = new Date();
         this.intervalId = setInterval(this.step.bind(this), 1000 / this.fps)
+        this.running = true;
     },
 
     resetFrame: function() {
@@ -28,6 +30,9 @@ var BaseGame = Class.extend({
     },
 
     step: function() {
+        if (!this.running) {
+            return;
+        }
         var now = new Date();
         var delta = now - this.lastFrame;
         if (delta < 0) {
@@ -42,6 +47,13 @@ var BaseGame = Class.extend({
         clearInterval(this.intervalId);
     },
 
+    log: function(msg) {
+        if (this.id) {
+            console.log("Game-" + this.id + ": " + msg);
+        } else {
+            console.log("Game: " + msg);
+        }
+    },
 
 });
 

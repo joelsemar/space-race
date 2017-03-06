@@ -29,7 +29,6 @@ var Ship = Entity.extend({
         if (!RUNNING_ON_CLIENT) {
             this.pos.add(this.vel.mulNew(1));
         }
-        console.log("ship " + this.id + " created");
     },
 
     update: function() {
@@ -69,7 +68,6 @@ var Ship = Entity.extend({
         if (island.id !== this.target.id) {
             return;
         }
-        console.log("colliding with: " + island.id);
         if (island.playerId === this.playerId) {
             island.resources += this.resources;
         } else {
@@ -97,7 +95,7 @@ var Ship = Entity.extend({
         ctx.translate(-this.size.x / 2, -this.size.y / 2);
         ctx.drawImage(this.image, 0, 0, this.size.x, this.size.y);
         ctx.beginPath();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         if (this.playerId !== 'neutral') {
             ctx.strokeStyle = getGame().entityManager.entityById(this.playerId).color;
         }

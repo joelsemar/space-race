@@ -17,6 +17,9 @@ class Game(BaseModel):
     start_time = models.DateTimeField(null=True, default=None)
     end_time = models.DateTimeField(null=True, default=None)
     node = models.ForeignKey("nodes.GameNode", null=True, blank=True)
+    num_bots  = models.PositiveIntegerField(default=0)
+    size = models.PositiveIntegerField(default=3500)
+    density = models.PositiveIntegerField(default=5)
     ready = models.BooleanField(default=False)
 
     @property

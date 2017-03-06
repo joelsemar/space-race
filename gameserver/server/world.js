@@ -10,18 +10,19 @@ var Class = require("../shared/lib/class.js"),
 
 var World = Class.extend({
 
-    numIslands: 50,
+    numIslands: 75,
 
-    init: function(players, size) {
-        this.players = players;
+    init: function(size, entityManager, gameId) {
         this.size = size;
-        this.initializeIslands();
+        this.entityManager = entityManager;
+        this.initializeIslands(gameId);
         this.assignStartingIslands();
     },
 
     playerSummary: function() {
         var ret = [];
-        _.each(this.players, function(player) {
+        var players = this.entityManager.entitiesByType('player');
+        _.each(players, function(player) {
             ret.push({
                 id: player.id,
                 color: player.color,
@@ -34,8 +35,9 @@ var World = Class.extend({
     },
 
     islandSummary: function() {
+        var islands = this.entityManager.entitiesByType('island');
         var ret = [];
-        _.each(this.islands, function(island) {
+        _.each(islands, function(island) {
             ret.push({
                 id: island.id,
                 playerId: island.playerId,
@@ -43,6 +45,7 @@ var World = Class.extend({
                 lastProductionTick: island.lastProductionTick,
                 pos: island.pos,
                 radius: island.radius,
+                gameId: island.gameId,
                 size: island.size
             });
         });
@@ -50,7 +53,7 @@ var World = Class.extend({
     },
 
     shipSummary: function(entityManager) {
-        var ships = entityManager.entitiesByType('ship');
+        var ships = this.entityManager.entitiesByType('ship');
         var ret = [];
         _.each(ships, function(ship) {
             ret.push({
@@ -69,8 +72,7 @@ var World = Class.extend({
         return generateIslands(this.size, this.numIslands, 500);
     },
 
-    initializeIslands: function() {
-        this.islands = [];
+    initializeIslands: function(gameId) {
         var islandData = this.getIslandData();
         _.each(islandData, function(data) {
             data.pos = {
@@ -81,18 +83,21 @@ var World = Class.extend({
                 x: data.radius * 2,
                 y: data.radius * 2
             };
+            data.gameId = gameId;
             data.resources = data.radius;
-            this.islands.push(new Island(data));
+            new Island(data);
         }, this);
 
     },
 
-    assignStartingIslands: function() {
-        _.each(this.players, function(player, idx) {
+    assignStartingIslands: function(players) {
+        var islands = this.entityManager.entitiesByType("island");
+        var players = this.entityManager.entitiesByType('player');
+        _.each(players, function(player, idx) {
             var i = idx,
                 island;
             while (true) {
-                island = this.islands[i];
+                island = islands[i];
                 if (island.radius >= 50 && island.playerId == 'neutral') {
                     island.playerId = player.id;
                     break;
@@ -105,7 +110,7 @@ var World = Class.extend({
 });
 
 
-var islandRadii = [30, 30, 30, 30, 30, 35, 35, 35, 45, 45, 45, 45, 50, 50, 50, 55, 55, 60, 80];
+var islandRadii = [30, 30, 30, 30, 30, 35, 35, 35, 45, 45, 45, 45, 50, 50, 50, 55, 55, 60, 60, 60, 70, 70, 80];
 
 function generateIslands(worldSize, numIslands, minDistance) {
     var radius, placed, foundCollision, diameter;

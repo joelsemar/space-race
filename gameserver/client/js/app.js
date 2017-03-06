@@ -58,24 +58,31 @@ function begin() {
         populateGamesTable(body)
     });
 
-    socket = io.connect(CURRENT_PLAYER.chatnode);
-    socket.on("serverUpdate", function(data) {
-        populateGamesTable(data);
-    });
-    socket.on("reconnect", console.log("reconnected"))
 
-    // subscribe to the lobby updates
-    socket.emit("subscribe", {
-        tok: CURRENT_PLAYER.token
-    })
     $('#gameName').keypress(function(e) {
         if (e.which == 13) {
             $(this).blur();
             createGame();
         }
     });
+    socket = io.connect(CURRENT_PLAYER.chatnode);
+    bindSocketHandlers(socket);
     bindChatUi("#chatLogInner", "#chatInput", "#chatSend");
+}
+
+function bindSocketHandlers(socket) {
+    socket.on("serverUpdate", function(data) {
+        populateGamesTable(data);
+    });
+    socket.on("reconnect", function() {
+        bindSocketHandlers(socket);
+    })
+    // subscribe to the lobby updates
+    socket.emit("subscribe", {
+        tok: CURRENT_PLAYER.token
+    })
     joinChat("main");
+
 }
 
 function populateGamesTable(data) {

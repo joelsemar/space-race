@@ -15,6 +15,7 @@ var Game = BaseGame.extend({
         this.viewport = new ViewPort();
         this.miniMap = new MiniMap();
         this.drawLoop = new DrawLoop();
+        //    this.fog = new Fog(this.entityManager, this.viewport);
 
         this.socket = io.connect(player.node);
         this.currentPlayerId = player.id;
@@ -70,15 +71,12 @@ var Game = BaseGame.extend({
             }
 
         }
-
-
     },
 
     start: function() {
         console.log('starting game');
         this.viewport.bindEvents();
         this.drawLoop.run();
-        this.running = true;
         this.run()
     },
 
@@ -96,18 +94,7 @@ var Game = BaseGame.extend({
     },
 
     receiveServerUpdate: function(data) {
-        this.islands = [];
-        _.each(data.islands || [], (island) => {
-            var localIsland = this.entityManager.entityById(island.id);
-            if (localIsland) {
-                localIsland.loadFromData(island);
-            } else {
-                new Island(island);
-            }
-        });
-
         if (data.players) {
-
             _.each(data.players, (player) => {
                 var clientPlayer = this.entityManager.entityById(player.id);
                 if (clientPlayer) {
@@ -117,6 +104,15 @@ var Game = BaseGame.extend({
                 }
             });
         }
+        _.each(data.islands || [], (island) => {
+            var localIsland = this.entityManager.entityById(island.id);
+            if (localIsland) {
+                localIsland.loadFromData(island);
+            } else {
+                new Island(island);
+            }
+        });
+
 
         if (data.ships) {
             _.each(data.ships, (ship) => {

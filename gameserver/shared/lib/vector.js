@@ -1,79 +1,78 @@
-if(require){
-   var Class = require("./class.js")
-    , _ = require('underscore');
+if (require) {
+    var Class = require("./class.js"),
+        _ = require('underscore');
 }
 
-var Vector =  Class.extend({
+var Vector = Class.extend({
 
-    init: function(x, y){
-      if (typeof x == 'Object') {
-         this.x = x.x;
-         this.y = x.y;
-      }
-      else {
-        this.x = x;
-        this.y = y;
-      }
+    init: function(x, y) {
+        if (typeof x == 'Object') {
+            this.x = x.x;
+            this.y = x.y;
+        } else {
+            this.x = x;
+            this.y = y;
+        }
     },
 
-    print: function(){
+    print: function() {
         return Math.round(this.x) + ', ' + Math.round(this.y);
     },
 
-    cp: function(){
+    cp: function() {
         return new Vector(this.x, this.y);
     },
 
-    mul: function(factor){
+    mul: function(factor) {
         this.x *= factor;
         this.y *= factor;
         return this;
     },
 
-    scalarProd: function(vec){
+    scalarProd: function(vec) {
         return (this.x * vec.x) + (this.y + vec.y);
-
     },
 
-    mulNew: function(factor){
+    mulNew: function(factor) {
         return new Vector(this.x * factor, this.y * factor);
     },
 
-    add: function(vec){
+    add: function(vec) {
         this.x += vec.x;
         this.y += vec.y;
         return this;
     },
 
-    addNew: function(vec){
+    addNew: function(vec) {
         return new Vector(this.x + vec.x, this.y + vec.y);
     },
 
-    sub: function(vec){
+    sub: function(vec) {
         this.x -= vec.x;
         this.y -= vec.y;
         return this;
     },
 
-    subNew: function(vec){
+    subNew: function(vec) {
         return new Vector(this.x - vec.x, this.y - vec.y);
     },
 
     // angle in radians
-    rotate: function(angle){
-        var x = this.x, y = this.y;
+    rotate: function(angle) {
+        var x = this.x,
+            y = this.y;
         this.x = x * Math.cos(angle) - Math.sin(angle) * y;
         this.y = x * Math.sin(angle) + Math.cos(angle) * y;
         return this;
     },
 
     // angle still in radians
-    rotateNew: function(angle){
+    rotateNew: function(angle) {
         return this.cp().rotate(angle);
     },
 
     // angle in radians... again
-    setAngle: function(angle){
+    setAngle: function(angle) {
         var l = this.len();
         this.x = Math.cos(angle) * l;
         this.y = Math.sin(angle) * l;
@@ -81,11 +80,11 @@ var Vector =  Class.extend({
     },
 
     // RADIANS
-    setAngleNew: function(angle){
+    setAngleNew: function(angle) {
         return this.cp().setAngle(angle);
     },
 
-    setLength: function(length){
+    setLength: function(length) {
         var l = this.len();
         if (l)
             this.mul(length / l);
@@ -94,57 +93,56 @@ var Vector =  Class.extend({
         return this;
     },
 
-    setLengthNew: function(length){
+    setLengthNew: function(length) {
         return this.cp().setLength(length);
     },
 
-    normalize: function(){
+    normalize: function() {
 
         var l = this.len();
-        if(!l){
-           return this;
+        if (!l) {
+            return this;
         }
         this.x /= l;
         this.y /= l;
         return this;
     },
 
-    normalizeNew: function(){
+    normalizeNew: function() {
         return this.cp().normalize();
     },
 
-    angle: function(){
+    angle: function() {
         return Math.atan2(this.x, this.y);
     },
 
-    collidesWith: function(rect){
+    collidesWith: function(rect) {
         return this.x > rect.x && this.y > rect.y && this.x < rect.x + rect.width && this.y < rect.y + rect.height;
     },
 
-    len: function(){
+    len: function() {
         var l = Math.sqrt(this.x * this.x + this.y * this.y);
         if (l < 0.005 && l > -0.005)
             return 0;
         return l;
     },
 
-    distanceTo: function(point){
-        var l = Math.sqrt(Math.pow(Math.abs(this.x - point.x), 2) + Math.pow(Math.abs(this.y  - point.y), 2));
+    distanceTo: function(point) {
+        var l = Math.sqrt(Math.pow(Math.abs(this.x - point.x), 2) + Math.pow(Math.abs(this.y - point.y), 2));
         if (l < 0.005 && l > -0.005)
             return 0;
         return l;
     },
 
-    is: function(test){
+    is: function(test) {
         return typeof test == 'object' && this.x == test.x && this.y == test.y;
     },
 
-    toString: function(){
+    toString: function() {
         return '[Vector(' + this.x + ', ' + this.y + ') angle: ' + this.angle() + ', length: ' + this.len() + ']';
     }
 });
 
-if(module){
+if (module) {
     module.exports = Vector;
 }
-

@@ -1,12 +1,24 @@
 if (require) {
-    var Entity = require("./entity.js")
-    Ship = require("./ship.js"), _ = require('underscore');
+    var Entity = require("./entity.js"),
+        Ship = require("./ship.js"),
+        utils = require("../lib/utils.js"),
+        _ = require('underscore');
 }
+_.templateSettings = {
+    interpolate: /\{\{(.+?)\}\}/g
+};
+
+var islandImages = ["barren", "barren-charred", "barren-icy", "chlorine", "chlorine-barren",
+    "desert", "inferno", "methane", "methane-barren", "methane-ice", "tundra"
+]
+var sprImages = ["spr_planet01", "spr_planet02", "spr_planet03", "spr_planet04", "spr_planet05", "spr_planet06", "spr_planet07"]
+var pImages = ["p1shaded", 'p2shaded', "p3shaded", "p4shaded", "p5shaded", "p6shaded", "p7shaded", "p8shaded", "p9shaded", "p10shaded"]
 
 var Island = Entity.extend({
 
     type: 'island',
     imageSrc: 'static/img/luna.png',
+    imageSrcTemplate: _.template("static/img/{{name}}.png"),
     resources: 0,
     maxResources: 500,
     productionInterval: 2000,
@@ -16,6 +28,13 @@ var Island = Entity.extend({
     growthProductionMultiplier: 1,
     upgrade: null,
 
+    init: function(obj) {
+        this.imageSrc = this.imageSrcTemplate({
+            name: utils.random(pImages)
+        });
+        this._super(obj);
+
+    },
 
     update: function(delta) {
         this.timeSinceLastResource += delta;
@@ -36,15 +55,18 @@ var Island = Entity.extend({
         if (upgradeName == "growth") {
             this.productionMultiplier = this.growthProductionMultiplier;
         }
-
     },
 
     addResources: function(resources) {
+        if (this.resources >= this.maxResources) {
+            return;
+        }
+        if ((this.maxResources - this.resources) < resources) {
+            this.resources = this.maxResources;
+
+        }
         this.resources += resources;
 
-        if (this.resources > this.maxResources) {
-            this.resources = this.maxResources;
-        }
     },
 
     shouldProduceResources: function() {
@@ -65,7 +87,7 @@ var Island = Entity.extend({
         var color = 'white';
         ctx.save();
         ctx.drawImage(this.image, x, y, this.size.x, this.size.y);
-        ctx.font = '22px Helvetica';
+        ctx.font = '26px Helvetica';
 
         if (this.playerId !== 'neutral') {
             color = this.getPlayer().color;
@@ -81,6 +103,10 @@ var Island = Entity.extend({
             ctx.closePath();
         }
         ctx.lineWidth = 1;
+        ctx.shadowColor = "black";
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        ctx.shadowBlur = 2;
         ctx.fillText(text, center.x - ctx.measureText(text).width / 2, center.y + 9);
         ctx.restore();
 
@@ -113,6 +139,7 @@ var Island = Entity.extend({
     },
 
 });
+
 
 if (module) {
     module.exports = Island;

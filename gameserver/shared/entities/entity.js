@@ -157,7 +157,7 @@ var Entity = Rect.extend({
         })
 
         if (!this.id) {
-            this.id = utils.guid().slice(0, 5);
+            this.id = utils.guid().slice(0, 8);
         }
         if (this.vel) {
             this.setVelocity(this.vel);

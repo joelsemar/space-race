@@ -40,32 +40,44 @@ function begin() {
     if (CURRENT_PLAYER.creator) {
         $("#goButton").show();
     }
+    bindSocketHandlers(socket);
+    bindChatUi("#chatLogInner", "#chatInput", "#chatSend");
 
+}
+
+
+function receiveServerUpdate(data) {
+    var updatedGame;
+    for (var i = 0; i < data.results.length; i++) {
+        if (data.results[i].id === CURRENT_GAME.id) {
+            updatedGame = data.results[i];
+            break;
+        }
+    }
+    if (!updatedGame) {
+        alert("This game no longer exists...");
+        window.location.href = "/";
+    }
+
+    CURRENT_GAME = updatedGame;
+    populatePlayerList();
+    if (CURRENT_GAME.node) {
+        window.location.href = "/play";
+    }
+}
+
+
+function bindSocketHandlers(socket) {
     socket.on("serverUpdate", function(data) {
-        var updatedGame;
-        for (var i = 0; i < data.results.length; i++) {
-            if (data.results[i].id === CURRENT_GAME.id) {
-                updatedGame = data.results[i];
-                break;
-            }
-        }
-        if (!updatedGame) {
-            alert("This game no longer exists...");
-            window.location.href = "/";
-        }
-
-        CURRENT_GAME = updatedGame;
-        populatePlayerList();
-        if (CURRENT_GAME.node) {
-            window.location.href = "/play";
-        }
+        receiveServerUpdate(data);
     });
-
+    socket.on("reconnect", function() {
+        bindSocketHandlers(socket);
+    })
     // subscribe to the lobby updates
     socket.emit("subscribe", {
         tok: CURRENT_PLAYER.token
-    });
-    bindChatUi("#chatLogInner", "#chatInput", "#chatSend");
+    })
     joinChat("game-" + CURRENT_GAME.id);
 
 }
@@ -125,6 +137,10 @@ function go() {
     var url = "/game";
     $.ajax({
         url: url,
+        data: JSON.stringify({
+            ready: "true",
+        }),
+        contentType: "application/json",
         type: "PUT",
     })
 }

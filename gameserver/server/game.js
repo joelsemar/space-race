@@ -1,7 +1,10 @@
 var World = require('./world.js'),
+    utils = require('../shared/lib/utils.js'),
     Player = require('../shared/entities/player.js'),
+    Bot = require('../shared/entities/bot.js'),
     BaseGame = require('../shared/lib/basegame.js'),
-    EntityManager = require('../shared/entities/entitymanager.js');
+    EntityManager = require('../shared/entities/entitymanager.js'),
+    _ = require("underscore");
 
 var Game = BaseGame.extend({
 
@@ -9,11 +12,11 @@ var Game = BaseGame.extend({
     lastClientUpdate: 0,
     clientUpdateInterval: 500,
     players: [],
-    colors: ['blue', 'red', 'red', 'green', "white", "gray", "yellow"],
+    botNames: ["Boomer", "Maverick", "Roundhouse", "Rex", "Goose", "Bandit", "Chopper"],
+    numBots: 2,
+    colors: ['blue', 'red', 'green', "brown", "orange", "purple", "yellow"],
 
-    init: function(data, apiClient) {
-        this.name = data.name;
-        this.id = data.id;
+    init: function(apiClient) {
         this.entityManager = new EntityManager();
         this.apiClient = apiClient;
     },
@@ -65,18 +68,30 @@ var Game = BaseGame.extend({
     },
 
     setPlayers: function(players) {
-        console.log(players)
+
+        var colors = utils.shuffle(this.colors);
         _.each(players, (player, idx) => {
             this.players.push(new Player({
-                color: this.colors[idx],
+                color: colors[idx],
                 id: player.id,
                 token: player.token,
                 nickname: player.nickname,
                 connected: false,
                 alive: true
             }));
-
+            colors.splice(idx, 1);
         });
+        for (var i = 0; i < this.numBots; i++) {
+            var nickname = utils.random(this.botNames);
+            new Bot({
+                color: this.colors[i],
+                nickname: nickname,
+                connected: true,
+                alive: true
+            });
+
+        }
+        this.log("Initialized with players: " + JSON.stringify(this.players))
     },
 
     sendAttackSignal: function() {},
@@ -89,7 +104,7 @@ var Game = BaseGame.extend({
 
 
     start: function() {
-        this.world = new World(this.players, this.size);
+        this.world = new World(this.size, this.entityManager, this.id);
         this.running = true;
         this.run();
     },
@@ -98,7 +113,7 @@ var Game = BaseGame.extend({
         return {
             size: this.size,
             islands: this.world.islandSummary(),
-            ships: this.world.shipSummary(this.entityManager),
+            ships: this.world.shipSummary(),
             players: this.world.playerSummary()
 
         }
@@ -106,9 +121,9 @@ var Game = BaseGame.extend({
     },
 
     win: function() {
+        this.log("Shutting down. Game Over.")
         this.stop();
         if (!RUNNING_ON_CLIENT) {
-            console.log()
             releaseGameNode();
         }
     },

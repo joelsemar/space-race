@@ -100,7 +100,7 @@ var MiniMap = UIElement.extend({
         var allIslands = game.entityManager.entitiesByType('island');
         this.cachedIslandPos = _.map(allIslands, function(island) {
             var center = this.scale(island.pos),
-                radius = island.radius / this.radiusRatio;
+                radius = island.radius * this.xRatio;
             center.x += radius;
             center.y += radius;
             return {
@@ -129,6 +129,7 @@ var MiniMap = UIElement.extend({
 
 
     draw: function() {
+        var game = getGame();
         var ctx = this.ctx;
         ctx.clear();
         var miniViewport = this.getViewPortCoords();
@@ -152,9 +153,9 @@ var MiniMap = UIElement.extend({
                 x: island.pos.x * this.xRatio,
                 y: island.pos.y * this.yRatio
             };
-            var radius = island.radius / this.radiusRatio;
+            var radius = island.radius * this.xRatio;
             if (island.playerId !== 'neutral') {
-                ctx.fillStyle = game.entityManager.entityById(island.playerId).color;
+                ctx.fillStyle = island.getPlayer().color;
             } else {
                 ctx.fillStyle = 'gray';
             }

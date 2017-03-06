@@ -1,8 +1,10 @@
 if (require) {
     var Entity = require('./entity.js'),
-        utils = require('../lib/utils.js');
+        utils = require('../lib/utils.js'),
+        _ = require("underscore");
 
 }
+
 
 var Player = Entity.extend({
     type: 'player',
@@ -10,11 +12,6 @@ var Player = Entity.extend({
     pendingDoubleClick: false,
     selectStart: false,
     resourcesGathered: 0,
-
-    update: function(delta) {
-
-    },
-
 
     draw: function(ctx) {
         if (this.selectStart && this.selectEnd) {
@@ -89,6 +86,13 @@ var Player = Entity.extend({
         });
     },
 
+    getIslands: function() {
+        return getGame().entityManager.entitiesWhere({
+            playerId: this.id,
+            type: 'island'
+        })
+    },
+
     selectedIslands: function() {
         return getGame().entityManager.entitiesWhere({
             type: 'island',
@@ -135,7 +139,7 @@ var Player = Entity.extend({
     },
 
     selectIslands: function() {
-        var game = getGame()
+        var game = getGame(r)
         var allIslands = game.entityManager.entitiesWhere({
             type: 'island',
             playerId: this.id

@@ -14,11 +14,12 @@ RUNNING_ON_CLIENT = false;
 var GameServer = BaseServer.extend({
     name: "GameServer",
     // how many ms to wait to abandon a game after everyone disconnects
-    abandonGameAfter: 10000,
+    abandonGameAfter: 20000,
     remoteMethods: ["register", "attack", "upgradePurchase"],
 
     run: function() {
         this._super();
+        this.game = new Game(this.apiClient);
         this.findNewGame();
     },
 
@@ -27,8 +28,9 @@ var GameServer = BaseServer.extend({
         var getNodeInfo = () => {
             this.apiClient.getCurrentNodeInfo((game) => {
                 this.log("Found game: " + game.name)
-                this.game = new Game(game, this.apiClient);
                 this.game.setPlayers(game.players);
+                this.game.id = game.id;
+                this.game.name = game.name;
             });
         }
 
@@ -49,12 +51,10 @@ var GameServer = BaseServer.extend({
 
     register: function(data, socket) {
         this.log("Attempting to register: " + JSON.stringify(data));
-        if (!this.game) {
-            return;
-        }
 
         var player = this.game.connectPlayer(data);
         if (!player) {
+            this.log("Player " + data.tok + " not found")
             socket.emit('tokenFail');
             return;
         }
@@ -75,7 +75,7 @@ var GameServer = BaseServer.extend({
 
     },
 
-    attack: function(data) {
+    attack: function(data, socket) {
         var player = this.game.playerByToken(data.tok);
         if (!player) {
             return;
@@ -93,7 +93,7 @@ var GameServer = BaseServer.extend({
 
     },
 
-    upgradePurchase: function(data) {
+    upgradePurchase: function(data, socket) {
         var player = this.game.playerByToken(data.tok);
         if (!player) {
             return;
@@ -108,9 +108,6 @@ var GameServer = BaseServer.extend({
     },
 
     disconnect: function(socket) {
-        if (!this.game) {
-            return;
-        }
         this.game.disconnectPlayer(socket.token);
         this.log("Player " + socket.nickname + " disconnected.")
         this.log("Remaining players: " + JSON.stringify(this.game.players));
@@ -127,11 +124,15 @@ var GameServer = BaseServer.extend({
     },
 
     nodeReset: function() {
+        delete this.game.entityManager;
+        delete this.game.world;
+        delete this.game;
+
+        this.game = new Game(this.apiClient);
         this.apiClient.updateNode({
             action: "stop",
             available: "true"
         }, this.findNewGame.bind(this));
-
     },
 
 });
