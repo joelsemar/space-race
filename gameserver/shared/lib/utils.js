@@ -1,12 +1,13 @@
 if (require) {
     var Class = require("./class.js"),
+        Vector = require("./vector.js"),
         _ = require('underscore');
 }
 
 var utils = {
 
 
-    getCoords: function(e, canvas) {
+    getCoords: function (e, canvas) {
         var canvas = canvas || getGame().viewport.canvas;
         if (e.offsetX) {
             // Works in Chrome / Safari (except on iPad/iPhone)
@@ -33,11 +34,11 @@ var utils = {
         }
     },
 
-    valueInRange: function(value, min, max) {
+    valueInRange: function (value, min, max) {
         return value >= min && value <= max;
     },
 
-    parseQueryString: function() {
+    parseQueryString: function () {
         var vars = {},
             values
         var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
@@ -50,7 +51,7 @@ var utils = {
 
     },
 
-    rectsIntersect: function(rectA, rectB) {
+    rectsIntersect: function (rectA, rectB) {
         xOverlap = this.valueInRange(rectA.left(), rectB.left(), rectB.right()) ||
             this.valueInRange(rectB.left(), rectA.left(), rectA.right());
         yOverlap = this.valueInRange(rectA.top(), rectB.top(), rectB.bottom()) ||
@@ -58,28 +59,28 @@ var utils = {
         return xOverlap && yOverlap;
     },
 
-    pointInRect: function(point, rect) {
+    pointInRect: function (point, rect) {
         if (point.x > rect.pos.x && point.x < rect.pos.x + rect.size.x && point.y > rect.pos.y && point.y < rect.pos.y + rect.size.y) {
             return true;
         }
 
     },
 
-    s4: function() {
+    s4: function () {
         return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
     },
 
-    guid: function() {
+    guid: function () {
         var s4 = this.s4;
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
             s4() + '-' + s4() + s4() + s4();
     },
 
-    capitalize: function(s) {
+    capitalize: function (s) {
         return s.charAt(0).toUpperCase() + s.slice(1);
     },
 
-    shuffle: function(array) {
+    shuffle: function (array) {
         let counter = array.length;
 
         // While there are elements in the array
@@ -98,8 +99,27 @@ var utils = {
 
         return array;
     },
-    random: function(array) {
+    random: function (array) {
         return array[Math.floor(Math.random() * array.length)];
+    },
+    computeSector: function (pos, sectorSize) {
+        var x = pos.x - (pos.x % sectorSize);
+        var y = pos.y - (pos.y % sectorSize);
+        return x + "," + y;
+    },
+    sectorCenter: function (sector, sectorSize) {
+        var v = sector.split(",");
+        var x = parseInt(v[0], 10),
+            y = parseInt(v[1], 10);
+        return new Vector(x + sectorSize / 2, y + sectorSize / 2);
+
+    },
+    sectorPos: function (sector) {
+        var v = sector.split(",");
+        var x = parseInt(v[0], 10),
+            y = parseInt(v[1], 10);
+        return new Vector(x, y);
+
     }
 
 

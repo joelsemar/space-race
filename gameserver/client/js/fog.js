@@ -1,51 +1,183 @@
-var Fog = UIElement.extend({
-    canvasId: "fogCanvas",
-    revealed: [new Vector(100, 100)],
+var BaseFog = UIElement.extend({
+    active: true,
+    clearFill: 'rgba( 0, 0, 0, 1 )',
+    hideFill: 'rgba( 0, 0, 0, 1 )',
 
-    init: function(entityManager, viewport) {
-        this._super()
-        return;
-        this.entityManager = entityManager;
-        this.viewPortCtx = viewport.ctx;
-        var ctx = this.ctx;
-        // black out the canvas
-        var overlay = 'rgba( 0, 0, 0, 1 )';
-        ctx.fillStyle = overlay;
-        ctx.fillRect(0, 0, this.size.x, this.size.y);
-
-    },
-
-    onInit: function() {
+    init: function () {
+        this._super();
         var game = getGame();
+        this.entityManager = game.entityManager;
+        this.viewport = game.viewport;
         this.pos = game.viewport.pos;
         this.size = game.viewport.size;
-        this.constructCanvas();
+        this.canvas = this.constructCanvas();
     },
 
-    draw: function() {
-        //    _.each(this.revealed, this.revealAt, this);
+    getPoints: function () {
+        //return  list of objects with .pos and .radius attributes
 
     },
-
-    revealAt: function(pos) {;
-        var r1 = 100,
-            r2 = 300;
-        var ctx = this.viewPortCtx;
-        var density = .4;
+    draw: function () {
+        var ctx = this.ctx;
+        this.ctx.clear();
         ctx.save();
+
+        ctx.fillStyle = this.hideFill;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillRect(0, 0, this.size.x, this.size.y);
+
+        ctx.fillStyle = this.clearFill;
         ctx.globalCompositeOperation = 'destination-out';
-        var radGrd = ctx.createRadialGradient(pos.x, pos.y, r1, pos.x, pos.y, r2);
-        radGrd.addColorStop(0, 'rgba( 0, 0, 0,  1 )');
-        radGrd.addColorStop(density, 'rgba( 0, 0, 0, .1 )');
-        radGrd.addColorStop(1, 'rgba( 0, 0, 0,  0 )');
 
-        ctx.fillStyle = radGrd;
-        ctx.fillRect(pos.x - r2, pos.y - r2, r2 * 2, r2 * 2);
+        _.each(this.getPoints(), (point) => {
+            this.revealAt(point.pos, point.radius);
+        });
+
         ctx.restore();
-    }
+    },
 
+    revealAt: function (pos, radius) {
+        var ctx = this.ctx;
+        ctx.fillStyle = this.clearFill;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    },
 
 })
+
+var FullFog = BaseFog.extend({
+    canvasId: "fullFogCanvas",
+    zIndex: "2",
+
+
+
+    getPoints: function () {
+        var game = getGame();
+        var playerId = game.currentPlayerId;
+        var points = [];
+        for (var sector in game.seenMap) {
+            var pos = utils.sectorCenter(sector, game.sectorSize);
+            var offset = this.viewport.getOffset(pos);
+            points.push({
+                pos: offset,
+                radius: game.sectorSize / 1.4
+            })
+        }
+        var entities = this.entityManager.entitiesWhere({
+            "playerId": getGame().currentPlayerId
+        })
+        _.each(entities, (entity) => {
+            var offset = this.viewport.getOffset(entity.pos);
+            // tack on half a sector to the radius to account for center row of sectors in light box
+            var lightRadius = entity.vision * game.sectorSize + game.sectorSize / 2
+            points.push({
+                pos: entity.center(offset),
+                radius: lightRadius
+            });
+        });
+        return points;
+
+    },
+
+})
+
+var Fog = BaseFog.extend({
+    zIndex: "1",
+    canvasId: "fogCanvas",
+    hideFill: 'rgba(0,0,0,0.7)',
+    getPoints: function () {
+        var results = [];
+        var game = getGame()
+        var entities = this.entityManager.entitiesWhere({
+            "playerId": game.currentPlayerId
+        })
+        _.each(entities, (entity) => {
+            var offset = this.viewport.getOffset(entity.pos);
+            // tack on half a sector to the radius to account for center row of sectors in light box
+            var lightRadius = entity.vision * game.sectorSize + game.sectorSize / 2
+            results.push({
+                pos: entity.center(offset),
+                radius: lightRadius
+            });
+        });
+        return results;
+
+    },
+
+})
+
+var MiniMapFog = Fog.extend({
+    canvasId: "miniMapFogCanvas",
+    init: function () {
+        this._super();
+        var game = getGame();
+        this.entityManager = game.entityManager;
+        this.pos = game.miniMap.pos;
+        this.size = game.miniMap.size;
+        this.miniMap = game.miniMap;
+        this.canvas = this.constructCanvas();
+    },
+
+    getPoints: function () {
+        var results = [];
+        var sectorSize = getGame().sectorSize;
+        var entities = this.entityManager.entitiesWhere({
+            "playerId": getGame().currentPlayerId
+        })
+        _.each(entities, (entity) => {
+            // tack on half a sector to the radius to account for center row of sectors in light box
+            var lightRadius = entity.vision * sectorSize + sectorSize / 2
+            results.push({
+                pos: this.miniMap.scale(entity.pos),
+                radius: lightRadius * this.miniMap.xRatio
+            });
+        });
+        return results;
+    },
+
+})
+var MiniMapFullFog = FullFog.extend({
+    canvasId: "miniMapFullFogCanvas",
+    zIndex: '110',
+    init: function () {
+        this._super();
+        var game = getGame();
+        this.entityManager = game.entityManager;
+        this.pos = game.miniMap.pos;
+        this.size = game.miniMap.size;
+        this.miniMap = game.miniMap;
+        this.canvas = this.constructCanvas();
+    },
+
+    getPoints: function () {
+        var game = getGame();
+        var points = [];
+        var sectorSize = game.sectorSize;
+        for (var sector in game.seenMap) {
+            var pos = utils.sectorCenter(sector, sectorSize);
+            points.push({
+                pos: this.miniMap.scale(pos),
+                radius: (sectorSize / 1.4) * this.miniMap.xRatio
+            })
+        }
+        var entities = this.entityManager.entitiesWhere({
+            "playerId": getGame().currentPlayerId
+        })
+        _.each(entities, (entity) => {
+            // tack on half a sector to the radius to account for center row of sectors in light box
+            var lightRadius = entity.vision * sectorSize + sectorSize / 2
+            points.push({
+                pos: this.miniMap.scale(entity.pos),
+                radius: lightRadius * this.miniMap.xRatio
+            });
+        });
+        return points;
+
+    },
+
+})
+
 
 // init canvas
 /***
@@ -125,5 +257,32 @@ canvas.last()
         pageX: 150,
         pageY: 150
     });
+
+    revealAt2: function(pos, r2) {
+        var r1 = 100;
+        var ctx = this.ctx;
+        var density = .4;
+        r2 *= 2;
+
+        var radGrd = ctx.createRadialGradient(pos.x, pos.y, r1, pos.x, pos.y, r2);
+        radGrd.addColorStop(0, 'rgba( 0, 0, 0,  1 )');
+        radGrd.addColorStop(density, 'rgba( 0, 0, 0, .1 )');
+        radGrd.addColorStop(1, 'rgba( 0, 0, 0,  0 )');
+
+        ctx.fillStyle = radGrd;
+        ctx.fillRect(pos.x - r2, pos.y - r2, r2 * 2, r2 * 2);
+    },
+    revealAt2: function(pos, r2) {
+        var r1 = 100;
+        var ctx = this.ctx;
+
+        var radGrd = ctx.createRadialGradient(pos.x, pos.y, r2 - 100, pos.x, pos.y, r2);
+        radGrd.addColorStop(0, 'rgba( 0, 0, 0,  1 )');
+        radGrd.addColorStop(.8, 'rgba( 0, 0, 0, .1 )');
+        radGrd.addColorStop(1, 'rgba( 0, 0, 0,  0 )');
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = radGrd;
+        ctx.fillRect(pos.x - r2, pos.y - r2, r2 * 2, r2 * 2);
+    },
 
 **/

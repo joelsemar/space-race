@@ -12,24 +12,27 @@ var BaseGame = Class.extend({
     lastFrame: new Date(),
     running: false,
     players: [],
+    seenMap: {},
+    visibleSectorMap: {},
+    sectorSize: 150,
     size: {
         x: 5000,
         y: 5000
     },
 
-    run: function() {
+    run: function () {
 
         this.lastFrame = new Date();
         this.intervalId = setInterval(this.step.bind(this), 1000 / this.fps)
         this.running = true;
     },
 
-    resetFrame: function() {
+    resetFrame: function () {
         this.stop();
         this.run();
     },
 
-    step: function() {
+    step: function () {
         if (!this.running) {
             return;
         }
@@ -43,17 +46,43 @@ var BaseGame = Class.extend({
         this.currentTick = delta;
     },
 
-    stop: function() {
+    stop: function () {
         clearInterval(this.intervalId);
+        this.running = false;
     },
 
-    log: function(msg) {
+
+    log: function (msg) {
         if (this.id) {
             console.log("Game-" + this.id + ": " + msg);
         } else {
             console.log("Game: " + msg);
         }
     },
+
+    markSeen: function (playerId, sector) {
+        if (!this.seenMap[playerId]) {
+            this.seenMap[playerId] = {};
+        }
+        this.seenMap[playerId][sector] = true;
+
+    },
+
+    clearVisible: function () {
+
+        this.visibleSectorMap = {};
+        for (var player of this.players) {
+            this.visibleSectorMap[player.id] = {};
+        }
+    },
+
+    markVisible: function (playerId, sector) {
+        if (!this.visibleSectorMap[playerId]) {
+            this.visibleSectorMap[playerId] = {};
+        }
+        this.visibleSectorMap[playerId][sector] = true;
+    }
+
 
 });
 

@@ -5,16 +5,18 @@ if (require) {
 }
 
 var EntityManager = Class.extend({
+    seenMap: {},
+    visibleSectorMap: {},
 
-    init: function() {
+    init: function () {
         this.entities = {};
     },
 
-    entityById: function(id) {
+    entityById: function (id) {
         return this.entities[id];
     },
 
-    entitiesByIds: function(ids) {
+    entitiesByIds: function (ids) {
         var ret = [];
         _.each(ids, (id) => {
             var entity = this.entityById(id);
@@ -25,18 +27,30 @@ var EntityManager = Class.extend({
         return ret;
     },
 
-    register: function(entity) {
+    register: function (entity) {
         this.entities[entity.id] = entity;
     },
 
-    removeEntity: function(id) {
+    removeEntity: function (id) {
         delete this.entities[id];
     },
 
-    updateEntities: function(delta) {
-        for (id in this.entities) {
+    updateEntities: function (delta) {
+        var game = getGame();
+        game.clearVisible();
+        for (var id in this.entities) {
             var entity = this.entities[id];
+            if (!entity) {
+                continue;
+            }
             entity._update(delta);
+            if (entity.playerId && entity.playerId != "neutral") {
+                for (var sector of entity.computeVisibleSectors()) {
+                    game.markSeen(entity.playerId, sector);
+                    game.markVisible(entity.playerId, sector);
+                }
+
+            }
             _.each(entity.collidesWith, (entityType) => {
                 var entities = this.entitiesByType(entityType);
                 _.each(entities, (target) => {
@@ -54,10 +68,10 @@ var EntityManager = Class.extend({
         }
     },
 
-    drawEntities: function() {
+    drawEntities: function () {
         var entity;
         var game = getGame();
-        for (id in this.entities) {
+        for (var id in this.entities) {
             entity = this.entities[id];
             if (utils.rectsIntersect(game.viewport, entity) || entity.type === 'UIElement' || entity.type === 'player') {
                 entity.draw(game.viewport.ctx, game.viewport.getOffset(entity.pos));
@@ -68,12 +82,12 @@ var EntityManager = Class.extend({
         }
     },
 
-    entitiesByType: function(type, filterFunc) {
+    entitiesByType: function (type, filterFunc) {
         var ret = [];
-        filterFunc = filterFunc || function() {
+        filterFunc = filterFunc || function () {
             return true
         };
-        for (id in this.entities) {
+        for (var id in this.entities) {
             var entity = this.entities[id];
             if (entity.type === type && filterFunc(entity)) {
                 ret.push(entity);
@@ -82,7 +96,7 @@ var EntityManager = Class.extend({
         return ret;
     },
 
-    entitiesWhere: function(where) {
+    entitiesWhere: function (where) {
         return _.where(this.entities, where);
     }
 

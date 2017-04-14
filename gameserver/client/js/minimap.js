@@ -2,10 +2,10 @@ var UIElement = Entity.extend({
     type: 'UIElement',
     zIndex: '100',
 
-    click: function(e) {},
-    mousemove: function(e) {},
+    click: function (e) {},
+    mousemove: function (e) {},
 
-    constructCanvas: function() {
+    constructCanvas: function () {
         var canvas = document.getElementById(this.canvasId);
         canvas.setAttribute('width', this.size.x);
         canvas.setAttribute('height', this.size.y);
@@ -15,31 +15,19 @@ var UIElement = Entity.extend({
         canvas.style.left = this.pos.x + 'px';
         canvas.style.zIndex = this.zIndex;
         canvas.style.position = 'fixed';
-
-        $(canvas).click(function(e) {
-            this.click(e);
-        }.bind(this));
-
-        $(canvas).mousemove(function(e) {
-            this.mousemove(e)
-        }.bind(this));
-
-        $(canvas).mouseout(function(e) {
-            this.islnadMousedOver = false;
-        }.bind(this));
-
         this.ctx = canvas.getContext('2d');
+        return canvas;
+
+
     },
 });
 
 
-var MiniMap = UIElement.extend({
+var MiniMapBase = UIElement.extend({
     size: new Vector(250, 250),
-    canvasId: 'miniMapLayer',
-    radiusRatio: 10,
-    islandMousedOver: false,
-    cachedIslandPos: [],
-    onInit: function() {
+    canvasId: 'miniMapBaseLayer',
+
+    onInit: function () {
         var game = getGame();
         this.pos.x = game.viewport.size.x - this.size.x - 80;
         this.pos.y = 20;
@@ -47,112 +35,22 @@ var MiniMap = UIElement.extend({
         this.yRatio = this.size.y / game.size.y;
         this.constructCanvas();
     },
-
-    translate: function(v) {
-        return {
-            x: v.x - this.pos.x,
-            y: v.y - this.pos.y,
-        };
-    },
-
-    scale: function(v) {
+    scale: function (v) {
         return {
             x: v.x * this.xRatio,
             y: v.y * this.yRatio,
         }
     },
 
-    click: function(e) {
+    draw: function () {
         var game = getGame();
-        var mm = game.miniMap;
-        var miniMapPosX = e.clientX - mm.pos.x;
-        var miniMapPosY = e.clientY - mm.pos.y;
-        if (this.islandMousedOver && game.getCurrentPlayer().selectedIslands.length) {
-            game.getCurrentPlayer().attack(game.entityManager.entityById(this.islandMousedOver.id));
-            return;
-        }
-        miniMapPosX /= mm.xRatio;
-        miniMapPosY /= mm.yRatio;
-        game.viewport.pos.x = miniMapPosX - game.viewport.size.x / 2;
-        game.viewport.pos.y = miniMapPosY - game.viewport.size.y / 2;
-        game.viewport.vel.x = 0;
-        game.viewport.vel.y = 0;
-    },
 
-    mousemove: function(e) {
-        var pos = new Vector(e.clientX - this.pos.x, e.clientY - this.pos.y);
-        this.islandMousedOver = false;
-
-        if (!this.cachedIslandPos.length) {
-            this.getCachedIslandPos();
-        }
-
-        _.each(this.cachedIslandPos, function(island) {
-            if (pos.distanceTo(island.center) < island.radius) {
-                this.islandMousedOver = island;
-            }
-        }, this);
-    },
-
-
-    getCachedIslandPos: function() {
-        var game = getGame();
-        var allIslands = game.entityManager.entitiesByType('island');
-        this.cachedIslandPos = _.map(allIslands, function(island) {
-            var center = this.scale(island.pos),
-                radius = island.radius * this.xRatio;
-            center.x += radius;
-            center.y += radius;
-            return {
-                center: center,
-                radius: radius,
-                id: island.id
-            }
-        }, this);
-    },
-
-    getViewPortCoords: function() {
-        var game = getGame();
-        game.viewport.checkBounds();
-        return {
-            pos: {
-                x: game.viewport.pos.x * this.xRatio,
-                y: game.viewport.pos.y * this.yRatio
-            },
-            size: {
-                x: game.viewport.size.x * this.xRatio,
-                y: game.viewport.size.y * this.yRatio
-            }
-        }
-
-    },
-
-
-    draw: function() {
-        var game = getGame();
         var ctx = this.ctx;
         ctx.clear();
-        var miniViewport = this.getViewPortCoords();
         ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, this.size.x, this.size.y);
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'white';
-        ctx.stroke();
-        ctx.closePath();
-        ctx.rect(miniViewport.pos.x, miniViewport.pos.y, miniViewport.size.x, miniViewport.size.y);
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.restore();
-        ctx.save();
-        var game = getGame();
-
 
         _.each(game.entityManager.entitiesByType('island'), (island) => {
-            var pos = {
-                x: island.pos.x * this.xRatio,
-                y: island.pos.y * this.yRatio
-            };
+            var pos = this.scale(island.pos);
             var radius = island.radius * this.xRatio;
             if (island.playerId !== 'neutral') {
                 ctx.fillStyle = island.getPlayer().color;
@@ -181,6 +79,119 @@ var MiniMap = UIElement.extend({
             ctx.fill();
         });
 
+
+    },
+})
+
+var MiniMapUI = UIElement.extend({
+    size: new Vector(250, 250),
+    canvasId: 'miniMapUILayer',
+    islandMousedOver: false,
+    cachedIslandPos: [],
+    zIndex: '150',
+    onInit: function () {
+        var game = getGame();
+        this.pos.x = game.viewport.size.x - this.size.x - 80;
+        this.pos.y = 20;
+        this.xRatio = this.size.x / game.size.x;
+        this.yRatio = this.size.y / game.size.y;
+        var canvas = this.constructCanvas();
+        this.bindClickEvents(canvas);
+    },
+
+    translate: function (v) {
+        return {
+            x: v.x - this.pos.x,
+            y: v.y - this.pos.y,
+        };
+    },
+
+    scale: function (v) {
+        return {
+            x: v.x * this.xRatio,
+            y: v.y * this.yRatio,
+        }
+    },
+
+    click: function (e) {
+        var game = getGame();
+        var mm = game.miniMap;
+        var miniMapPosX = e.clientX - mm.pos.x;
+        var miniMapPosY = e.clientY - mm.pos.y;
+        if (this.islandMousedOver && game.getCurrentPlayer().selectedIslands.length) {
+            game.getCurrentPlayer().attack(game.entityManager.entityById(this.islandMousedOver.id));
+            return;
+        }
+        miniMapPosX /= mm.xRatio;
+        miniMapPosY /= mm.yRatio;
+        game.viewport.pos.x = miniMapPosX - game.viewport.size.x / 2;
+        game.viewport.pos.y = miniMapPosY - game.viewport.size.y / 2;
+        game.viewport.vel.x = 0;
+        game.viewport.vel.y = 0;
+    },
+
+    mousemove: function (e) {
+        var pos = new Vector(e.clientX - this.pos.x, e.clientY - this.pos.y);
+        this.islandMousedOver = false;
+
+        if (!this.cachedIslandPos.length) {
+            this.getCachedIslandPos();
+        }
+
+        _.each(this.cachedIslandPos, function (island) {
+            if (pos.distanceTo(island.center) < island.radius) {
+                this.islandMousedOver = island;
+            }
+        }, this);
+    },
+
+
+    getCachedIslandPos: function () {
+        var game = getGame();
+        var allIslands = game.entityManager.entitiesByType('island');
+        this.cachedIslandPos = _.map(allIslands, function (island) {
+            var center = this.scale(island.pos),
+                radius = island.radius * this.xRatio;
+            center.x += radius;
+            center.y += radius;
+            return {
+                center: center,
+                radius: radius,
+                id: island.id
+            }
+        }, this);
+    },
+
+    getViewPortCoords: function () {
+        var game = getGame();
+        game.viewport.checkBounds();
+        return {
+            pos: this.scale(game.viewport.pos),
+            size: this.scale(game.viewport.size)
+        }
+
+    },
+
+
+    draw: function () {
+        var game = getGame();
+        var ctx = this.ctx;
+        ctx.clear();
+        var miniViewport = this.getViewPortCoords();
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, this.size.x, this.size.y);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+        ctx.closePath();
+        ctx.rect(miniViewport.pos.x, miniViewport.pos.y, miniViewport.size.x, miniViewport.size.y);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+        ctx.save();
+        var game = getGame();
+
         if (this.islandMousedOver) {
             this.drawCrossHairs(ctx, this.islandMousedOver.center, this.islandMousedOver.radius + 2);
         }
@@ -188,7 +199,7 @@ var MiniMap = UIElement.extend({
 
     },
 
-    drawCrossHairs: function(ctx, pos, radius) {
+    drawCrossHairs: function (ctx, pos, radius) {
         var length = 3
         ctx.save();
         ctx.strokeStyle = getGame().getCurrentPlayer().color;
@@ -211,19 +222,49 @@ var MiniMap = UIElement.extend({
         ctx.restore();
 
     },
-    drawDebug: function() {},
+    bindClickEvents: function (canvas) {
+        $(canvas).click(function (e) {
+            this.click(e);
+        }.bind(this));
+
+        $(canvas).mousemove(function (e) {
+            this.mousemove(e)
+        }.bind(this));
+
+        $(canvas).mouseout(function (e) {
+            this.islandMousedOver = false;
+        }.bind(this));
+
+    },
+    drawDebug: function () {},
 });
+
+var MiniMap = Class.extend({
+
+    init: function () {
+        this.miniMapBase = new MiniMapBase()
+        this.miniMapUI = new MiniMapUI()
+        this.pos = this.miniMapBase.pos;
+        this.size = this.miniMapBase.size;
+        this.xRatio = this.miniMapBase.xRatio;
+        this.yRatio = this.miniMapBase.yRatio;
+    },
+    scale: function (v) {
+        return {
+            x: v.x * this.xRatio,
+            y: v.y * this.yRatio,
+        }
+    },
+
+})
 
 var ScoreBoard = UIElement.extend({
     type: 'UIElement',
     canvasId: 'scoreboardLayer',
     playerLineTemplate: _.template(""),
 
-    onInit: function() {
-        this.pos = {
-            x: 20,
-            y: 20
-        };
+    onInit: function () {
+        this.pos = new Vector(20, 20);
         this.size = {
             x: 200,
             y: 200
@@ -231,14 +272,14 @@ var ScoreBoard = UIElement.extend({
         this.constructCanvas();
     },
 
-    draw: function() {
+    draw: function () {
         var ctx = this.ctx;
         ctx.clear();
         ctx.save();
         ctx.font = '18px Helvetica';
         ctx.lineWidth = 1;
 
-        var players = getGame().players.sort(function(a, b) {
+        var players = getGame().players.sort(function (a, b) {
             return b.resourcesGathered - a.resourcesGathered
         });
 

@@ -8,6 +8,7 @@ var Ship = Entity.extend({
     type: 'ship',
     speed: 110,
     imageSrc: 'static/img/ship.png',
+    vision: 1,
 
     resources: 0,
     target: null,
@@ -16,7 +17,7 @@ var Ship = Entity.extend({
         y: 77
     },
     collidesWith: ['ship', 'island'],
-    onInit: function() {
+    onInit: function () {
         if (!this.targetID) {
             return;
         }
@@ -31,20 +32,20 @@ var Ship = Entity.extend({
         }
     },
 
-    update: function() {
+    update: function () {
         if (this.resources <= 0) {
             this.destroy();
         }
 
     },
 
-    collideWithShip: function(ship) {
+    collideWithShip: function (ship) {
         var thisTempResources = this.resources;
         if (this.id === ship.id) {
             return;
         }
         if (this.playerId === ship.playerId) {
-            if (this.target.id === ship.target.id) {
+            if (this.targetID === ship.targetID) {
                 ship.resources += this.resources;
                 this.resources = 0;
                 return;
@@ -64,7 +65,7 @@ var Ship = Entity.extend({
 
     },
 
-    collideWithIsland: function(island) {
+    collideWithIsland: function (island) {
         if (island.id !== this.target.id) {
             return;
         }
@@ -78,12 +79,16 @@ var Ship = Entity.extend({
                 island.lastProductionTick = 0;
             }
         }
+        var game = getGame();
         this.destroy();
+        if (this.playerId == game.currentPlayerId && game.getCurrentPlayer().hasOwnProperty("onShipLand")) {
+            game.getCurrentPlayer().onShipLand();
+        }
 
     },
 
 
-    draw: function(ctx, offsetPos) {
+    draw: function (ctx, offsetPos) {
         var x = offsetPos.x;
         var y = offsetPos.y;
         var center = this.center();

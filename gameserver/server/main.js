@@ -11,14 +11,14 @@ var gameServer = new GameServer({
 });
 gameServer.run();
 
-updateClients = function(data) {
+updateClients = function (data) {
     gameServer.updateClients();
 }
-getGame = function() {
+getGame = function () {
     return gameServer.game;
 }
 
-releaseGameNode = function() {
+releaseGameNode = function () {
     gameServer.nodeReset()
 }
 

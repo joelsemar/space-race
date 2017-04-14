@@ -29,6 +29,7 @@ class PlayerController(AnonymousController):
     def create(self, request, response, player):
         """
         "log in" by providing a nickname
+        API Handler: POST /player
         """
 
         player = Player.objects.create(nickname=player.nickname)
@@ -50,6 +51,14 @@ class PlayerController(AnonymousController):
             return response.not_found()
 
         response.set(instance=player)
+
+    def delete(self, request, response):
+        """
+        Log out, (for anonymous session just clear the session)
+        API Handler: DELETE /player
+        """
+        request.session.clear()
+
 
 
 class PlayerResetDto(object):

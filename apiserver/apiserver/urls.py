@@ -35,7 +35,7 @@ def serve_html(request, file_name):
 
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/?', include(admin.site.urls)),
     url(r'^docs/?', include(docgen_urls)),
     url(r'', include(main_urls)),
     url(r'', include(node_urls)),

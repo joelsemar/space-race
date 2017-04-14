@@ -13,19 +13,20 @@ var Game = BaseGame.extend({
     clientUpdateInterval: 500,
     players: [],
     botNames: ["Boomer", "Maverick", "Roundhouse", "Rex", "Goose", "Bandit", "Chopper"],
-    numBots: 2,
+    numBots: 0,
     colors: ['blue', 'red', 'green', "brown", "orange", "purple", "yellow"],
+    sockets: {},
 
-    init: function(apiClient) {
+    init: function (apiClient) {
         this.entityManager = new EntityManager();
         this.apiClient = apiClient;
     },
 
-    step: function() {
+    step: function () {
         this._super();
         this.lastClientUpdate += this.currentTick;
         if (this.lastClientUpdate > this.clientUpdateInterval) {
-            updateClients();
+            this.updatePlayers();
             this.lastClientUpdate = 0;
         }
         var alivePlayers = this.entityManager.entitiesWhere({
@@ -37,7 +38,7 @@ var Game = BaseGame.extend({
         }
     },
 
-    connectPlayer: function(playerData) {
+    connectPlayer: function (playerData, socket) {
         var player = _.findWhere(this.players, {
             token: playerData.tok
         });
@@ -46,6 +47,7 @@ var Game = BaseGame.extend({
             return false;
         }
         player.connected = true;
+        this.sockets[player.id] = socket;
 
         if (!this.running && this.allPlayersConnected()) {
             this.start();
@@ -54,7 +56,7 @@ var Game = BaseGame.extend({
         return player;
     },
 
-    disconnectPlayer: function(token) {
+    disconnectPlayer: function (token) {
         var player = _.findWhere(this.players, {
             token: token
         });
@@ -63,11 +65,11 @@ var Game = BaseGame.extend({
         }
     },
 
-    allPlayersConnected: function() {
+    allPlayersConnected: function () {
         return _.every(_.pluck(this.players, 'connected'));
     },
 
-    setPlayers: function(players) {
+    setPlayers: function (players) {
 
         var colors = utils.shuffle(this.colors);
         _.each(players, (player, idx) => {
@@ -94,33 +96,29 @@ var Game = BaseGame.extend({
         this.log("Initialized with players: " + JSON.stringify(this.players))
     },
 
-    sendAttackSignal: function() {},
+    sendAttackSignal: function () {},
 
-    playerByToken: function(token) {
+    playerByToken: function (token) {
         return _.findWhere(this.players, {
             token: token
         });
     },
 
 
-    start: function() {
-        this.world = new World(this.size, this.entityManager, this.id);
+    start: function () {
+        this.world = new World(this.size, this.entityManager, this.id, this.sectorSize);
         this.running = true;
         this.run();
     },
 
-    getUpdate: function() {
-        return {
-            size: this.size,
-            islands: this.world.islandSummary(),
-            ships: this.world.shipSummary(),
-            players: this.world.playerSummary()
-
+    updatePlayers: function () {
+        for (var player of this.players) {
+            this.sendPlayerUpdate(player);
         }
 
     },
 
-    win: function() {
+    win: function () {
         this.log("Shutting down. Game Over.")
         this.stop();
         if (!RUNNING_ON_CLIENT) {
@@ -128,6 +126,34 @@ var Game = BaseGame.extend({
         }
     },
 
+    sendPlayerUpdate: function (player) {
+        var update = {
+            size: this.size,
+            islands: this.filterVisibleEntities(player.id, this.world.islandSummary()),
+            ships: this.filterVisibleEntities(player.id, this.world.shipSummary()),
+            players: this.world.playerSummary(),
+            seenMap: this.seenMap,
+            visibleSectorMap: this.visibleSectorMap
+
+        }
+        var socket = this.sockets[player.id];
+        if (!socket) {
+            console.log("No socket for player: " + JSON.stringify(player))
+            return;
+        }
+        this.sockets[player.id].emit("serverUpdate", update);
+
+    },
+
+    filterVisibleEntities: function (playerId, entities) {
+        var ret = [];
+        for (var entity of entities) {
+            if (this.visibleSectorMap[playerId][entity.sector] || entity.playerId == playerId) {
+                ret.push(entity);
+            }
+        }
+        return ret;
+    }
 
 });
 

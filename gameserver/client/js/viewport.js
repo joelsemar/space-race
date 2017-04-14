@@ -28,7 +28,7 @@ var ViewPort = Entity.extend({
         canvas.style.left = "0px";
         canvas.style.bottom = "0px";
         canvas.style.right = "0px";
-        canvas.style.zIndex = "10";
+        canvas.style.zIndex = "50";
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
     },
@@ -116,6 +116,7 @@ var ViewPort = Entity.extend({
         };
 
         this.canvas.onmouseup = function(e) {
+            console.log("mouseup")
             currentPlayer.stopSelect();
         };
 

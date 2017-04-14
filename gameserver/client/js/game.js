@@ -9,13 +9,17 @@ var Game = BaseGame.extend({
     debug: false,
     running: false,
     client: true,
-    setup: function(player) {
+    seenMap: {},
+    setup: function (player) {
 
         this.entityManager = new EntityManager();
         this.viewport = new ViewPort();
         this.miniMap = new MiniMap();
         this.drawLoop = new DrawLoop();
-        //    this.fog = new Fog(this.entityManager, this.viewport);
+        this.fog = new Fog();
+        this.fullFog = new FullFog();
+        this.miniMapFog = new MiniMapFog();
+        this.miniMapFullFog = new MiniMapFullFog();
 
         this.socket = io.connect(player.node);
         this.currentPlayerId = player.id;
@@ -29,7 +33,11 @@ var Game = BaseGame.extend({
 
         this.socket.on('gameStart', (data) => {
             data.token = player.token;
-            this.players.push(new Player(data));
+            var currentPlayer = new Player(data);
+            currentPlayer.onSelect = () => onSelectSound.play();
+            currentPlayer.onAttack = () => onLaunchSound.play();
+            currentPlayer.onShipLand = () => shipLandSound.play();
+            this.players.push(currentPlayer);
             this.start();
         });
 
@@ -55,7 +63,7 @@ var Game = BaseGame.extend({
         })
     },
 
-    step: function() {
+    step: function () {
         this._super();
         var currentPlayer = this.getCurrentPlayer();
 
@@ -73,14 +81,14 @@ var Game = BaseGame.extend({
         }
     },
 
-    start: function() {
+    start: function () {
         console.log('starting game');
         this.viewport.bindEvents();
         this.drawLoop.run();
         this.run()
     },
 
-    sendAttackSignal: function(target) {
+    sendAttackSignal: function (target) {
         this.socket.emit('attack', {
             p: this.currentPlayerId,
             t: target.id,
@@ -89,11 +97,11 @@ var Game = BaseGame.extend({
         });
     },
 
-    getCurrentPlayer: function() {
+    getCurrentPlayer: function () {
         return this.entityManager.entityById(this.currentPlayerId);
     },
 
-    receiveServerUpdate: function(data) {
+    receiveServerUpdate: function (data) {
         if (data.players) {
             _.each(data.players, (player) => {
                 var clientPlayer = this.entityManager.entityById(player.id);
@@ -134,11 +142,19 @@ var Game = BaseGame.extend({
                 }
             });
         }
+        if (data.seenMap && _.isEmpty(this.seenMap)) {
+            this.seenMap = data.seenMap[this.currentPlayerId];
+        }
+
+        if (data.visibleSectorMap) {
+            this.visibleSectorMap = data.visibleSectorMap;
+        }
+
         this.size = data.size;
         this.resetFrame();
     },
 
-    win: function() {
+    win: function () {
         $("#gameOverBody").html("Nicely Done!")
         $("#gameOverModalTitle").html("You Win!")
         $("#gameOverModal").modal();
@@ -155,7 +171,7 @@ var Game = BaseGame.extend({
 
 
 
-    gameOver: function() {
+    gameOver: function () {
         $("#gameOverBody").html("Ouch :(")
         $("#gameOverModalTitle").html("You Lose")
         $("#gameOverModal").modal();
@@ -168,15 +184,21 @@ var Game = BaseGame.extend({
         })
     },
 
-    exit: function() {
+    exit: function () {
         console.log("exiting");
         $.ajax({
             type: "POST",
             url: "/player/reset",
-            success: function() {
+            success: function () {
                 document.location.href = "/";
             },
         })
+    },
+
+    markSeen: function (playerId, sector) {
+        if (playerId === this.currentPlayerId) {
+            this.seenMap[sector] = true;
+        }
     },
 
 });
@@ -184,18 +206,18 @@ var Game = BaseGame.extend({
 
 var DrawLoop = Class.extend({
 
-    init: function() {
+    init: function () {
         window.requestAnimationFrame = window.requestAnimationFrame ||
             window.mozRequestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
             window.msRequestAnimationFrame;
     },
 
-    run: function() {
+    run: function () {
         requestAnimationFrame(this.draw.bind(this));
     },
 
-    draw: function() {
+    draw: function () {
         var game = getGame();
         game.viewport.clear();
         game.entityManager.drawEntities();
@@ -205,24 +227,24 @@ var DrawLoop = Class.extend({
 });
 var getGame;
 
-$(function() {
+$(function () {
     $.ajax({
         url: "player",
-        success: function(player) {
+        success: function (player) {
             if (!player.node) {
                 window.location.href = "/";
             }
             var game = new Game();
 
-            getGame = function() {
+            getGame = function () {
                 return game;
             }
 
             game.setup(player);
         },
 
-        error: function(err) {
+        error: function (err) {
             window.location.href = "/";
         }
     });
-});
+});;;

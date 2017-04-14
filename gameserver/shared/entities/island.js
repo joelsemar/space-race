@@ -27,8 +27,9 @@ var Island = Entity.extend({
     productionMultiplier: 1,
     growthProductionMultiplier: 1,
     upgrade: null,
+    vision: 5,
 
-    init: function(obj) {
+    init: function (obj) {
         this.imageSrc = this.imageSrcTemplate({
             name: utils.random(pImages)
         });
@@ -36,14 +37,14 @@ var Island = Entity.extend({
 
     },
 
-    update: function(delta) {
+    update: function (delta) {
         this.timeSinceLastResource += delta;
         if (this.shouldProduceResources()) {
             this.produceResources();
         }
     },
 
-    produceResources: function() {
+    produceResources: function () {
         //players still get credit for resources gathered over max, just not ships
         var newResources = Math.floor(this.radius / 20) * this.productionMultiplier;
         this.getPlayer().resourcesGathered += newResources;
@@ -51,13 +52,13 @@ var Island = Entity.extend({
         this.timeSinceLastResource = 0;
     },
 
-    addUpgrade: function(upgradeName) {
+    addUpgrade: function (upgradeName) {
         if (upgradeName == "growth") {
             this.productionMultiplier = this.growthProductionMultiplier;
         }
     },
 
-    addResources: function(resources) {
+    addResources: function (resources) {
         if (this.resources >= this.maxResources) {
             return;
         }
@@ -69,7 +70,7 @@ var Island = Entity.extend({
 
     },
 
-    shouldProduceResources: function() {
+    shouldProduceResources: function () {
         if (this.playerId === "neutral") {
             return false;
         }
@@ -79,7 +80,7 @@ var Island = Entity.extend({
         return true;
     },
 
-    draw: function(ctx, offsetPos) {
+    draw: function (ctx, offsetPos) {
         var x = offsetPos.x;
         var y = offsetPos.y;
         var center = this.center(offsetPos);
@@ -113,11 +114,11 @@ var Island = Entity.extend({
     },
 
 
-    getPlayer: function() {
+    getPlayer: function () {
         return getGame().entityManager.entityById(this.playerId);
     },
 
-    attack: function(target) {
+    attack: function (target) {
         if (!this.resources || this.id === target.id) {
             return;
         }

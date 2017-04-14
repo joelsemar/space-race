@@ -28,6 +28,6 @@ class PlayerView(ModelView):
         except ChatNode.DoesNotExist:
             pass
 
-        if self.instance.game and self.instance.game.node:
+        if self.instance.game and self.instance.game.node and not self.instance.game.end_time:
             ret["node"] = self.instance.game.node.destination
         return ret

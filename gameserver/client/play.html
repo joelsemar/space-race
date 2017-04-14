@@ -39,18 +39,30 @@
     <script src="static/js/viewport.js"></script>
     <script src="static/js/minimap.js"></script>
     <script src="static/js/fog.js"></script>
+    <script src="static/js/howler-core.js"></script>
+    <script src="static/js/sounds.js"></script>
 
     <style type="text/css">
         body {
             background-image: url('static/img/stars.png');
         }
+        #miniMapBaseLayer {
+            background-image: url('static/img/stars.png');
+
+        }
     </style>
 </head>
 
 <body>
-    <canvas id="miniMapLayer"></canvas>
-    <canvas id="scoreboardLayer"></canvas>
+
+    <canvas id="fullFogCanvas" style="pointer-events: none"></canvas>
+    <canvas id="fogCanvas" style="pointer-events: none"></canvas>
     <canvas id="mainCanvas"></canvas>
+    <canvas id="miniMapBaseLayer" style="pointer-events: none"></canvas>
+    <canvas id="miniMapUILayer"></canvas>
+    <canvas id="miniMapFogCanvas" style="pointer-events: none"></canvas>
+    <canvas id="miniMapFullFogCanvas" style="pointer-events: none"></canvas>
+    <canvas id="scoreboardLayer"></canvas>
 
     <div class="modal fade" id="gameOverModal" tabindex="-1" role="dialog" aria-labelledby="gameOverModalLabel">
         <div class="modal-dialog" role="document">

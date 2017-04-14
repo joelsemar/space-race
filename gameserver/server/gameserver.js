@@ -17,13 +17,13 @@ var GameServer = BaseServer.extend({
     abandonGameAfter: 20000,
     remoteMethods: ["register", "attack", "upgradePurchase"],
 
-    run: function() {
+    run: function () {
         this._super();
         this.game = new Game(this.apiClient);
         this.findNewGame();
     },
 
-    findNewGame: function() {
+    findNewGame: function () {
         this.log("Seeking new game.")
         var getNodeInfo = () => {
             this.apiClient.getCurrentNodeInfo((game) => {
@@ -49,10 +49,10 @@ var GameServer = BaseServer.extend({
     },
 
 
-    register: function(data, socket) {
+    register: function (data, socket) {
         this.log("Attempting to register: " + JSON.stringify(data));
 
-        var player = this.game.connectPlayer(data);
+        var player = this.game.connectPlayer(data, socket);
         if (!player) {
             this.log("Player " + data.tok + " not found")
             socket.emit('tokenFail');
@@ -65,7 +65,7 @@ var GameServer = BaseServer.extend({
             nickname: player.nickname,
             alive: true
         });
-        socket.playerToken = data.tok;
+        socket.token = data.tok;
         socket.nickname = player.nickname;
         this.apiClient.updateNode({
             action: "start"
@@ -75,7 +75,7 @@ var GameServer = BaseServer.extend({
 
     },
 
-    attack: function(data, socket) {
+    attack: function (data, socket) {
         var player = this.game.playerByToken(data.tok);
         if (!player) {
             return;
@@ -83,17 +83,16 @@ var GameServer = BaseServer.extend({
         this.log('received attack signal ' + JSON.stringify(data));
         var selectedIslands = this.game.entityManager.entitiesByIds(data.i);
         selectedIslands = _.filter(selectedIslands, (i) => i.playerId == player.id)
-        this.log("Attacking With: " + JSON.stringify(selectedIslands));
         var target = this.game.entityManager.entityById(data.t);
-        _.map(selectedIslands, function(i) {
+        _.map(selectedIslands, function (i) {
             i.selected = true
         });
         player.attack(target);
-        this.updateClients();
+        this.game.updatePlayers();
 
     },
 
-    upgradePurchase: function(data, socket) {
+    upgradePurchase: function (data, socket) {
         var player = this.game.playerByToken(data.tok);
         if (!player) {
             return;
@@ -101,13 +100,13 @@ var GameServer = BaseServer.extend({
         console.log('received upgrade request: ' + JSON.stringify(data));
     },
 
-    updateClients: function() {
+    updateClients: function () {
         this._super(
             this.game.getUpdate()
         );
     },
 
-    disconnect: function(socket) {
+    disconnect: function (socket) {
         this.game.disconnectPlayer(socket.token);
         this.log("Player " + socket.nickname + " disconnected.")
         this.log("Remaining players: " + JSON.stringify(this.game.players));
@@ -116,15 +115,15 @@ var GameServer = BaseServer.extend({
         }
     },
 
-    abandonGame: function() {
+    abandonGame: function () {
         if (!this.game.allPlayersConnected()) {
             this.log("All players have been disconnected for " + this.abandonGameAfter / 1000 + " seconds..finding a new game.")
             this.nodeReset();
         }
     },
 
-    nodeReset: function() {
-        delete this.game.entityManager;
+    nodeReset: function () {
+        this.game.stop();
         delete this.game.world;
         delete this.game;
 

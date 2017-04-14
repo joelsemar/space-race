@@ -74,6 +74,9 @@ var Player = Entity.extend({
         if (target.playerId === this.id) {
             target.selected = true;
         }
+        if (this.hasOwnProperty("onSelect")){
+            this.onSelect();
+        }
     },
 
     unSelect: function(target) {
@@ -107,6 +110,9 @@ var Player = Entity.extend({
             island.attack(target);
         });
         this.clearSelection();
+        if (this.hasOwnProperty("onAttack")){
+            this.onAttack();
+        }
     },
 
 
@@ -139,7 +145,7 @@ var Player = Entity.extend({
     },
 
     selectIslands: function() {
-        var game = getGame(r)
+        var game = getGame()
         var allIslands = game.entityManager.entitiesWhere({
             type: 'island',
             playerId: this.id

@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
+import os, sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -108,4 +108,72 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATICFILES_DIRS = ["/home/joel/space-race/gameserver/client/"]
 
-NODE_HOSTS = ["127.0.0.1", "192.168.0.2"]
+NODE_HOSTS = ["127.0.0.1", "192.168.0.5"]
+#LOG_FILE = os.path.join('/srv/encast-api/logs/encast', "encast.log")
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(asctime)s -- %(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter':'simple',
+        },
+        'default':{
+            'level': 'DEBUG',
+            'class':'logging.StreamHandler',
+            'stream': sys.stdout,
+#            'class':'logging.handlers.RotatingFileHandler',
+#            'filename': LOG_FILE,
+        #    'maxBytes': 1024*1024*5, # 5 MB
+        #    'backupCount': 5,
+            'formatter':'simple',
+
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+    },
+    'loggers': {
+        'default': {
+                      'handlers': ['default', 'console'],
+                      'level': 'DEBUG',
+        },
+        'apnsclient.apns': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'apnsclient.transport': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'apnsclients.backends.stdio': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'concurrent.futures': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+        },
+
+        'django.db.backends': {
+            'handlers': ['default'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+    }
+}

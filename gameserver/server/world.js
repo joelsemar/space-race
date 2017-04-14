@@ -6,23 +6,25 @@ var Class = require("../shared/lib/class.js"),
     Ship = require('../shared/entities/ship.js'),
     EntityManager = require('../shared/entities/entitymanager.js'),
     Vector = require('../shared/lib/vector.js'),
+    utils = require("../shared/lib/utils.js"),
     _ = require('underscore');
 
 var World = Class.extend({
 
     numIslands: 75,
 
-    init: function(size, entityManager, gameId) {
+    init: function (size, entityManager, gameId, sectorSize) {
         this.size = size;
+        this.sectorSize = sectorSize
         this.entityManager = entityManager;
         this.initializeIslands(gameId);
         this.assignStartingIslands();
     },
 
-    playerSummary: function() {
+    playerSummary: function () {
         var ret = [];
         var players = this.entityManager.entitiesByType('player');
-        _.each(players, function(player) {
+        _.each(players, function (player) {
             ret.push({
                 id: player.id,
                 color: player.color,
@@ -34,10 +36,10 @@ var World = Class.extend({
         return ret;
     },
 
-    islandSummary: function() {
+    islandSummary: function () {
         var islands = this.entityManager.entitiesByType('island');
         var ret = [];
-        _.each(islands, function(island) {
+        _.each(islands, function (island) {
             ret.push({
                 id: island.id,
                 playerId: island.playerId,
@@ -45,36 +47,39 @@ var World = Class.extend({
                 lastProductionTick: island.lastProductionTick,
                 pos: island.pos,
                 radius: island.radius,
+                vision: island.vision,
                 gameId: island.gameId,
+                sector: island.sector,
                 size: island.size
             });
         });
         return ret;
     },
 
-    shipSummary: function(entityManager) {
+    shipSummary: function (entityManager) {
         var ships = this.entityManager.entitiesByType('ship');
         var ret = [];
-        _.each(ships, function(ship) {
+        _.each(ships, function (ship) {
             ret.push({
                 id: ship.id,
                 targetID: ship.targetID,
                 playerId: ship.playerId,
                 pos: ship.pos,
                 vel: ship.vel,
+                sector: ship.sector,
                 resources: ship.resources
             });
         });
         return ret;
     },
 
-    getIslandData: function() {
-        return generateIslands(this.size, this.numIslands, 500);
+    getIslandData: function () {
+        return generateIslands(this.size, this.numIslands, 500, this.sectorSize);
     },
 
-    initializeIslands: function(gameId) {
+    initializeIslands: function (gameId) {
         var islandData = this.getIslandData();
-        _.each(islandData, function(data) {
+        _.each(islandData, function (data) {
             data.pos = {
                 x: data.x,
                 y: data.y
@@ -90,10 +95,10 @@ var World = Class.extend({
 
     },
 
-    assignStartingIslands: function(players) {
+    assignStartingIslands: function (players) {
         var islands = this.entityManager.entitiesByType("island");
         var players = this.entityManager.entitiesByType('player');
-        _.each(players, function(player, idx) {
+        _.each(players, function (player, idx) {
             var i = idx,
                 island;
             while (true) {
@@ -112,7 +117,7 @@ var World = Class.extend({
 
 var islandRadii = [30, 30, 30, 30, 30, 35, 35, 35, 45, 45, 45, 45, 50, 50, 50, 55, 55, 60, 60, 60, 70, 70, 80];
 
-function generateIslands(worldSize, numIslands, minDistance) {
+function generateIslands(worldSize, numIslands, minDistance, sectorSize) {
     var radius, placed, foundCollision, diameter;
     var islands = [];
     var candidateLocation;
@@ -127,6 +132,9 @@ function generateIslands(worldSize, numIslands, minDistance) {
                 x: randomChoice(_.range(20, worldSize.x - diameter)),
                 y: randomChoice(_.range(20, worldSize.y - diameter))
             };
+            candidateLocation = utils.sectorCenter(utils.computeSector(candidateLocation, sectorSize), sectorSize)
+            candidateLocation.x -= radius;
+            candidateLocation.y -= radius;
             for (var j = 0; j < islands.length; j++) {
                 var island = islands[j];
                 var distance = getCenter(island, island.radius).distanceTo(getCenter(candidateLocation, radius));
