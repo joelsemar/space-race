@@ -1,56 +1,43 @@
 var log = false;
-var express = require('express'),
-    http = require('http'),
-    io = require('socket.io'),
-    _ = require('underscore'),
-    path = require('path'),
+var  _ = require('underscore'),
     BaseServer = require("./baseserver.js"),
-    Game = require('./game.js'),
-    World = require("./world.js"),
-    ApiClient = require("./api.js");
+    BaseHttpController = require('./basehttpcontroller.js'),
+    Game = require('./game.js');
 
+class GameServer extends  BaseServer {
+    constructor(config){
+        super(config);
+        this.name =  "GameServer";
+        // how many ms to wait to abandon a game after everyone disconnects
+        this.abandonGameAfter =  20000;
+    }
 
-RUNNING_ON_CLIENT = false;
-var GameServer = BaseServer.extend({
-    name: "GameServer",
-    // how many ms to wait to abandon a game after everyone disconnects
-    abandonGameAfter: 20000,
-    remoteMethods: ["register", "attack", "upgradePurchase"],
-
-    run: function () {
-        this._super();
-        this.game = new Game(this.apiClient);
-        this.findNewGame();
-    },
-
-    findNewGame: function () {
-        this.log("Seeking new game.")
-        var getNodeInfo = () => {
-            this.apiClient.getCurrentNodeInfo((game) => {
-                this.log("Found game: " + game.name)
-                this.game.setPlayers(game.players);
-                this.game.id = game.id;
-                this.game.name = game.name;
-            });
+    get httpRoutes(){
+        return {
+            '/game':  new GameHttpController(this)
         }
+    }
 
-        if (!this.apiClient.token) {
-            this.log("no token stored, registering a new node...")
-            var nodePayload = {
-                host: this.host,
-                port: this.port
-            }
-            this.apiClient.registerNode(nodePayload, getNodeInfo);
-        } else {
-            this.log("getting node info with token: " + this.apiClient.token);
-            getNodeInfo();
+    get remoteMethods(){
+        return  ["register", "attack", "upgradePurchase"];
+    }
+
+    onInit (){
+        this.apiClient.getCurrentNodeInfo(this.gameUpdate.bind(this))
+    }
+
+
+    gameUpdate(gameData){
+        this.game = new Game(this.apiClient, gameData);
+        this.game.setPlayers(gameData.players);
+    }
+
+    register(data, socket) {
+        this.log("Attempting to register: {{user}}" , {user: JSON.stringify(data)});
+        if(!this.game){
+            this.log("user {{user}} attempted to connect to inactive node (no game) ", {user: JSON.stringify(data)})
+            return;
         }
-
-    },
-
-
-    register: function (data, socket) {
-        this.log("Attempting to register: " + JSON.stringify(data));
 
         var player = this.game.connectPlayer(data, socket);
         if (!player) {
@@ -67,15 +54,15 @@ var GameServer = BaseServer.extend({
         });
         socket.token = data.tok;
         socket.nickname = player.nickname;
-        this.apiClient.updateNode({
+        this.apiClient.updateNode(this.nodeType, {
             action: "start"
         });
         // gameserver clients *must* be subscribed to channel updates
         this.subscribe(data, socket)
 
-    },
+    }
 
-    attack: function (data, socket) {
+    attack(data, socket) {
         var player = this.game.playerByToken(data.tok);
         if (!player) {
             return;
@@ -90,50 +77,61 @@ var GameServer = BaseServer.extend({
         player.attack(target);
         this.game.updatePlayers();
 
-    },
+    }
 
-    upgradePurchase: function (data, socket) {
+    upgradePurchase (data, socket) {
         var player = this.game.playerByToken(data.tok);
         if (!player) {
             return;
         }
         console.log('received upgrade request: ' + JSON.stringify(data));
-    },
+    }
 
-    updateClients: function () {
-        this._super(
-            this.game.getUpdate()
-        );
-    },
+    updateClients () {
+        super.updateClients(this.game.getUpdate());
+    }
 
-    disconnect: function (socket) {
+    disconnect (socket) {
+        if(!this.game){
+            return;
+        }
         this.game.disconnectPlayer(socket.token);
         this.log("Player " + socket.nickname + " disconnected.")
         this.log("Remaining players: " + JSON.stringify(this.game.players));
         if (!this.game.allPlayersConnected()) {
-            setTimeout(this.abandonGame.bind(this), this.abandonGameAfter)
+            setTimeout(() => {this.abandonGame()}, this.abandonGameAfter)
         }
-    },
+    }
 
-    abandonGame: function () {
+    abandonGame() {
         if (!this.game.allPlayersConnected()) {
             this.log("All players have been disconnected for " + this.abandonGameAfter / 1000 + " seconds..finding a new game.")
             this.nodeReset();
         }
-    },
+    }
 
-    nodeReset: function () {
+    nodeReset() {
         this.game.stop();
         delete this.game.world;
         delete this.game;
+        this.game = null;
 
-        this.game = new Game(this.apiClient);
-        this.apiClient.updateNode({
+        this.apiClient.updateNode(this.nodeType, {
             action: "stop",
             available: "true"
-        }, this.findNewGame.bind(this));
-    },
+        });
+    }
+}
 
-});
+class GameHttpController extends BaseHttpController {
+
+    update (req, onComplete){
+        console.log("Received: " + JSON.stringify(req.body));
+        this.server.gameUpdate(req.body);
+        onComplete();
+    }
+
+}
+
 
 module.exports = GameServer;

@@ -9,8 +9,7 @@ class GameView(ModelView):
 
     def render(self, request):
         ret = super(GameView, self).render(request)
-        players = Player.objects.filter(game=self.instance)
-        ret["players"] = QuerySetView.inline_render(players, request)
+        ret["players"] = QuerySetView.inline_render(self.instance.players, request)
         ret["state"] = self.instance.state
         if self.instance.node:
             ret["node"] = self.instance.node.destination
@@ -21,13 +20,17 @@ class PlayerView(ModelView):
 
     def render(self, request):
         ret = super(PlayerView, self).render(request)
-        ret["token"] = self.instance.token
-        ret["creator"] = self.instance.creator
+        if request.player and request.player.id == self.instance.id:
+            ret["token"] = self.instance.token
+
         try:
             ret["chatnode"] = ChatNode.objects.get(active=True).destination
         except ChatNode.DoesNotExist:
             pass
 
-        if self.instance.game and self.instance.game.node and not self.instance.game.end_time:
-            ret["node"] = self.instance.game.node.destination
+        if self.instance.game:
+            ret["game"] = GameView.render_instance(self.instance.game, request)
+            if self.instance.game.creator == self.instance:
+                ret["creator"] = True
+
         return ret

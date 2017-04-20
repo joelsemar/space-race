@@ -14,12 +14,13 @@ class Game(BaseModel):
 
     name = models.CharField(max_length=128)
     num_players = models.PositiveIntegerField(default=2)
-    start_time = models.DateTimeField(null=True, default=None)
-    end_time = models.DateTimeField(null=True, default=None)
+    start_time = models.DateTimeField(null=True, default=None, blank=True)
+    end_time = models.DateTimeField(null=True, default=None, blank=True)
     node = models.ForeignKey("nodes.GameNode", null=True, blank=True)
-    num_bots  = models.PositiveIntegerField(default=0)
+    num_bots = models.PositiveIntegerField(default=0)
     size = models.PositiveIntegerField(default=3500)
     density = models.PositiveIntegerField(default=5)
+    creator = models.ForeignKey("Player", related_name="created_game")
     ready = models.BooleanField(default=False)
 
     @property
@@ -49,7 +50,6 @@ class Player(BaseModel):
     nickname = models.CharField(max_length=32)
     user = models.ForeignKey(User, null=True, blank=True)
     ready = models.BooleanField(default=False)
-    creator = models.BooleanField(default=False)
     expired = models.BooleanField(default=False)
 
     @property
@@ -60,9 +60,21 @@ class Player(BaseModel):
             "id": self.id
         }
 
-    def join_game(self, game, creator=False):
+    def join_game(self, game):
         self.game = game
-        self.creator = creator
+        self.ready = False
         self.save()
+
+    @property
+    def creator(self):
+        if self.game:
+            return self.game.creator == self
+        return False
+
+    def reset(self, nickname=None):
+        self.expired = True
+        self.save()
+        new_nickname = nickname or self.nickname
+        return Player.objects.create(nickname=new_nickname)
 
 from signals import *

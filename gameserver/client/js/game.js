@@ -21,7 +21,7 @@ var Game = BaseGame.extend({
         this.miniMapFog = new MiniMapFog();
         this.miniMapFullFog = new MiniMapFullFog();
 
-        this.socket = io.connect(player.node);
+        this.socket = io.connect(player.game.node);
         this.currentPlayerId = player.id;
 
         console.log("Registering with token: " + player.token);
@@ -231,7 +231,7 @@ $(function () {
     $.ajax({
         url: "player",
         success: function (player) {
-            if (!player.node) {
+            if (!player.game) {
                 window.location.href = "/";
             }
             var game = new Game();
@@ -247,4 +247,4 @@ $(function () {
             window.location.href = "/";
         }
     });
-});;;
+});

@@ -10,6 +10,7 @@ var gameServer = new GameServer({
     port: CONFIG.gameServerPort
 });
 gameServer.run();
+RUNNING_ON_CLIENT = false;
 
 updateClients = function (data) {
     gameServer.updateClients();

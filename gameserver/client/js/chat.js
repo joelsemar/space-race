@@ -9,7 +9,6 @@ function joinChat(room) {
 
 function bindChatUi(chatLogBody, chatInput, submitButton) {
     socket.on("message", function(data) {
-        var line = "<span><b>"
         $(chatLogBody).append(chatLineTemplate(data));
         $(chatLogBody).scrollTop($(chatLogBody)[0].scrollHeight);
 

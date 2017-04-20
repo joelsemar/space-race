@@ -33,7 +33,7 @@ class BaseNodeController(BaseController):
         if not token:
             return auth_response
         try:
-            request.node = NodeClass.objects.get(token=token)
+            request.node = NodeClass.objects.get(token=token, active=True)
         except NodeClass.DoesNotExist:
             return auth_response
 
@@ -62,17 +62,6 @@ class BaseNodeController(BaseController):
         if hasattr(info, 'available'):
             request.node.available = str_to_bool(info.available)
             request.node.save()
-        if info.action:
-            try:
-                game = Game.objects.get(node=request.node, end_time=None)
-            except Game.DoesNotExist:
-                return
-
-            if info.action == 'start' and game.start_time is None:
-                game.start_time = datetime.utcnow()
-            if info.action == 'stop' and game.end_time is None:
-                game.end_time = datetime.utcnow()
-            game.save()
 
 
 class ChatNodeController(BaseNodeController):
@@ -114,3 +103,23 @@ class GameNodeController(BaseNodeController):
             request.node.save()
 
         response.set(instance=game)
+
+    @body(NodeDto, arg="info")
+    def update(self, request, response, info):
+        """
+        Update node status
+        API Handler: PUT /node
+        """
+        super(GameNodeController, self).update(request, response, info)
+
+        if info.action:
+            try:
+                game = Game.objects.get(node=request.node, end_time=None)
+            except Game.DoesNotExist:
+                return
+
+            if info.action == 'start' and game.start_time is None:
+                game.start_time = datetime.utcnow()
+            if info.action == 'stop' and game.end_time is None:
+                game.end_time = datetime.utcnow()
+            game.save()

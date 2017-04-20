@@ -1,0 +1,124 @@
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  padding: 20px;
+  color: white;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+#chatLogInner {
+	overflow-y: scroll;
+	height: 100%;
+    padding: 3px;
+    text-align: left;
+}
+#chatLogWrapper{
+	height: 300px;
+    padding: 5px;
+	margin-top: 4px;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+.chatMessage{
+    padding: 3px;
+}
+
+.App {
+    height: 100vh;
+    overflow: hidden;
+}
+
+html {
+    height: 100%;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+body{
+    height: 100%;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+}
+
+.horizontal-center{
+  justify-content: center;
+}
+
+.center{
+    justify-content: center;
+}
+.alight-left{
+    justify-content: flex-start;
+}
+.vertical-center{
+    align-items: center;
+}
+.horizontal{
+    flex-direction: row;
+}
+.horizontal-reverse{
+    flex-direction: row;
+    justify-content: flex-end;
+
+}
+.wrap {
+    flex-wrap: wrap;
+}
+.vertical{
+    flex-direction: column;
+}
+.flex1 {
+  flex: 1;
+}
+
+.flex2 {
+  flex: 2;
+}
+.flex3{
+    flex: 3;
+}
+.flex4 {
+  flex: 4;
+}
+.dialogClose{
+    cursor: pointer;
+}
+.mainHeader{
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+
+}
+.sectionHeader {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.clickable{
+    cursor: pointer;
+}
+.unclickable{
+    pointer-events: none;
+}
+.hiddenScroll::-webkit-scrollbar {
+	    display: none;
+}

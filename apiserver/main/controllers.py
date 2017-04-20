@@ -1,20 +1,22 @@
 from services.controller import BaseController
 from services.views import QuerySetView
-from services.decorators import render_with, body, entity
+from services.decorators import render_with, body, entity, unauthenticated, render_with
 from services.utils import str_to_bool
 from main.models import Game, Player
 from views import GameView, PlayerView
+from django.contrib.auth import logout
 
 
 class AnonymousController(BaseController):
 
     def auth_check(self, request, method):
         token = request.session.get("player_token")
+        request.player = None
         if token:
             try:
                 request.player = Player.objects.get(token=token, expired=False)
             except Player.DoesNotExist:
-                request.player = None
+                pass
         return None
 
 
@@ -50,6 +52,10 @@ class PlayerController(AnonymousController):
         if not player:
             return response.not_found()
 
+        if player.game and player.game.end_time:
+            player = request.player.reset()
+            request.session["player_token"] = str(player.token)
+
         response.set(instance=player)
 
     def delete(self, request, response):
@@ -58,7 +64,6 @@ class PlayerController(AnonymousController):
         API Handler: DELETE /player
         """
         request.session.clear()
-
 
 
 class PlayerResetDto(object):
@@ -76,10 +81,7 @@ class PlayerResetController(AnonymousController):
         """
         if not request.player:
             return
-        request.player.expired = True
-        request.player.save()
-        nickname = getattr(reset, 'nickname', False) or request.player.nickname
-        player = Player.objects.create(nickname=nickname)
+        player = request.player.reset(nickname=reset.nickname)
         request.session["player_token"] = str(player.token)
         response.set(instance=player)
 
@@ -113,8 +115,8 @@ class GameController(AnonymousController):
         Create a new game
         API Handler: POST /game
         """
-        game = Game.objects.create(num_players=game_dto.num_players, name=game_dto.name)
-        request.player.join_game(game, creator=True)
+        game = Game.objects.create(num_players=game_dto.num_players, num_bots=game_dto.num_bots, name=game_dto.name, creator=request.player)
+        request.player.join_game(game)
         response.set(instance=game)
 
     def read(self, request, response):
@@ -137,31 +139,35 @@ class GameController(AnonymousController):
         API Handler: PUT /game
         """
         game = request.player.game
-        if not game or not request.player.creator:
+
+        if not game or not game.creator == request.player:
             return response.not_found()
+
         if game.state != "lobby":
             return response.bad_request("Game has already started")
 
-        if not game.players_ready:
-            return response.bad_request("All players must be ready before beginning")
-
         dirty = False
         # if the "ready" value is sent, everything else is ignored
-        if hasattr(game_dto, "ready") and not game.ready:
+        if getattr(game_dto, "ready") and not game.ready:
+            if not game.players_ready:
+                return response.bad_request("All players must be ready before beginning")
             game.ready = str_to_bool(game_dto.ready)
         else:
             for field in ["num_players", "num_bots", "size", "density", "name"]:
                 if hasattr(game_dto, field) and getattr(game_dto, field) != getattr(game, field):
                     dirty = True
-                    setattr(game, field)
+                    setattr(game, field, getattr(game_dto, field))
+
+        game.save()
 
         if dirty:
             Player.objects.filter(game=game).update(ready=False)
-        game.save()
+
+        response.set(instance=game)
 
 
 class GamePlayerController(AnonymousController):
-    view = PlayerView
+    view = GameView
 
     @entity(Game, arg="game")
     def create(self, request, response, game):
@@ -176,10 +182,9 @@ class GamePlayerController(AnonymousController):
             return response.bad_request("A player by that name is already in this game.")
 
         request.player.join_game(game)
-        response.set(instance=request.player)
+        response.set(instance=game)
 
     @entity(Game, arg="game")
-    @render_with(GameView)
     def update(self, request, response, game):
         """
         Update ready status in the lobby
@@ -196,6 +201,7 @@ class GamePlayerController(AnonymousController):
         response.set(instance=game)
 
     @entity(Game, arg="game")
+    @render_with(PlayerView)
     def delete(self, request, response, game):
         """
         Leave a game
@@ -210,6 +216,19 @@ class GamePlayerController(AnonymousController):
         if request.player.creator:
             game.players.update(game=None)
             game.delete()
-        else:
-            request.player.game = None
-            request.player.save()
+
+        request.player.game = None
+        request.player.save()
+
+        response.set(instance=request.player)
+
+
+class LogoutController(BaseController):
+
+    @unauthenticated
+    def read(self, request, response):
+        """
+        Logout
+        API Handler: GET /logout
+        """
+        logout(request)

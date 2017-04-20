@@ -2,26 +2,61 @@ var express = require('express'),
     http = require('http'),
     io = require('socket.io'),
     _ = require('underscore'),
-    path = require('path'),
-    Game = require('./game.js'),
-    Class = require('../shared/lib/class.js'),
+    bodyParser = require('body-parser'),
     ApiClient = require("./api.js");
 
-var BaseServer = Class.extend({
-    name: "BaseServer",
-    tokenMap: {},
-    remoteMethods: [],
-    updatesChannel: "updates",
-    init: function(config) {
+
+_.templateSettings = {
+    interpolate: /\{\{(.+?)\}\}/g
+};
+
+class BaseServer {
+
+    constructor(config){
+        this.name = "BaseSever";
+        this.tokenMap =  {};
+        this.updatesChannel =  "updates";
         this.apiClient = config.apiClient;
         this.host = config.host;
         this.port = config.port;
+
+        this.createServer();
+        this.bindRemoteMethods();
+        if(this.httpRoutes){
+            this.bindRoutes();
+        }
+
+    }
+
+    get remoteMethods (){
+        return [];
+    }
+
+    get nodeType(){
+        return "node";
+    }
+
+    get httpRoutes () { }
+
+    createServer(){
         this.app = express();
-        this.server = http.createServer(this.app);
-        this.io = io.listen(this.server, {
-            log: true
-        })
-        this.io.sockets.on('connection', (socket) => {
+        this.app.use(bodyParser.json())
+        this.server = http.Server(this.app);
+        this.io = io(this.server);
+        this.server.listen(this.port);
+
+    }
+
+    bindRoutes(){
+        for(var route in this.httpRoutes){
+            var controller = this.httpRoutes[route];
+            this.app.all(route, controller.request.bind(controller));
+        }
+
+    }
+
+    bindRemoteMethods(){
+        this.io.on('connection', (socket) => {
             _.each(this.remoteMethods, (methodName) => {
                 if (this[methodName]) {
                     // wrap the method, so we can pass the socket in along with the data.
@@ -35,18 +70,35 @@ var BaseServer = Class.extend({
                 this.disconnect(socket);
             })
         })
-    },
+    }
 
-    run: function() {
+    run() {
         this.server.listen(this.port);
         this.log("listening on port " + this.port);
-    },
 
-    updateClients: function(data) {
+        var nodePayload = {
+            host: this.host,
+            port: this.port,
+            available: true
+        }
+
+        if(!this.apiClient.token){
+            this.log("no token stored, registering a new node...")
+            this.apiClient.registerNode(this.nodeType, nodePayload, this.onInit.bind(this));
+        }
+
+        else{
+            this.apiClient.updateNode(this.nodeType, nodePayload, this.onInit.bind(this));
+        }
+    }
+
+    onInit(){}
+
+    updateClients(data) {
         this.io.sockets.in(this.updatesChannel).emit('serverUpdate', data);
-    },
+    }
 
-    auth: function(data, cb) {
+    auth(data, cb) {
         var token = data.tok;
         if (this.tokenMap[token]) {
             return this.tokenMap[token];
@@ -57,22 +109,30 @@ var BaseServer = Class.extend({
                 cb()
             });
         }
-    },
+    }
 
     // subscribes the client to the "updates" channel for the server
     // optionally pass "channelName" to sub to custom channels
-    subscribe: function(data, socket) {
+    subscribe(data, socket) {
         var player = this.auth(data, () => {
             // this only gets called if api auth is successful
             this.subscribe(data, socket);
         })
         var channel = data.channelName || this.updatesChannel;
         socket.join(channel);
-    },
-    log: function(msg) {
-        console.log(this.name + ": " + msg);
-    },
-    disconnect: function() {},
+    }
 
-});
+    log(msg, args) {
+        if(!args){
+            console.log(this.name + ": " + msg);
+        }
+        else{
+            console.log(this.name + ": " + _.template(msg)(args))
+        }
+    }
+
+    disconnect() {}
+
+}
+
 module.exports = BaseServer;

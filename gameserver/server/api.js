@@ -1,9 +1,9 @@
 var request = require("request"),
-    fs = require('fs'),
-    Class = require("../shared/lib/class.js");
+    fs = require('fs');
 
 
 DEFAULT_TOKEN_FILE = "./token"
+let token;
 
 try {
     token = fs.readFileSync(TOKEN_CACHE);
@@ -12,31 +12,23 @@ try {
 }
 
 
-var ApiClient = Class.extend({
-    init: function(apiServer, tokenFile) {
+class ApiClient {
+
+    constructor(apiServer, tokenFile){
         this.apiServer = apiServer;
         this.tokenFile = tokenFile || DEFAULT_TOKEN_FILE;
         this.getToken();
-    },
+    }
 
-    getCurrentNodeInfo: function(success, error) {
-        var retry = () => {
-            this.getCurrentNodeInfo(success, error);
-        }
+    getCurrentNodeInfo(success, error) {
+        this.get("node", success, error);
+    }
 
-        function callback(err) {
-            console.log(err);
-            setTimeout(retry, 3000);
-        }
-
-        this.get("node", success, callback);
-    },
-
-    getChatNodeInfo: function(success, error) {
+    getChatNodeInfo(success, error) {
         this.get("chatnode", success, error);
-    },
+    }
 
-    registerNode: function(payload, success, endpoint) {
+    registerNode(endpoint, payload, success, error) {
         endpoint = endpoint || "node";
         success = success || function() {};
 
@@ -44,45 +36,53 @@ var ApiClient = Class.extend({
             this.storeToken(body.token);
             success();
         }
-        this.post(endpoint, payload, callback);
-    },
+        this.post(endpoint, payload, callback, error);
+    }
 
-    updateNode: function(payload, success) {
-        this.put("node", payload, success)
-    },
+    updateNode(endpoint, payload, success, error) {
+        this.put(endpoint, payload, success, error)
+    }
 
-    getGames: function(success) {
+    getGames(success) {
         this.get("games", success);
-    },
+    }
 
-    getPlayerForToken: function(token, success) {
+    getPlayerForToken(token, success) {
         this.get("player?token=" + token, success);
-    },
+    }
 
-    get: function(endpoint, success, error) {
+    get(endpoint, success, error) {
         this.call(endpoint, "get", {}, success, error);
-    },
+    }
 
-    post: function(endpoint, payload, success, error) {
+    post(endpoint, payload, success, error) {
         this.call(endpoint, "post", payload, success, error);
-    },
+    }
 
-    put: function(endpoint, payload, success, error) {
+    put(endpoint, payload, success, error) {
         this.call(endpoint, "put", payload, success, error);
-    },
+    }
 
-    call: function(endpoint, method, payload, success, error) {
-        var defaultErrback = function(out) {
-            console.log(out);
-        }
-        var defaultCallback = function(out) {
-            console.log(out);
+    call(endpoint, method, payload, success, error) {
 
+        var defaultErrback = (out) => {
+            if(out){
+                console.log(out);
+            }
         }
+
+        var defaultCallback = (out) => {
+            if(out){
+                console.log(out);
+            }
+        }
+
+        var headers = {};
+
         success = success || defaultCallback;
         error = error || defaultErrback;
         payload = payload || {};
-        headers = {};
+
         if (this.token) {
             headers["X-NODE-TOKEN"] = this.token;
         }
@@ -92,7 +92,8 @@ var ApiClient = Class.extend({
             headers: headers,
             json: payload
         }
-        console.log("calling " + method + "/" + endpoint)
+
+        console.log("calling " + method.toUpperCase() + " /" + endpoint + " with: " + JSON.stringify(payload))
         request[method](options, (err, response, body) => {
             if (!response) {
                 console.log("Null response returned: " + err + ", " + response + ", " + body)
@@ -107,9 +108,9 @@ var ApiClient = Class.extend({
                 success(body);
             }
         });
-    },
+    }
 
-    getToken: function() {
+    getToken() {
         try {
             token = fs.readFileSync(this.tokenFile);
             console.log("read from token file: " + token);
@@ -123,9 +124,9 @@ var ApiClient = Class.extend({
             this.token = null;
             return;
         }
-    },
+    }
 
-    storeToken: function(token) {
+    storeToken(token) {
         console.log("Storing token: " + token);
         this.token = token;
         try {
@@ -134,16 +135,14 @@ var ApiClient = Class.extend({
             console.log("Error writing token file: " + this.tokenFile)
             console.log(e);
             return;
-
         }
+    }
 
-    },
-
-    wipeToken: function() {
+    wipeToken() {
         this.token = null;
         fs.writeFile(this.tokenFile, '', function() {});
     }
 
-})
+}
 
 module.exports = ApiClient;

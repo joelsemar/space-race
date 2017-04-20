@@ -17,9 +17,12 @@ var Game = BaseGame.extend({
     colors: ['blue', 'red', 'green', "brown", "orange", "purple", "yellow"],
     sockets: {},
 
-    init: function (apiClient) {
+    init: function (apiClient, gameData) {
         this.entityManager = new EntityManager();
         this.apiClient = apiClient;
+        this.id = gameData.id;
+        this.name = gameData.name;
+        this.numBots = gameData.num_bots;
     },
 
     step: function () {
@@ -120,10 +123,9 @@ var Game = BaseGame.extend({
 
     win: function () {
         this.log("Shutting down. Game Over.")
+        this.updatePlayers();
         this.stop();
-        if (!RUNNING_ON_CLIENT) {
-            releaseGameNode();
-        }
+        releaseGameNode();
     },
 
     sendPlayerUpdate: function (player) {
