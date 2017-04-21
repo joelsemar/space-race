@@ -3,3 +3,5 @@
 .vagrant/
 node_modules/
 *token
+db.sqlite3
+
