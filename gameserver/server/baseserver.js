@@ -6,6 +6,8 @@ var express = require('express'),
     ApiClient = require("./api.js");
 
 
+const HEARTBEAT_INTERVAL = 5000;
+
 _.templateSettings = {
     interpolate: /\{\{(.+?)\}\}/g
 };
@@ -18,7 +20,6 @@ class BaseServer {
         this.updatesChannel =  "updates";
         this.apiClient = config.apiClient;
         this.host = config.host;
-        this.port = config.port;
 
         this.createServer();
         this.bindRemoteMethods();
@@ -43,7 +44,6 @@ class BaseServer {
         this.app.use(bodyParser.json())
         this.server = http.Server(this.app);
         this.io = io(this.server);
-        this.server.listen(this.port);
 
     }
 
@@ -73,23 +73,32 @@ class BaseServer {
     }
 
     run() {
-        this.server.listen(this.port);
-        this.log("listening on port " + this.port);
+        var onRegister = (node) => {
+            this.port = node.port
+            this.server.listen(this.port);
+            this.log("listening on port " + this.port);
+            this.heartbeat();
+            this.onInit();
 
-        var nodePayload = {
+        }
+        this.apiClient.registerNode(this.nodeType, this.defaultPayload(), onRegister);
+    }
+
+
+    defaultPayload (){
+        return {
             host: this.host,
-            port: this.port,
             available: true
         }
 
-        if(!this.apiClient.token){
-            this.log("no token stored, registering a new node...")
-            this.apiClient.registerNode(this.nodeType, nodePayload, this.onInit.bind(this));
-        }
+    }
 
-        else{
-            this.apiClient.updateNode(this.nodeType, nodePayload, this.onInit.bind(this));
+    heartbeat() {
+        var beat = () => {
+            this.apiClient.updateNode(this.nodeType, this.defaultPayload(), ()=>{});
         }
+        this.heartbeatInterval = setInterval(beat, HEARTBEAT_INTERVAL);
+
     }
 
     onInit(){}
@@ -106,7 +115,7 @@ class BaseServer {
         if (cb) {
             this.apiClient.getPlayerForToken(token, (player) => {
                 this.tokenMap[token] = player;
-                cb()
+                cb(player);
             });
         }
     }

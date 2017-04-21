@@ -13,7 +13,6 @@ from django.conf import settings
 
 class NodeDto(object):
     host = "127.0.0.1"
-    port = "8001"
     available = "bool"
     action = "start|stop"
 
@@ -48,10 +47,7 @@ class BaseNodeController(BaseController):
         if node.host not in settings.NODE_HOSTS:
             return response.forbidden()
 
-        if NodeClass.objects.filter(active=True, host=node.host, port=node.port).exists():
-            return response.forbidden()
-
-        response.set(**NodeClass.objects.create(host=node.host, port=node.port, active=True, available=True).dict)
+        response.set(**NodeClass.objects.create(host=node.host, active=True, available=True).dict)
 
     @body(NodeDto, arg="info")
     def update(self, request, response, info):
@@ -62,6 +58,8 @@ class BaseNodeController(BaseController):
         if hasattr(info, 'available'):
             request.node.available = str_to_bool(info.available)
             request.node.save()
+            
+        response.set(**request.node.dict)
 
 
 class ChatNodeController(BaseNodeController):
@@ -122,4 +120,5 @@ class GameNodeController(BaseNodeController):
                 game.start_time = datetime.utcnow()
             if info.action == 'stop' and game.end_time is None:
                 game.end_time = datetime.utcnow()
+                game.players.update(game=None)
             game.save()

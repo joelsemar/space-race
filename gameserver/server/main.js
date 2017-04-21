@@ -23,7 +23,7 @@ releaseGameNode = function () {
     gameServer.nodeReset()
 }
 
-if (CONFIG.lobbyServerPort) {
+if (CONFIG.lobby) {
     var apiClient = new ApiClient(CONFIG.apiHost, "./chat_node_token");
     new LobbyServer({
         apiClient: apiClient,

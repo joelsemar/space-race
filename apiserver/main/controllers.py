@@ -81,7 +81,8 @@ class PlayerResetController(AnonymousController):
         """
         if not request.player:
             return
-        player = request.player.reset(nickname=reset.nickname)
+        new_nickname = reset and reset.nickname or request.player.nickname
+        player = request.player.reset(nickname=new_nickname)
         request.session["player_token"] = str(player.token)
         response.set(instance=player)
 
@@ -115,7 +116,8 @@ class GameController(AnonymousController):
         Create a new game
         API Handler: POST /game
         """
-        game = Game.objects.create(num_players=game_dto.num_players, num_bots=game_dto.num_bots, name=game_dto.name, creator=request.player)
+        game = Game.objects.create(num_players=game_dto.num_players, num_bots=game_dto.num_bots,
+                                   name=game_dto.name, creator=request.player)
         request.player.join_game(game)
         response.set(instance=game)
 
