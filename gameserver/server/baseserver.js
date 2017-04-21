@@ -20,6 +20,7 @@ class BaseServer {
         this.updatesChannel =  "updates";
         this.apiClient = config.apiClient;
         this.host = config.host;
+        this.nodeTag = config.nodeTag;
 
         this.createServer();
         this.bindRemoteMethods();
@@ -81,21 +82,22 @@ class BaseServer {
             this.onInit();
 
         }
-        this.apiClient.registerNode(this.nodeType, this.defaultPayload(), onRegister);
+        this.apiClient.registerNode(this.nodeType, this.nodePayload(), onRegister);
     }
 
 
-    defaultPayload (){
+    nodePayload (){
         return {
             host: this.host,
-            available: true
+            available: true,
+            node_tag: this.nodeTag
         }
 
     }
 
     heartbeat() {
         var beat = () => {
-            this.apiClient.updateNode(this.nodeType, this.defaultPayload(), ()=>{});
+            this.apiClient.updateNode(this.nodeType, this.nodePayload(), ()=>{});
         }
         this.heartbeatInterval = setInterval(beat, HEARTBEAT_INTERVAL);
 
@@ -132,11 +134,12 @@ class BaseServer {
     }
 
     log(msg, args) {
+        var prefix = _.template("{{name}}|{{tag}}: ")({name: this.name, tag: this.nodeTag})
         if(!args){
-            console.log(this.name + ": " + msg);
+            console.log(prefix + msg);
         }
         else{
-            console.log(this.name + ": " + _.template(msg)(args))
+            console.log(prefix + _.template(msg)(args))
         }
     }
 

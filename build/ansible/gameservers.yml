@@ -1,0 +1,13 @@
+---
+- hosts: gameservers
+  sudo: yes
+  roles:
+     -  node
+     -  gameserver 
+
+  vars_files:
+    -  vars/default.yml
+    -  vars/secrets.yml
+    -  vars/{{env}}.yml
+    -  vars/gameserver/default.yml
+    -  vars/gameserver/{{env}}.yml

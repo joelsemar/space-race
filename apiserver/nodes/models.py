@@ -13,6 +13,7 @@ class BaseNode(BaseModel):
     port = models.CharField(max_length=5)
     available = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
+    node_tag = models.CharField(max_length=32, blank=True, default="")
     token = models.CharField(default=uuid4, max_length=128)
 
     class Meta:

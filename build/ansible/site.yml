@@ -1,9 +1,9 @@
 ---
 - include: common.yml
 - include: dbservers.yml
-- include: taskbrokers.yml
 - include: appservers.yml
-- include: workers.yml
+#- include: taskbrokers.yml
+#- include: workers.yml
 #- include: staticwebservers.yml
 #- include: buildserver.yml
 

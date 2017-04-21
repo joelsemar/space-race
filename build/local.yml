@@ -2,18 +2,18 @@
 devops:
   user: devops
   group: devops
-  app_user: encast
-  key: ~/.ssh/encast-devops
-  public_key: ~/.ssh/encast-devops.pub
+  app_user: space-race
+  key: ~/.ssh/space-race-devops
+  public_key: ~/.ssh/space-race-devops.pub
 
-# if this is set, ansible will not attempt to checkout code from app repos
+# if this is set, ansible will run code mounted from your machine
 local_mount: true
 
 # these are unfortunate copies that do nothing more than make the ./manage.py work
 # they dont affect actual deployment (we cant use jinja interpolation in this file)
 services:
    encast:
-      django_root: /srv/encast-api/encast
+      django_root: /srv/space-race/apiserver
 
 virtualenv: /srv/python-env
 
@@ -28,12 +28,8 @@ vagrant:
          - host: 9001
            guest: 9000
       sync:
-         - from: ~/encast-myhero
-           to: /srv/encast-myhero
-         - from: ~/encast-api
-           to: /srv/encast-api
+         - from: ~/space-race
+           to: /srv/space-race
 
 
-secrets: ~/.encast-secrets.yml
-react_app_location: /home/joel/encast-myhero
-
+react_app_location: /home/joel/space-race/lobby

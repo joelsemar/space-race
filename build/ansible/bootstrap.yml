@@ -3,4 +3,4 @@
   roles:
     - bootstrap
   vars_files:
-    -  group_vars/default.yml
+    -  vars/default.yml

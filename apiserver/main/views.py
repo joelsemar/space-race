@@ -23,10 +23,9 @@ class PlayerView(ModelView):
         if request.player and request.player.id == self.instance.id:
             ret["token"] = self.instance.token
 
-        try:
-            ret["chatnode"] = ChatNode.objects.get(active=True).destination
-        except ChatNode.DoesNotExist:
-            pass
+        chatnode = ChatNode.objects.filter(active=True, available=True).first()
+        if chatnode:
+            ret['chatnode'] = chatnode.destination
 
         if self.instance.game:
             ret["game"] = GameView.render_instance(self.instance.game, request)

@@ -1,6 +1,6 @@
 ---
-project_name: encast-api
-app_name: encast
+project_name: space-race
+app_name: apiserver
 git_branch: dev
 
 
@@ -13,8 +13,8 @@ project:
 log_root: "{{project.root}}/logs"
 
 git:
-  repo: git@github.com:encast/encast-api.git
-  http_path: https://github.com/encast/encast-api
+  repo: git@github.com:joelsemar/space-race.git
+  http_path: https://github.com/joelsemar/space-race
   branch: "{{git_branch}}"
   provider: github.com
 
@@ -25,7 +25,6 @@ nginx:
    server_names:
        - localhost
        - 127.0.0.1
-       - api-local.encast.gives
 
 django:
   root: "{{project.root}}/{{project.app_name}}"
@@ -36,26 +35,14 @@ django:
   media_root: "{{ project.root }}/media/"
   static_url: "/static/"
 
-   
-
-django_settings:
-   - "AWS_ACCESS_KEY_ID = '{{AWS_ACCESS_KEY_ID}}'"
-   - "AWS_SECRET_ACCESS_KEY = '{{AWS_SECRET_ACCESS_KEY}}'"
-   - "CN_APP_KEY = '{{CN_APP_KEY}}'"
-   - "CN_APP_ID = '{{CN_APP_ID}}'"
-   - "DWOLLA_API_KEY = '{{DWOLLA_SANDBOX_API_KEY}}'"
-   - "DWOLLA_SECRET = '{{DWOLLA_SANDBOX_SECRET}}'"
-   - "HOST = 'api-dev.encast.gives'"
-   - "SENDGRID_KEY = '{{SENDGRID_KEY}}'"
-   - "STRIPE_API_KEY = '{{STRIPE_TEST_SECRET}}'"
 
 status_path: "{{django.static_root}}status.html"
 
 
 db:
-  user: encast
-  name: encast
-  password: encast
+  user: space-race
+  name: space-race
+  password: space-race
   port: 5432
   host: 127.0.0.1
 

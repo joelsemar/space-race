@@ -1,0 +1,6 @@
+---
+git:
+  repo: git@github.com:joelsemar/space-race.git
+  http_path: https://github.com/joelsemar/space-race
+  branch: "{{git_branch}}"
+  provider: github.com

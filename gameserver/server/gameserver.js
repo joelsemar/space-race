@@ -10,6 +10,7 @@ class GameServer extends  BaseServer {
         this.name =  "GameServer";
         // how many ms to wait to abandon a game after everyone disconnects
         this.abandonGameAfter =  20000;
+        this.game = null;
     }
 
     get httpRoutes(){
@@ -120,6 +121,15 @@ class GameServer extends  BaseServer {
             action: "stop",
             available: "true"
         });
+    }
+
+    nodePayload (){
+        return {
+            host: this.host,
+            available: this.game === null,
+            node_tag: this.nodeTag
+        }
+
     }
 }
 

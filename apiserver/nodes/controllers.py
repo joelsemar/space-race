@@ -14,6 +14,7 @@ from django.conf import settings
 class NodeDto(object):
     host = "127.0.0.1"
     available = "bool"
+    node_tag = "nodeTag"
     action = "start|stop"
 
 
@@ -47,7 +48,7 @@ class BaseNodeController(BaseController):
         if node.host not in settings.NODE_HOSTS:
             return response.forbidden()
 
-        response.set(**NodeClass.objects.create(host=node.host, active=True, available=True).dict)
+        response.set(**NodeClass.objects.create(host=node.host, active=True, available=True, node_tag=node.node_tag).dict)
 
     @body(NodeDto, arg="info")
     def update(self, request, response, info):
@@ -58,7 +59,7 @@ class BaseNodeController(BaseController):
         if hasattr(info, 'available'):
             request.node.available = str_to_bool(info.available)
             request.node.save()
-            
+
         response.set(**request.node.dict)
 
 

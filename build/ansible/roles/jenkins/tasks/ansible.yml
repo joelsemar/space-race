@@ -93,7 +93,7 @@
 - name: Ansible | place secrets
   copy: >
       src={{secrets}}
-      dest={{jenkins_lib}}/{{item.project_name}}/ansible/group_vars/secrets.yml
+      dest={{jenkins_lib}}/{{item.project_name}}/ansible/vars/secrets.yml
       mode=0400
       force=yes
       owner=jenkins

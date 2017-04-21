@@ -52,7 +52,7 @@ class PlayerController(AnonymousController):
         if not player:
             return response.not_found()
 
-        if player.game and player.game.end_time:
+        if request.player and player.game and player.game.end_time:
             player = request.player.reset()
             request.session["player_token"] = str(player.token)
 

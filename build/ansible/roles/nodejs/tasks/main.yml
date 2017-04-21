@@ -1,0 +1,7 @@
+- name: determine if node is installed
+  stat: 
+    path: /usr/bin/node
+  register: node
+
+- include: install.yml
+  when: not node.stat.exists
