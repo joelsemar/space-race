@@ -7,7 +7,7 @@ if (require) {
 var Ship = Entity.extend({
     type: 'ship',
     speed: 110,
-    imageSrc: 'static/img/ship.png',
+    imageSrc: 'img/ship.png',
     vision: 1,
 
     resources: 0,

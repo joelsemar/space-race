@@ -37,3 +37,7 @@ nginx:
       direct: false
    
    
+
+static_paths:
+  - path: play
+    location: "/srv/{{project_name}}/gameserver/client/"

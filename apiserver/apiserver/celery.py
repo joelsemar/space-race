@@ -13,20 +13,3 @@ from celery.schedules import crontab
 
 app = Celery('apiserver')
 
-# Using a string here means the worker will not have to
-# pickle the object when using Windows.
-app.config_from_object('django.conf:settings')
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
-app.conf.beat_schedule = {
-    'rebuild-portfolios': {
-        'task': 'main.tasks.regenerate_portfolios',
-        'schedule': crontab(**settings.PORTFOLIO_CRONTAB_KWARGS),
-        'args': ()
-    },
-    'generate_daf_report': {
-        'task': 'main.tasks.generate_daf_report',
-        'schedule': crontab(**settings.DAF_REPORT_INTERVAL_CRONTAB_KWARGS),
-        'args': ()
-    },
-}
-

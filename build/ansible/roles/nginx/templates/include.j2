@@ -21,27 +21,15 @@ location ~ /alive$ {
 
 {% endif %}
 
-location /status.html {
-   alias {{status_path}};
-}
+{% if static_paths is defined %}
+   {% for static_path in static_paths %}
+  location /{{static_path.path}} {
+    alias {{static_path.location}};
+    index index.html;
 
-location / {
-  {% if nginx.ssl_redirect is defined %}
-    if ($http_x_forwarded_proto = 'http') {
-        return 301 https://$host$request_uri;
-    }
-  {% endif %}
-
-
-{% if django is defined %}
-    uwsgi_pass unix://run/uwsgi/app/{{ project.app_name }}/socket;
-    include uwsgi_params;
-    include /etc/nginx/sites-available/includes/cors_include;
+  }
+    {% endfor %}
 {% endif %}
-{% if nginx.static_root is defined %}
-   root {{ nginx.static_root }};
-{% endif %}
-}
 
 
 {% if nginx.proxy is defined %}
@@ -62,3 +50,26 @@ location  /{{cdn.path}} {
    return 301 $scheme://{{cdn.domain}}$request_uri;
 }
 {% endif %}
+
+location /status.html {
+   alias {{status_path}};
+}
+
+location / {
+  {% if nginx.ssl_redirect is defined %}
+    if ($http_x_forwarded_proto = 'http') {
+        return 301 https://$host$request_uri;
+    }
+  {% endif %}
+
+
+  {% if django is defined %}
+      uwsgi_pass unix://run/uwsgi/app/{{ project.app_name }}/socket;
+      include uwsgi_params;
+      include /etc/nginx/sites-available/includes/cors_include;
+  {% endif %}
+  {% if nginx.static_root is defined %}
+     root {{ nginx.static_root }};
+  {% endif %}
+}
+

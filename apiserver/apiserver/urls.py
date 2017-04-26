@@ -39,7 +39,12 @@ urlpatterns = [
     url(r'^docs/?', include(docgen_urls)),
     url(r'', include(main_urls)),
     url(r'', include(node_urls)),
-    static(settings.STATIC_URL, document_root="/home/joel/space-race/gameserver/client/")[0],
-    url(r'^(?P<file_name>.*)$', serve_html)
 
 ]
+
+if settings.ENV == "LOCAL":
+    urlpatterns += [
+        static(settings.STATIC_URL, document_root="/home/joel/space-race/gameserver/client/")[0],
+        url(r'^(?P<file_name>.*)$', serve_html)
+    ]
+

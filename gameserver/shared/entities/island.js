@@ -17,8 +17,7 @@ var pImages = ["p1shaded", 'p2shaded', "p3shaded", "p4shaded", "p5shaded", "p6sh
 var Island = Entity.extend({
 
     type: 'island',
-    imageSrc: 'static/img/luna.png',
-    imageSrcTemplate: _.template("static/img/{{name}}.png"),
+    imageSrcTemplate: _.template("img/{{name}}.png"),
     resources: 0,
     maxResources: 500,
     productionInterval: 2000,

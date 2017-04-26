@@ -38,10 +38,7 @@
     src=nginx_server.j2
     dest=/etc/nginx/sites-available/{{project.app_name}}
   tags:
-    - configuration
-    - nginx
-    - webserver
-
+    - update
 
 - name: Server | Install app specific location includes
   notify: restart nginx
@@ -49,9 +46,7 @@
     src=include.j2
     dest=/etc/nginx/sites-available/location_includes/{{project.app_name}}
   tags:
-    - configuration
-    - nginx
-    - webserver
+    - update
 
 - name: Server | Enable {{project.app_name}} server
   file: >
