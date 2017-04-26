@@ -26,9 +26,9 @@ class PlayerView(ModelView):
             ret["token"] = self.instance.token
 
         chatnode = ChatNode.objects.filter(active=True, available=True).first()
+        ret["lobby_location"] = settings.LOBBY_LOCATION
         if chatnode:
             ret['chatnode'] = chatnode.destination
-            ret["lobby_location"] = settings.LOBBY_LOCATION
 
         if self.instance.game:
             ret["game"] = GameView.render_instance(self.instance.game, request)
