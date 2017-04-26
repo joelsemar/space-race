@@ -1,0 +1,39 @@
+---
+project_name: space-race
+app_name: lobby 
+git_branch: dev
+
+
+project:
+  name: "{{project_name}}"
+  app_name: "{{app_name}}"
+  root: /srv/{{project_name}}/{{app_name}}
+
+log_root: "{{project.root}}/logs"
+build_root: "{{project.root}}/build"
+status_path: "{{build_root}}/status.html"
+
+git:
+  repo: git@github.com:joelsemar/space-race.git
+  http_path: https://github.com/joelsemar/space-race
+  branch: "{{git_branch}}"
+  provider: github.com
+
+api_host: http://10.10.10.100
+
+nginx:
+   enable_cors: true
+   log_dir: "{{log_root}}/nginx"
+   ssl_redirect: true
+   static_root: "{{build_root}}"
+   server_names:
+       - localhost
+       - 127.0.0.1
+       - local.planetgrab.com
+
+   proxy:
+      target: "http://{{groups.get('appservers')[0]}}"
+      path: "api"
+      direct: false
+   
+   

@@ -3,5 +3,5 @@
   roles:
       - common
   vars_files:
-    -  group_vars/default.yml
-    -  group_vars/{{env}}.yml
+    -  vars/default.yml
+    -  vars/{{env}}.yml

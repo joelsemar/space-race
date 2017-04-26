@@ -1,0 +1,25 @@
+---
+- name: run nodesource.sh  for nodesource binary distro
+  script: roles/react_build/files/nodesource_setup.sh
+  become: true
+  become_user: root
+   
+- name: install nodejs packages
+  apt: >
+    pkg={{item}}
+    state=installed
+    update-cache=yes
+  with_items:
+    - nodejs
+
+- name: store nodejs executable directory
+  shell: which nodejs
+  register: node_location
+
+- name: symlink nodejs executable to make "node" command available
+  file: src={{node_location.stdout}}
+        dest=/usr/bin/node
+        state=link
+
+- name: get latest npm
+  shell: npm -g install npm

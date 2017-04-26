@@ -1,0 +1,67 @@
+---
+- set_fact: task_header="Code | {{project.app_name}}"
+  tags:
+     - update
+     
+- name: "{{task_header}} | copy ssh private key for git checkouts"
+  copy: >
+      src=roles/django/files/deploy_key_ro
+      dest=/home/{{devops.app_user}}/.ssh/id_rsa_git_ro
+      mode=0400
+      force=yes
+      owner={{devops.app_user}}
+      group=www-data
+  sudo: yes
+
+- name: "{{task_header}} | set up ssh config to use key for {{git.provider}}"
+  template: >
+      src=roles/django/templates/ssh_config.j2
+      dest=~{{devops.app_user}}/.ssh/config
+      mode=0400
+      owner={{devops.app_user}}
+      group=www-data
+  sudo: yes
+
+- name: "{{task_header}} | set up .gitconfig for {{devops.app_user}}"
+  template: >
+      src=roles/django/templates/gitconfig.j2
+      dest=~{{devops.app_user}}/.gitconfig
+      mode=0664
+      owner={{devops.app_user}}
+      group=www-data
+  sudo: yes
+
+- name: "{{task_header}} | create {{project.root}} directory"
+  when: local_mount is not defined
+  file: >
+      dest={{project.root}}
+      mode=0775
+      state=directory
+      owner={{devops.app_user}}
+      group=www-data
+  sudo: yes
+
+# When developing locally we mount project root from host machine
+# having logs/ in this directory makes local debugging much easier
+# However, after every role puts their log dir in project.root/logs the directory
+# it is no longer empty, so git clone barffs
+# instead of relying on a specific execution order we 
+# check out the code to the devops.app_user home dir and symlink the code to project.root
+- name: "{{task_header}} | checkout code"
+  git: >
+      dest=/home/{{devops.app_user}}/{{project.name}}
+      repo={{git.repo}}
+      version={{git.branch}}
+      force=yes
+      accept_hostkey=yes
+  sudo: yes
+  sudo_user: "{{devops.app_user}}"
+  tags:
+     - update
+
+- name: "{{task_header}} | Symlink project to project root"
+  when: local_mount is not defined
+  file: >
+      src=/home/{{devops.app_user}}/{{project.name}}/{{project.app_name}}
+      dest={{project.root}}/{{project.app_name}}
+      state=link

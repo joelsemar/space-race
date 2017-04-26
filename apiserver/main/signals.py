@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from services.utils import DateTimeAwareJSONEncoder
 
 
-from nodes.models import GameNode, ChatNode
+from nodes.models import GameNode, ChatNode, update_inactive_nodes
 from main.models import Player, Game
 
 logger = logging.getLogger("default")
@@ -31,10 +31,14 @@ def handle_game_delete(sender, instance=None, created=False, **kwargs):
 
 
 def assign_to_node(game):
+    logger.debug("Assigning node to game: %s " % game.dict)
+    update_inactive_nodes()
     node = GameNode.objects.filter(active=True, available=True).first()
     if not node:
         logger.debug("no available nodes!")
         return
+
+    logger.debug("Found node: ")
     game.node = node
     node.available = False
     payload = game.dict
@@ -53,9 +57,9 @@ def assign_to_node(game):
 
 def update_lobby():
     logger.debug("Updating lobby")
-    try:
-        node = ChatNode.objects.get(active=True)
-    except ChatNode.DoesNotExist:
+    update_inactive_nodes()
+    nodes = ChatNode.objects.filter(active=True, available=True)
+    if not nodes.count():
         logger.debug("No available chat nodes!")
         return
 
@@ -69,12 +73,13 @@ def update_lobby():
                               for p in Player.objects.filter(game=game)]
         ret.append(payload)
 
-    resp = send_to_node(node, "/lobby", ret)
-    logger.debug(resp)
-    logger.debug(resp.content)
+    for node in nodes:
+        resp = send_to_node(node, "/lobby", ret)
+        logger.debug(resp)
+        logger.debug(resp.content)
 
 
 def send_to_node(node, path, data):
     headers = {'Content-Type': 'application/json'}
-    data = json.dumps(data, cls = DateTimeAwareJSONEncoder)
+    data = json.dumps(data, cls=DateTimeAwareJSONEncoder)
     return requests.put(node.destination + path, data, headers=headers)

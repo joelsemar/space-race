@@ -104,6 +104,7 @@ var Entity = Rect.extend({
         }
         if (this.vel.x || this.vel.y) {
             this.pos.add(this.vel.mulNew(delta / 1000));
+            this.pos.floor();
         }
         var sectorSize = getGame().sectorSize;
         this.sector = utils.computeSector(this.center(), sectorSize);

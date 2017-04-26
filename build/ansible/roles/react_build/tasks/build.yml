@@ -36,16 +36,17 @@
 #    -update
 
 
-- name: upload static assets
-  s3:
-    aws_access_key: "{{AWS_ACCESS_KEY_ID}}"
-    aws_secret_key: "{{AWS_SECRET_ACCESS_KEY}}"
-    bucket: "{{ cdn.s3_bucket }}"
-    mode: put
-    object: "static/{{ item }}"
-    src: "{{react_app_location}}/build/static/{{ item }}"
-    permission: "public-read"
-  with_items: "{{ static_files_cmd.stdout|from_json }}"
+#- name: upload static assets
+#  s3:
+#    aws_access_key: "{{AWS_ACCESS_KEY_ID}}"
+#    aws_secret_key: "{{AWS_SECRET_ACCESS_KEY}}"
+#    bucket: "{{ cdn.s3_bucket }}"
+#    mode: put
+#    object: "static/{{ item }}"
+#    src: "{{react_app_location}}/build/static/{{ item }}"
+#    permission: "public-read"
+#  with_items: "{{ static_files_cmd.stdout|from_json }}"
+#  when: no
 
 - name: create build archive
   shell: "tar -cvzf  build_{{current_git_commit.stdout}}.tgz build/"

@@ -9,12 +9,14 @@ from main.models import Game
 from views import NodeGameView
 
 from django.conf import settings
+import logging
+logger = logging.getLogger("default")
 
 
 class NodeDto(object):
     host = "127.0.0.1"
-    port = "8001"
     available = "bool"
+    node_tag = "nodeTag"
     action = "start|stop"
 
 
@@ -46,12 +48,11 @@ class BaseNodeController(BaseController):
         """
         NodeClass = self.node_class()
         if node.host not in settings.NODE_HOSTS:
+            logger.debug("Failed attempt to register host %s, should be one of %s" % (node.host, ','.join(settings.NODE_HOSTS)))
             return response.forbidden()
 
-        if NodeClass.objects.filter(active=True, host=node.host, port=node.port).exists():
-            return response.forbidden()
-
-        response.set(**NodeClass.objects.create(host=node.host, port=node.port, active=True, available=True).dict)
+        response.set(**NodeClass.objects.create(host=node.host, active=True,
+                                                available=True, node_tag=node.node_tag).dict)
 
     @body(NodeDto, arg="info")
     def update(self, request, response, info):
@@ -60,8 +61,10 @@ class BaseNodeController(BaseController):
         API Handler: PUT /node
         """
         if hasattr(info, 'available'):
-            request.node.available = str_to_bool(info.available)
+            request.node.available=str_to_bool(info.available)
             request.node.save()
+
+        response.set(**request.node.dict)
 
 
 class ChatNodeController(BaseNodeController):
@@ -80,7 +83,7 @@ class ChatNodeController(BaseNodeController):
 
 
 class GameNodeController(BaseNodeController):
-    view = NodeGameView
+    view=NodeGameView
 
     def node_class(self):
         return GameNode
@@ -91,15 +94,15 @@ class GameNodeController(BaseNodeController):
         API Handler: GET /node
         """
         try:
-            game = Game.objects.get(node=request.node, end_time=None)
+            game=Game.objects.get(node=request.node, end_time=None)
         except Game.DoesNotExist:
-            game = Game.objects.filter(ready=True, node=None, end_time=None).order_by("created_date").first()
+            game=Game.objects.filter(ready=True, node=None, end_time=None).order_by("created_date").first()
             if not game:
                 return response.not_found()
 
-            game.node = request.node
+            game.node=request.node
             game.save()
-            request.node.available = False
+            request.node.available=False
             request.node.save()
 
         response.set(instance=game)
@@ -114,12 +117,13 @@ class GameNodeController(BaseNodeController):
 
         if info.action:
             try:
-                game = Game.objects.get(node=request.node, end_time=None)
+                game=Game.objects.get(node=request.node, end_time=None)
             except Game.DoesNotExist:
                 return
 
             if info.action == 'start' and game.start_time is None:
-                game.start_time = datetime.utcnow()
+                game.start_time=datetime.utcnow()
             if info.action == 'stop' and game.end_time is None:
-                game.end_time = datetime.utcnow()
+                game.end_time=datetime.utcnow()
+                game.players.update(game=None)
             game.save()

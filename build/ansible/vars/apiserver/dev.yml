@@ -1,0 +1,9 @@
+---
+nginx:
+   enable_cors: true
+   log_dir: "{{log_root}}/nginx"
+   ssl_redirect: true
+   server_names:
+       - localhost
+       - 127.0.0.1
+       - api-dev.planetgrab.com

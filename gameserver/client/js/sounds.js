@@ -2,7 +2,7 @@ var playlist = ["candlepower", "are_you_you", ]
 
 var soundtrack = new Howl({
     src: ['static/sounds/candlepower.mp3'],
-    autoplay: false,
+    autoplay: true,
     loop: true,
     html5: true,
     volume: 0.5,

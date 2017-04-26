@@ -1,0 +1,14 @@
+nginx:
+   enable_cors: true
+   log_dir: "{{log_root}}/nginx"
+   ssl_redirect: true
+   static_root: "{{build_root}}"
+   server_names:
+       - localhost
+       - 127.0.0.1
+       - dev.planetgrab.com
+
+   proxy:
+      target: "http://{{groups.get('appservers')[0]}}"
+      path: "api"
+      direct: false

@@ -89,22 +89,22 @@ var Ship = Entity.extend({
 
 
     draw: function (ctx, offsetPos) {
-        var x = offsetPos.x;
-        var y = offsetPos.y;
         var center = this.center();
+        var halfWidth = Math.floor(this.size.x/2);
+        var halfHeight = Math.floor(this.size.y/2);
         ctx.save();
         ctx.font = '12px';
         ctx.lineWidth = 1;
-        ctx.translate(x + this.size.x / 2, y + this.size.y / 2);
+        ctx.translate(x + halfWidth, y + halfHeight);
         ctx.rotate(Math.PI - this.vel.angle());
-        ctx.translate(-this.size.x / 2, -this.size.y / 2);
+        ctx.translate(-1 * halfWidth, -1 * halfHeight);
         ctx.drawImage(this.image, 0, 0, this.size.x, this.size.y);
         ctx.beginPath();
         ctx.lineWidth = 1;
         if (this.playerId !== 'neutral') {
             ctx.strokeStyle = getGame().entityManager.entityById(this.playerId).color;
         }
-        ctx.arc(this.size.x / 2, this.size.y / 2, this.size.x / 2 + 20, 0, Math.PI * 2, true);
+        ctx.arc(halfWidth,  halfHeight, halfWidth + 20, 0, Math.PI * 2, true);
         ctx.closePath();
         ctx.stroke();
         ctx.rotate(-1 * (Math.PI - this.vel.angle()));
@@ -112,8 +112,7 @@ var Ship = Entity.extend({
         ctx.strokeStyle = 'white';
         ctx.strokeText(this.resources, 0, 0);
         ctx.restore();
-    },
-
+    }
 
 });
 

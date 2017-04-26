@@ -10,6 +10,7 @@ class GameServer extends  BaseServer {
         this.name =  "GameServer";
         // how many ms to wait to abandon a game after everyone disconnects
         this.abandonGameAfter =  20000;
+        this.game = null;
     }
 
     get httpRoutes(){
@@ -84,7 +85,7 @@ class GameServer extends  BaseServer {
         if (!player) {
             return;
         }
-        console.log('received upgrade request: ' + JSON.stringify(data));
+        this.log('received upgrade request: ' + JSON.stringify(data));
     }
 
     updateClients () {
@@ -121,12 +122,21 @@ class GameServer extends  BaseServer {
             available: "true"
         });
     }
+
+    nodePayload (){
+        return {
+            host: this.host,
+            available: this.game === null,
+            node_tag: this.nodeTag
+        }
+
+    }
 }
 
 class GameHttpController extends BaseHttpController {
 
     update (req, onComplete){
-        console.log("Received: " + JSON.stringify(req.body));
+        console.log("GAMESERVER: Received: " + JSON.stringify(req.body));
         this.server.gameUpdate(req.body);
         onComplete();
     }

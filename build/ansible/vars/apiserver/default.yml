@@ -1,0 +1,83 @@
+---
+project_name: space-race
+app_name: apiserver
+git_branch: dev
+
+
+project:
+  name: "{{project_name}}"
+  app_name: "{{app_name}}"
+  root: /srv/{{project_name}}
+  virtualenv: "/srv/python-env"
+
+log_root: "{{project.root}}/logs"
+
+git:
+  repo: git@github.com:joelsemar/space-race.git
+  http_path: https://github.com/joelsemar/space-race
+  branch: "{{git_branch}}"
+  provider: github.com
+
+nginx:
+   enable_cors: true
+   log_dir: "{{log_root}}/nginx"
+   ssl_redirect: true
+   server_names:
+       - localhost
+       - 127.0.0.1
+       - api-local.planetgrab.com
+
+django:
+  root: "{{project.root}}/{{project.app_name}}"
+  settings: "{{project.app_name}}.settings"
+  log_dir: "{{log_root}}/{{project.app_name}}"
+  db_engine: django.db.backends.postgresql
+  static_root: "{{ project.root }}/static/"
+  media_root: "{{ project.root }}/media/"
+  static_url: "/static/"
+
+
+status_path: "{{django.static_root}}status.html"
+
+
+db:
+  user: space-race
+  name: space-race
+  password: space-race
+  port: 5432
+  host: 127.0.0.1
+
+uwsgi:
+   processes: 2
+   max_requests: 1000
+   module: "{{project.app_name}}.wsgi"
+   log_dir: "{{project.root}}/logs/uwsgi"
+
+
+celery:
+  app_path: "{{django.root}}/{{project.app_name}}/celery.py"
+  log_dir: "{{project.root}}/logs/celery"
+  # celery # of workers per node and "concurrency" (process/threads)  
+  # The celery docs have this to say: 
+  #
+  # More pool processes are usually better, but there’s a cut-off point where adding more pool processes 
+  # affects performance in negative ways. There is even some encastence to support that having multiple worker
+  # instances running, may perform better than having a single worker. 
+  # For example 3 workers with 10 pool processes each. You need to experiment to find the numbers that works best for you,
+  # as this varies based on application, work load, task run times and other factors.
+  workers: 2
+  concurrency: 4
+
+
+
+message_queue:
+  redis_port: 6379
+  redis_id: 2 
+  host: 127.0.0.1
+
+ops_settings_file: "{{django.root}}/{{project.app_name}}/ops_settings.py"
+
+
+
+
+

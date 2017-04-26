@@ -106,9 +106,9 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = ["/home/joel/space-race/gameserver/client/"]
 
 NODE_HOSTS = ["127.0.0.1", "192.168.0.2"]
+
 #LOG_FILE = os.path.join('/srv/encast-api/logs/encast', "encast.log")
 LOGGING = {
     'version': 1,
@@ -178,3 +178,7 @@ LOGGING = {
     }
 }
 API_RESPONSE_LEGACY_FORMAT = False
+try:
+    from apiserver.ops_settings import *
+except ImportError:
+    pass

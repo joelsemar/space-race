@@ -190,7 +190,7 @@ var Game = BaseGame.extend({
             type: "POST",
             url: "/player/reset",
             success: function () {
-                document.location.href = "/";
+                document.location.href = player.lobby_location;
             },
         })
     },
@@ -232,7 +232,7 @@ $(function () {
         url: "player",
         success: function (player) {
             if (!player.game) {
-                window.location.href = "/";
+                window.location.href = player.lobby_location;
             }
             var game = new Game();
 
@@ -244,7 +244,7 @@ $(function () {
         },
 
         error: function (err) {
-            window.location.href = "/";
+            window.location.href = player.lobby_location;
         }
     });
 });

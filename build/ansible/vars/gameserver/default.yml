@@ -1,0 +1,24 @@
+---
+project_name: space-race
+app_name: gameserver
+git_branch: dev
+
+
+project:
+  name: "{{project_name}}"
+  app_name: "{{app_name}}"
+  root: /srv/{{project_name}}/{{app_name}}
+  virtualenv: /srv/python-env
+  executable: main.js
+  entrypoint: /srv/{{project_name}}/{{app_name}}/server/main.js
+
+log_root: "{{project.root}}/logs"
+
+git:
+  repo: git@github.com:joelsemar/space-race.git
+  http_path: https://github.com/joelsemar/space-race
+  branch: "{{git_branch}}"
+  provider: github.com
+
+api_host: http://10.10.10.100
+

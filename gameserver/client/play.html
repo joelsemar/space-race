@@ -17,7 +17,21 @@
                     this.restore();
                 }
             };
+        WebGLRenderingContext.prototype.clear =
+            WebGLRenderingContext.prototype.clear || function(preserveTransform) {
+                if (preserveTransform) {
+                    this.save();
+                    this.setTransform(1, 0, 0, 1, 0, 0);
+                }
+
+                this.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (preserveTransform) {
+                    this.restore();
+                }
+            };
     </script>
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
@@ -74,7 +88,6 @@
                 <div class="modal-body" id="gameOverBody">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="gameOverKeepWatching">Keep Watching</button>
                     <button type="button" class="btn btn-primary" id="gameOverExit">Exit</button>
                 </div>
             </div>

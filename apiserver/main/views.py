@@ -1,6 +1,7 @@
 from services.views import ModelView, QuerySetView
 from main.models import Player
 from nodes.models import ChatNode
+from django.conf import settings
 
 # Create your views here.
 
@@ -11,6 +12,7 @@ class GameView(ModelView):
         ret = super(GameView, self).render(request)
         ret["players"] = QuerySetView.inline_render(self.instance.players, request)
         ret["state"] = self.instance.state
+        ret["location"] = settings.GAME_LOCATION
         if self.instance.node:
             ret["node"] = self.instance.node.destination
         return ret
@@ -23,10 +25,10 @@ class PlayerView(ModelView):
         if request.player and request.player.id == self.instance.id:
             ret["token"] = self.instance.token
 
-        try:
-            ret["chatnode"] = ChatNode.objects.get(active=True).destination
-        except ChatNode.DoesNotExist:
-            pass
+        chatnode = ChatNode.objects.filter(active=True, available=True).first()
+        if chatnode:
+            ret['chatnode'] = chatnode.destination
+            ret["lobby_location"] = settings.LOBBY_LOCATION
 
         if self.instance.game:
             ret["game"] = GameView.render_instance(self.instance.game, request)

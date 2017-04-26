@@ -15,6 +15,8 @@
 
 [staticwebservers]
 10.10.10.100
+[gameservers]
+10.10.10.100
 
 [local]
 localhost ansible_connection=local ansible_python_interpreter=python

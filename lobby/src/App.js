@@ -38,6 +38,7 @@ class App extends Component {
         api.getPlayer(player => {
             this.setUp(player);
         }, () => {
+            this.setState({player: false})
             dataStore.clearPlayer();
         })
 
@@ -81,7 +82,7 @@ class App extends Component {
 
     onLogin = (player) => {
         this.setState({player: player});
-        dataStore.savePlayer(player);
+        this.setUp(player);
     }
 
     onGameJoined = (game) => {
@@ -95,7 +96,7 @@ class App extends Component {
     componentDidUpdate(){
         if(this.state.currentGame && this.state.currentGame.node){
             console.log("opening game")
-            window.location.href = "http://127.0.0.1:8000/play"
+            window.location.href = this.state.currentGame.location
         }
 
     }

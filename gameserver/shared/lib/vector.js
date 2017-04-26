@@ -13,6 +13,12 @@ var Vector = Class.extend({
             this.x = x;
             this.y = y;
         }
+        this.floor();
+    },
+    floor: function(){
+        this.x = Math.floor(this.x);
+        this.y = Math.floor(this.y);
+        return this;
     },
 
     print: function () {
@@ -26,7 +32,7 @@ var Vector = Class.extend({
     mul: function (factor) {
         this.x *= factor;
         this.y *= factor;
-        return this;
+        return this.floor();
     },
 
     scalarProd: function (vec) {
@@ -40,7 +46,7 @@ var Vector = Class.extend({
     add: function (vec) {
         this.x += vec.x;
         this.y += vec.y;
-        return this;
+        return this.floor();
     },
 
     addNew: function (vec) {
@@ -50,7 +56,7 @@ var Vector = Class.extend({
     sub: function (vec) {
         this.x -= vec.x;
         this.y -= vec.y;
-        return this;
+        return this.floor();
     },
 
     subNew: function (vec) {
@@ -63,7 +69,7 @@ var Vector = Class.extend({
             y = this.y;
         this.x = x * Math.cos(angle) - Math.sin(angle) * y;
         this.y = x * Math.sin(angle) + Math.cos(angle) * y;
-        return this;
+        return this.floor();
     },
 
     // angle still in radians
@@ -76,7 +82,7 @@ var Vector = Class.extend({
         var l = this.len();
         this.x = Math.cos(angle) * l;
         this.y = Math.sin(angle) * l;
-        return this;
+        return this.floor();
     },
 
     // RADIANS

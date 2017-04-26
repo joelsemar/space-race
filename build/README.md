@@ -23,7 +23,7 @@ Get it here: https://www.virtualbox.org/wiki/Downloads
 2. make sure `devops.key` , `devops.public_key`,are paths on your system that make sense. You can use any valid keypair.
 3. `vagrant up`
 4. Grab a cup of coffee
-5. place your secrets.yml file in ansible/group_vars/secrets.yml (sensitive data, not version controlled)
+5. place your secrets.yml file in ansible/vars/secrets.yml (sensitive data, not version controlled)
 6. install local machine dependencies `pip install -r requirements.txt && sudo apt-get install libpq-dev`
 7. `./deploy.py local`
 

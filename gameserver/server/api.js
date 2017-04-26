@@ -32,11 +32,18 @@ class ApiClient {
         endpoint = endpoint || "node";
         success = success || function() {};
 
-        var callback = (body) => {
-            this.storeToken(body.token);
-            success();
+        if(this.token){
+            this.updateNode(endpoint, payload, success, error);
+            return;
         }
+
+        var callback = (node) => {
+            this.storeToken(node.token);
+            success(node);
+        }
+
         this.post(endpoint, payload, callback, error);
+
     }
 
     updateNode(endpoint, payload, success, error) {

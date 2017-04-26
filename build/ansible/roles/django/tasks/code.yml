@@ -84,9 +84,9 @@
 
 - name: "{{task_header}} | Install python requirements files"
   pip: >
-      requirements=/home/{{devops.app_user}}/{{project.name}}/requirements.txt
+      requirements={{project.root}}/{{project.app_name}}/requirements.txt
       virtualenv={{project.virtualenv}}
-      use_mirrors=yes
+      use_mirrors=yes 
       extra_args="--upgrade"
   notify:
     - restart uwsgi

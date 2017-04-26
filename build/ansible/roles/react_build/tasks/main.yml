@@ -1,12 +1,4 @@
 ---
-- name: determine if node is installed
-  stat: 
-    path: /usr/bin/node
-  register: node
-
-- include: install_npm.yml
-  when: not node.stat.exists
-
 - name: get current git commit
   shell: git rev-parse HEAD chdir={{react_app_location}}
   register: current_git_commit
@@ -24,6 +16,7 @@
   args:
      chdir: "{{react_app_location}}/build/static"
   register: static_files_cmd
+  when: no
   tags:
      - update
   

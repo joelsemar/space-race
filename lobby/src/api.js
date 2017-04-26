@@ -81,7 +81,7 @@ class Api {
         xhr({
             body: JSON.stringify(data),
             method: method,
-            uri: path,
+            uri: "/api/" + path,
             headers: {
                 "Content-Type": "application/json"
             }

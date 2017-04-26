@@ -1,0 +1,44 @@
+---
+- include: code.yml
+- name: install forever
+  npm: name=forever global=yes state=present
+
+- name: run npm install
+  npm: 
+    path:  "{{project.root}}"
+
+
+- name: "Check list of Node.js apps running."
+  command: forever list
+  register: forever_list
+  changed_when: false
+  tags:
+     - bounce
+     - update
+
+- name: "Place config.js"
+  template: >
+      dest={{project.root}}/server/config.js
+      src=roles/gameserver/templates/config.js.j2
+      owner={{devops.app_user}}
+      group=www-data
+      mode=775
+  tags:
+     - update
+
+
+
+- name: "Start forever server"
+  command: forever start {{project.entrypoint}}
+  become: true
+  become_user: "{{devops.app_user}}"
+  when: "forever_list.stdout.find('{{project.executable}}') == -1"
+
+- name: "Restart forever"
+  command: forever restart {{project.entrypoint}}
+  become: true
+  become_user: "{{devops.app_user}}"
+  when: "forever_list.stdout.find('{{project.entrypoint}}') != -1"
+  tags:
+     - bounce
+     - update
