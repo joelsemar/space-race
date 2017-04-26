@@ -2,6 +2,7 @@ import logging
 import requests
 import json
 from django.db.models.signals import post_save, post_delete
+from django.conf import settings
 from django.dispatch import receiver
 from services.utils import DateTimeAwareJSONEncoder
 
@@ -67,6 +68,7 @@ def update_lobby():
     ret = []
     for game in games:
         payload = game.dict
+        payload["location"] = settings.GAME_LOCATION
         if game.node:
             payload['node'] = game.node.destination
         payload['players'] = [{'id': p.id, 'nickname': p.nickname, 'ready': p.ready}

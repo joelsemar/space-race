@@ -33,6 +33,9 @@
   become: true
   become_user: "{{devops.app_user}}"
   when: "forever_list.stdout.find('{{project.executable}}') == -1"
+  tags:
+     - bounce
+     - update
 
 - name: "Restart forever"
   command: forever restart {{project.entrypoint}}
