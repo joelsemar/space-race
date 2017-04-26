@@ -31,15 +31,6 @@
       group=www-data
   sudo: yes
 
-- name: "{{task_header}} | create {{project.root}} directory"
-  when: local_mount is not defined
-  file: >
-      dest={{project.root}}
-      mode=0775
-      state=directory
-      owner={{devops.app_user}}
-      group=www-data
-  sudo: yes
 
 # When developing locally we mount project root from host machine
 # having logs/ in this directory makes local debugging much easier
@@ -63,5 +54,5 @@
   when: local_mount is not defined
   file: >
       src=/home/{{devops.app_user}}/{{project.name}}/{{project.app_name}}
-      dest={{project.root}}/{{project.app_name}}
+      dest={{project.root}}
       state=link
