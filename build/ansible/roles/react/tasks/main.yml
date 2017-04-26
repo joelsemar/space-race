@@ -24,3 +24,15 @@
   when: current_build.stat.exists
   tags: 
     - update
+
+
+# this should go away but necessary for now
+# maybe start bundling up js files and/or break game client down to new role
+- name: symlink game lib dirs
+  file: >
+    src={{game_client_root}}/../shared/{{item}}
+    dest={{game_client_root}}/js/{{item}}
+    state=link
+  with_items:
+      - entities
+      - lib

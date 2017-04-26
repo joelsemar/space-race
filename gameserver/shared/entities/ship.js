@@ -95,8 +95,8 @@ var Ship = Entity.extend({
         ctx.save();
         ctx.font = '12px';
         ctx.lineWidth = 1;
-        ctx.translate(x + halfWidth, y + halfHeight);
-        ctx.rotate(Math.PI - this.vel.angle());
+        ctx.translate(offsetPos.x + halfWidth, offsetPos.y + halfHeight);
+        ctx.rotate(this.vel.angle() + Math.PI/2);
         ctx.translate(-1 * halfWidth, -1 * halfHeight);
         ctx.drawImage(this.image, 0, 0, this.size.x, this.size.y);
         ctx.beginPath();
@@ -107,7 +107,7 @@ var Ship = Entity.extend({
         ctx.arc(halfWidth,  halfHeight, halfWidth + 20, 0, Math.PI * 2, true);
         ctx.closePath();
         ctx.stroke();
-        ctx.rotate(-1 * (Math.PI - this.vel.angle()));
+        ctx.rotate(-1 * (this.vel.angle() + Math.PI/2));
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'white';
         ctx.strokeText(this.resources, 0, 0);

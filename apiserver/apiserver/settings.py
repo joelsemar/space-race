@@ -179,6 +179,7 @@ LOGGING = {
 }
 API_RESPONSE_LEGACY_FORMAT = False
 try:
-    from apiserver.ops_settings import *
+   # from apiserver.ops_settings import *
+   pass
 except ImportError:
     pass

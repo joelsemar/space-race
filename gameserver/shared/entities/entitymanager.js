@@ -74,7 +74,7 @@ var EntityManager = Class.extend({
         for (var id in this.entities) {
             entity = this.entities[id];
             if (utils.rectsIntersect(game.viewport, entity) || entity.type === 'UIElement' || entity.type === 'player') {
-                entity.draw(game.viewport.ctx, game.viewport.getOffset(entity.pos));
+                entity.draw(game.viewport.ctx, game.viewport.getOffset(entity.pos).floor());
                 if (game.debug) {
                     entity.drawDebug();
                 }

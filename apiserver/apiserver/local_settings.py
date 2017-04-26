@@ -1,4 +1,4 @@
 NODE_HOSTS = ["10.10.10.100"]
-LOBBY_LOCATION = 'http://192.168.0.2:3000'
-GAME_LOCATION = 'http://192.168.0.2:8000/play'
+LOBBY_LOCATION = 'http://local.planetgrab.com/'
+GAME_LOCATION = 'http://local.planetgrab.com/play'
 #STATICFILES_DIRS = ["/home/joel/space-race/gameserver/client/"]

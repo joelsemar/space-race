@@ -39,7 +39,7 @@ if args.env == "local":
     bootstrap_key = "~/.vagrant.d/insecure_private_key"
 
 else:
-    bootstrap_user = 'ubuntu'
+    bootstrap_user = 'root'
     bootstrap_key = app_config['devops']['key']
 
 

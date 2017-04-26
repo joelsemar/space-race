@@ -12,7 +12,7 @@ project:
 log_root: "{{project.root}}/logs"
 build_root: "{{project.root}}/build"
 status_path: "{{build_root}}/status.html"
-
+game_client_root: /srv/{{project_name}}/gameserver/client/
 git:
   repo: git@github.com:joelsemar/space-race.git
   http_path: https://github.com/joelsemar/space-race
@@ -32,12 +32,12 @@ nginx:
        - local.planetgrab.com
 
    proxy:
-      target: "http://{{groups.get('appservers')[0]}}"
-      path: "api"
+      target: http://{{groups.get('appservers')[0]}}
+      path: api
       direct: false
    
    
 
 static_paths:
   - path: play
-    location: "/srv/{{project_name}}/gameserver/client/"
+    location: "{{game_client_root}}"

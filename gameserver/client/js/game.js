@@ -229,7 +229,7 @@ var getGame;
 
 $(function () {
     $.ajax({
-        url: "player",
+        url: "/api/player",
         success: function (player) {
             if (!player.game) {
                 window.location.href = player.lobby_location;
@@ -244,7 +244,8 @@ $(function () {
         },
 
         error: function (err) {
-            window.location.href = player.lobby_location;
+            debugger;
+            window.location.href = '/';
         }
     });
 });
