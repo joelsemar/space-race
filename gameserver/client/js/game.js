@@ -188,7 +188,7 @@ var Game = BaseGame.extend({
         console.log("exiting");
         $.ajax({
             type: "POST",
-            url: "/player/reset",
+            url: "/api/player/reset",
             success: function () {
                 document.location.href = player.lobby_location;
             },
