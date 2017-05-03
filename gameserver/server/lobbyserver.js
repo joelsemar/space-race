@@ -1,5 +1,5 @@
 var BaseServer = require("./baseserver.js"),
-    BaseHttpController = require('./basehttpcontroller.js'),
+    BaseHttpController = require('./basehttpcontroller.js').BaseHttpController,
     _ = require('underscore');
 
 _.templateSettings = {
@@ -30,6 +30,7 @@ class LobbyServer extends BaseServer {
         this.joinMessageTemplate =  _.template("{{nickname}} has joined.");
         this.leftMessageTemplate =  _.template("{{nickname}} has left.");
         this.systemNick = "SYSTEM";
+        this.rooms = {};
     }
 
     joinChat(data, socket) {
@@ -47,22 +48,39 @@ class LobbyServer extends BaseServer {
         });
 
         socket.join(data.r);
+        this.joinRoom(player, data.r);
         this.io.sockets.in(data.r).emit("message", this.buildJoinMessage(player.nickname));
         if (socket.room) {
             this.io.sockets.in(socket.room).emit("message", this.buildLeaveMessage(player.nickname));
         }
         socket.room = data.r;
+        socket.playerId = player.id;
         socket.nickname = player.nickname;
 
+    }
+
+    joinRoom(player, room){
+        if(!this.rooms[room]){
+            this.rooms[room] = {};
+        }
+        this.rooms[room][player.id] = player.nickname;
+        this.updateRoomList(room);
+    }
+
+    leaveRoom(playerId, room){
+        this.rooms[room][playerId] = null;
+        this.updateRoomList(room);
     }
 
     disconnect(socket) {
         if (!socket.nickname || !socket.room) {
             return;
         }
+        this.leaveRoom(socket.playerId, socket.room);
         this.log("Player {{nickname}} left chat: {{room}}",
                 { nickname: socket.nickname, room: socket.room });
         this.io.sockets.in(socket.room).emit("message", this.buildLeaveMessage(socket.nickname));
+        this.updateRoomList(socket.room);
 
     }
 
@@ -97,9 +115,12 @@ class LobbyServer extends BaseServer {
         }
         this.io.sockets.in(socket.room).emit("message", payload);
     }
-
+    updateRoomList(room){
+        this.io.sockets.in(room).emit("playerList", _.values(this.rooms[room]));
+    }
 
 }
+
 
 class LobbyHttpController extends BaseHttpController {
 

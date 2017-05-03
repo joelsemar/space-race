@@ -39,6 +39,12 @@ class BaseNode(BaseModel):
             if str(port) not in existing:
                 return port
 
+    @classmethod
+    def get_active_nodes(cls):
+        now = datetime.utcnow()
+        cutoff = now - timedelta(milliseconds=NODE_EXPIRY)
+        return cls.objects.filter(last_modified__gte=cutoff)
+
 
 def update_inactive_nodes():
     now = datetime.utcnow()

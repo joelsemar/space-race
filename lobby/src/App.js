@@ -14,6 +14,7 @@ import stars_bg from "./img/stars.png";
 
 window.dataStore = new DataStore();
 window.api = api;
+const MAX_CONNECTION_FAILURES = 5;
 
 const dataStore = new DataStore();
 
@@ -26,7 +27,9 @@ class App extends Component {
             submittedNick: false,
             games: [],
             loading: true,
-            currentGame: false
+            currentGame: false,
+            error: false,
+            connectionErrors: 0
         }
     }
 
@@ -45,7 +48,24 @@ class App extends Component {
     }
 
     setUp(player) {
-        var socket = io.connect(player.chatnode, () => {});
+        var socket = io.connect(player.chatnode, () => {
+            this.setState({error: false, connectionErrors: 0})
+        });
+
+        socket.io.on("connect_error", (err) => {
+            this.setState(prevState => {
+                return {error: "Unable to connect to the lobby: " + err,
+                        connectionErrors: prevState.connectionErrors + 1}
+            })
+        })
+
+        socket.io.on("connect", () => {
+            this.setState({error: false, connectionErrors: 0})
+        })
+
+        socket.io.on("reconnect", () => {
+            this.setState({error: false})
+        })
 
         api.getGames((response) => {
             this.setState({games: response.results})
@@ -93,10 +113,20 @@ class App extends Component {
         this.setState({player: player, currentGame: false})
     }
 
+    onErrorDismissed = () => {
+        this.setState({error: false})
+    }
+
     componentDidUpdate(){
         if(this.state.currentGame && this.state.currentGame.node){
             console.log("opening game")
             window.location.href = this.state.currentGame.location
+        }
+        
+        if(this.state.connectionErrors >= MAX_CONNECTION_FAILURES){
+            this.setState({connectionErrors: 0, error: false})
+            this.state.socket.io.disconnect();
+            this.fetchPlayer();
         }
 
     }
@@ -128,6 +158,7 @@ class App extends Component {
                     </div>
                     <LoginDialog onLogin={this.onLogin} open={!this.state.player}/>
                 </div>
+                <ErrorDialog open={this.state.error != false} message={this.state.error} onErrorDismissed={this.onErrorDismissed}/>
             </div>
         )
     }
@@ -179,6 +210,16 @@ class LoginDialog extends Component {
         )
 
     }
+
+}
+
+var ErrorDialog = (props) => {
+    return (
+        <Dialog open={props.open} title="Server Error">
+            {props.message}
+            <RaisedButton  fullWidth={false} onTouchTap={props.onErrorDismissed} label="Dismiss"/>
+        </Dialog>
+    )
 
 
 }

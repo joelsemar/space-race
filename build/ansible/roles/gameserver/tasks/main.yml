@@ -29,19 +29,19 @@
 
 
 - name: "Start forever server"
-  command: forever start {{project.entrypoint}}
+  command: forever start {{project.entrypoint}} --uid={{project.app_name}}
   become: true
   become_user: "{{devops.app_user}}"
-  when: "forever_list.stdout.find('{{project.entrypoint}}') == -1"
+  when: "forever_list.stdout.find('{{project.app_name}}') == -1"
   tags:
      - bounce
      - update
 
 - name: "Restart forever"
-  command: forever restart {{project.entrypoint}}
+  command: forever restart {{project.app_name}}
   become: true
   become_user: "{{devops.app_user}}"
-  when: "forever_list.stdout.find('{{project.entrypoint}}') != -1"
+  when: "forever_list.stdout.find('{{project.app_name}}') != -1"
   tags:
      - bounce
      - update

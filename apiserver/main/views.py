@@ -11,10 +11,7 @@ class GameView(ModelView):
     def render(self, request):
         ret = super(GameView, self).render(request)
         ret["players"] = QuerySetView.inline_render(self.instance.players, request)
-        ret["state"] = self.instance.state
         ret["location"] = settings.GAME_LOCATION
-        if self.instance.node:
-            ret["node"] = self.instance.node.destination
         return ret
 
 
@@ -25,7 +22,7 @@ class PlayerView(ModelView):
         if request.player and request.player.id == self.instance.id:
             ret["token"] = self.instance.token
 
-        chatnode = ChatNode.objects.filter(active=True, available=True).first()
+        chatnode = ChatNode.get_active_nodes().filter(available=True).first()
         ret["lobby_location"] = settings.LOBBY_LOCATION
         if chatnode:
             ret['chatnode'] = chatnode.destination

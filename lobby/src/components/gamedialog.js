@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import RaisedButton from 'material-ui/RaisedButton';
 import Dialog from "material-ui/Dialog"
 import TextField from "material-ui/TextField"
+import SelectField from 'material-ui/SelectField';
+import MenuItem from 'material-ui/MenuItem';
 import close_button_img from "../img/btn-cancel.svg";
 
 class GameDialog extends Component {
@@ -23,8 +25,12 @@ class GameDialog extends Component {
         }
     }
 
-    onFieldChanged = (fieldName, event, val) => {
-        this.setState({[fieldName]: val });
+    onFieldChanged = (fieldName, evt, value) => {
+        this.setState({[fieldName]: value });
+    }
+
+    onSelectChanged = (fieldName, evt, index, value) => {
+        this.setState({[fieldName]: value });
     }
 
     onSubmit = () => {
@@ -54,8 +60,18 @@ class GameDialog extends Component {
                             </div>
                         </div>
                         {this.buildTextField("name", "Name")}
-                        {this.buildTextField("numPlayers", "Players")}
-                        {this.buildTextField("numBots", "Bots")}
+                        <SelectField floatingLabelText="Number of Players" value={this.state.numPlayers} onChange={this.onSelectChanged.bind(null, "numPlayers")}>
+                            <MenuItem value={1} primaryText={1}></MenuItem>
+                            <MenuItem value={2} primaryText={2}></MenuItem>
+                            <MenuItem value={3} primaryText={3}></MenuItem>
+                            <MenuItem value={4} primaryText={4}></MenuItem>
+                        </SelectField>
+                        <SelectField floatingLabelText="Number of Bots" value={this.state.numBots} onChange={this.onSelectChanged.bind(null, "numBots")}>
+                            <MenuItem value={0} primaryText={0}></MenuItem>
+                            <MenuItem value={1} primaryText={1}></MenuItem>
+                            <MenuItem value={2} primaryText={2}></MenuItem>
+                        </SelectField>
+
                       <RaisedButton onTouchTap={this.onSubmit} label="Submit" primary={true}/>
                     </div>
                 </div>

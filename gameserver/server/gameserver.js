@@ -1,7 +1,7 @@
 var log = false;
 var  _ = require('underscore'),
     BaseServer = require("./baseserver.js"),
-    BaseHttpController = require('./basehttpcontroller.js'),
+    BaseHttpController = require('./basehttpcontroller.js').BaseHttpController,
     Game = require('./game.js');
 
 class GameServer extends  BaseServer {
@@ -37,6 +37,7 @@ class GameServer extends  BaseServer {
         this.log("Attempting to register: {{user}}" , {user: JSON.stringify(data)});
         if(!this.game){
             this.log("user {{user}} attempted to connect to inactive node (no game) ", {user: JSON.stringify(data)})
+            socket.emit("gameReset");
             return;
         }
 

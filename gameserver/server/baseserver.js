@@ -3,6 +3,7 @@ var express = require('express'),
     io = require('socket.io'),
     _ = require('underscore'),
     bodyParser = require('body-parser'),
+    AliveController = require('./basehttpcontroller.js').AliveController,
     ApiClient = require("./api.js");
 
 
@@ -53,6 +54,8 @@ class BaseServer {
             var controller = this.httpRoutes[route];
             this.app.all(route, controller.request.bind(controller));
         }
+        var aliveController = new AliveController(this);
+        this.app.all("/alive", aliveController.request.bind(aliveController));
 
     }
 
@@ -74,15 +77,26 @@ class BaseServer {
     }
 
     run() {
+        this.registerNode();
+    }
+
+    registerNode(){
         var onRegister = (node) => {
             this.port = node.port
             this.server.listen(this.port);
-            this.log("listening on port " + this.port);
+            this.log("listening on {{port}}", {port: this.port});
             this.heartbeat();
             this.onInit();
 
         }
-        this.apiClient.registerNode(this.nodeType, this.nodePayload(), onRegister);
+        var onRegisterFail = (resp) => {
+            this.log("received {{status}} - {{resp}} from api server, token wiped, trying again for new token/port assignment", {status: resp.statusCode,
+                                                                                                                                 resp: JSON.stringify(resp.body)})
+            setTimeout(this.registerNode.bind(this), 4000)
+
+        }
+        this.apiClient.registerNode(this.nodeType, this.nodePayload(), onRegister, onRegisterFail);
+
     }
 
 
@@ -133,13 +147,16 @@ class BaseServer {
         socket.join(channel);
     }
 
+    get prefix(){
+        return _.template("{{name}}|{{tag}}: ")({name: this.name, tag: this.nodeTag})
+    }
+
     log(msg, args) {
-        var prefix = _.template("{{name}}|{{tag}}: ")({name: this.name, tag: this.nodeTag})
         if(!args){
-            console.log(prefix + msg);
+            console.log(this.prefix + msg);
         }
         else{
-            console.log(prefix + _.template(msg)(args))
+            console.log(this.prefix + _.template(msg)(args))
         }
     }
 

@@ -19,7 +19,11 @@ releaseGameNode = function () {
 
 if (cluster.isMaster){
     var numWorkers = require('os').cpus().length;
+
     var pidEnvMap = {};
+    if(CONFIG.numWorkers !== undefined){
+        numWorkers = CONFIG.numWorkers;
+    }
     console.log('Master cluster setting up ' + numWorkers + ' workers...');
     let started = 0;
 

@@ -45,6 +45,7 @@ class GameLobby extends Component {
         api.updateGame(gameData, this.props.onGameJoined)
     }
 
+
     getEmptySlots () {
         var ret = [];
         for(var i=0;i<(this.props.game.num_players - this.props.game.players.length);i++){

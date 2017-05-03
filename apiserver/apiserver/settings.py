@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os, sys
+import os
+import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -80,12 +81,6 @@ WSGI_APPLICATION = 'apiserver.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
 
 
 # Internationalization
@@ -122,21 +117,21 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console':{
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
-            'stream': sys.stdout,
-            'formatter':'simple',
-        },
-        'default':{
+        'console': {
             'level': 'DEBUG',
-            'class':'logging.StreamHandler',
+            'class': 'logging.StreamHandler',
             'stream': sys.stdout,
-#            'class':'logging.handlers.RotatingFileHandler',
-#            'filename': LOG_FILE,
-        #    'maxBytes': 1024*1024*5, # 5 MB
-        #    'backupCount': 5,
-            'formatter':'simple',
+            'formatter': 'simple',
+        },
+        'default': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            #            'class':'logging.handlers.RotatingFileHandler',
+            #            'filename': LOG_FILE,
+            #    'maxBytes': 1024*1024*5, # 5 MB
+            #    'backupCount': 5,
+            'formatter': 'simple',
 
         },
         'null': {
@@ -146,8 +141,8 @@ LOGGING = {
     },
     'loggers': {
         'default': {
-                      'handlers': ['default', 'console'],
-                      'level': 'DEBUG',
+            'handlers': ['default', 'console'],
+            'level': 'DEBUG',
         },
         'apnsclient.apns': {
             'handlers': ['default'],
@@ -178,6 +173,7 @@ LOGGING = {
     }
 }
 API_RESPONSE_LEGACY_FORMAT = False
+
 try:
     from apiserver.ops_settings import *
 except ImportError:

@@ -32,6 +32,15 @@ class Game(BaseModel):
         return self.players.count() == self.num_players and all([p.ready for p in self.players])
 
     @property
+    def dict(self):
+        ret = super(BaseModel, self).dict
+        ret["state"] = self.state
+        if self.node:
+            ret["node"] = self.node.destination
+        return ret
+
+
+    @property
     def state(self):
         if self.start_time is None:
             if self.node is None:

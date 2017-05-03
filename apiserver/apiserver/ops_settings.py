@@ -25,6 +25,7 @@ BROKER_URL = "redis://127.0.0.1:6379/2"
 
 
 LOG_FILE = os.path.join('/srv/space-race/logs/apiserver', "apiserver.log")
+LOG_FILE = os.path.join('/home/joel/space-race/logs/apiserver', "apiserver.log")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,

@@ -72,15 +72,15 @@ class ApiClient {
 
     call(endpoint, method, payload, success, error) {
 
-        var defaultErrback = (out) => {
+        var defaultCallback = (out) => {
             if(out){
                 console.log(out);
             }
         }
 
-        var defaultCallback = (out) => {
-            if(out){
-                console.log(out);
+        var defaultErrback = (resp) => {
+            if(resp){
+                console.log(resp.statusCode + ":" + JSON.stringify(resp.body));
             }
         }
 
@@ -110,7 +110,7 @@ class ApiClient {
                 if (response.statusCode === 401) {
                     this.wipeToken();
                 }
-                error(body);
+                error(response);
             } else {
                 success(body);
             }

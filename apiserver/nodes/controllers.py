@@ -35,7 +35,7 @@ class BaseNodeController(BaseController):
         if not token:
             return auth_response
         try:
-            request.node = NodeClass.objects.get(token=token, active=True)
+            request.node = NodeClass.objects.get(token=token)
         except NodeClass.DoesNotExist:
             return auth_response
 
@@ -60,6 +60,7 @@ class BaseNodeController(BaseController):
         Update node status
         API Handler: PUT /node
         """
+        request.node.active = True
         if hasattr(info, 'available'):
             request.node.available=str_to_bool(info.available)
             request.node.save()

@@ -20,16 +20,15 @@
 }
 
 
-#chatLogInner {
+.chatLogInner {
 	overflow-y: scroll;
 	height: 100%;
     padding: 3px;
     text-align: left;
 }
-#chatLogWrapper{
+.chatLogWrapper{
 	height: 300px;
     padding: 5px;
-	margin-top: 4px;
     border: 1px solid gray;
     border-radius: 5px;
 }
@@ -98,6 +97,18 @@ body{
 .flex4 {
   flex: 4;
 }
+.flex5 {
+  flex: 5;
+}
+.flex6 {
+  flex: 6;
+}
+.flex8{
+    flex: 8;
+}
+.flex10 {
+  flex: 10;
+}
 .dialogClose{
     cursor: pointer;
 }
@@ -121,4 +132,16 @@ body{
 }
 .hiddenScroll::-webkit-scrollbar {
 	    display: none;
+}
+.playerList{
+    border: 1px solid gray;
+    border-radius: 5px;
+
+}
+.playerListHeader{
+    text-align: center;
+    border-bottom: 1px solid gray;
+}
+.playerInList{
+    text-align: right;
 }

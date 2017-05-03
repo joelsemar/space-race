@@ -12,8 +12,11 @@ class BaseHttpController {
         this.server = server;
     }
 
-    notAllowed(){
+    get notAllowed() {
         return {status: 405}
+    }
+    success(msg) {
+        return {status: 200, msg: msg}
     }
 
     request(req, res){
@@ -33,18 +36,26 @@ class BaseHttpController {
 
 
     create (req, onComplete){
-        onComplete(this.notAllowed());
+        onComplete(this.notAllowed);
     }
     read (req, onComplete){
-        onComplete(this.notAllowed());
+        onComplete(this.notAllowed);
     }
     update (req, onComplete){
-        onComplete(this.notAllowed());
+        onComplete(this.notAllowed);
     }
     delete (req, onComplete){
-        onComplete(this.notAllowed());
+        onComplete(this.notAllowed);
     }
 
 }
 
-module.exports = BaseHttpController;
+class AliveController extends BaseHttpController{
+    read (req, onComplete){
+        onComplete(this.success(this.server.prefix + " is alive at " + new Date()));
+    }
+
+}
+
+
+module.exports = {BaseHttpController: BaseHttpController, AliveController: AliveController};
