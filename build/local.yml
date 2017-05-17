@@ -12,7 +12,7 @@ local_mount: true
 # these are unfortunate copies that do nothing more than make the ./manage.py work
 # they dont affect actual deployment (we cant use jinja interpolation in this file)
 services:
-   encast:
+   apiserver:
       django_root: /srv/space-race/apiserver
 
 virtualenv: /srv/python-env

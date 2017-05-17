@@ -5,7 +5,9 @@ from datetime import datetime, timedelta
 from services.models import BaseModel
 from uuid import uuid4
 
-NODE_EXPIRY = 30 * 1000
+
+# after fifteen seconds with no hearbeat, a node is considered sick
+NODE_EXPIRY = 15 * 1000
 
 
 class BaseNode(BaseModel):

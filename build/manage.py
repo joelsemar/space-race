@@ -10,7 +10,7 @@ parser.add_argument("command", help="manage command to run")
 parser.add_argument("-m", dest="hostname",
                     help="machine hostname to execute command on")
 parser.add_argument("-s", dest="service",
-                    help="django service to interact with", default="encast")
+                    help="django service to interact with", default="apiserver")
 parser.add_argument("command_args", nargs=argparse.REMAINDER)
 
 

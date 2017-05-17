@@ -25,7 +25,7 @@ class Game(BaseModel):
 
     @property
     def players(self):
-        return Player.objects.filter(game=self)
+        return Player.objects.filter(game=self).order_by("nickname")
 
     @property
     def players_ready(self):
@@ -38,7 +38,6 @@ class Game(BaseModel):
         if self.node:
             ret["node"] = self.node.destination
         return ret
-
 
     @property
     def state(self):

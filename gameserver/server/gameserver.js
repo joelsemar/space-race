@@ -41,7 +41,7 @@ class GameServer extends  BaseServer {
             return;
         }
 
-        var player = this.game.connectPlayer(data, socket);
+        var player = this.game.connectPlayer(data.tok, socket);
         if (!player) {
             this.log("Player " + data.tok + " not found")
             socket.emit('tokenFail');

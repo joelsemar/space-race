@@ -8,9 +8,11 @@
     path:  "{{project.root}}"
 
 
-- name: "Check list of Node.js apps running."
+- name: "Check list {{project.app_name}} is running."
   command: forever list
   register: forever_list
+  become: true
+  become_user: "{{devops.app_user}}"
   changed_when: false
   tags:
      - bounce
@@ -27,12 +29,11 @@
      - update
 
 
-
 - name: "Start forever server"
-  command: forever start {{project.entrypoint}} --uid={{project.app_name}}
+  command: forever start -a --uid={{project.app_name}} {{project.entrypoint}} 
   become: true
   become_user: "{{devops.app_user}}"
-  when: "forever_list.stdout.find('{{project.app_name}}') == -1"
+  when: forever_list.stdout.find('{{project.app_name}}') == -1
   tags:
      - bounce
      - update
@@ -41,7 +42,7 @@
   command: forever restart {{project.app_name}}
   become: true
   become_user: "{{devops.app_user}}"
-  when: "forever_list.stdout.find('{{project.app_name}}') != -1"
+  when: forever_list.stdout.find('{{project.app_name}}') != -1
   tags:
      - bounce
      - update

@@ -44,7 +44,7 @@ def assign_to_node(game):
     node.available = False
     payload = game.dict
     payload['players'] = [{'id': p.id, 'nickname': p.nickname, 'token': p.token}
-                          for p in Player.objects.filter(game=game)]
+                          for p in game.players]
     payload['node'] = node.destination
 
     resp = send_to_node(node, "/game", payload)
@@ -72,7 +72,7 @@ def update_lobby():
         if game.node:
             payload['node'] = game.node.destination
         payload['players'] = [{'id': p.id, 'nickname': p.nickname, 'ready': p.ready}
-                              for p in Player.objects.filter(game=game)]
+                              for p in game.players]
         ret.append(payload)
 
     for node in nodes:
@@ -85,3 +85,4 @@ def send_to_node(node, path, data):
     headers = {'Content-Type': 'application/json'}
     data = json.dumps(data, cls=DateTimeAwareJSONEncoder)
     return requests.put(node.destination + path, data, headers=headers)
+

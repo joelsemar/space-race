@@ -1,11 +1,9 @@
 import os
 ENV = "LOCAL"
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-NODE_HOSTS = ["10.10.10.100", "192.168.0.2"]
+NODE_HOSTS = ["127.0.0.1", "localhost", "192.168.0.2"]
 LOBBY_LOCATION = "http://127.0.0.1:3000"
-GAME_LOCATION = "http://127.0.0.1:8000/play"  
-#LOBBY_LOCATION = 'http://local.planetgrab.com/'
-#GAME_LOCATION = 'http://local.planetgrab.com/play'
+GAME_LOCATION = "http://127.0.0.1:8000/play"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

@@ -33,7 +33,7 @@ app_config = yaml.load(open('local.yml').read())
 os.chdir('ansible')
 
 extra_args = ''
-if args.env == "local":
+if args.env == "local" or args.env == "vm":
     bootstrap_user = 'vagrant'
     extra_args = "-e '@../local.yml'"
     bootstrap_key = "~/.vagrant.d/insecure_private_key"
@@ -46,6 +46,9 @@ else:
 extra_args += ' --extra-vars "env={env}"'.format(env=args.env)
 if args.react_app_location:
     extra_args += ' --extra-vars "react_app_location=%s"' % (args.react_app_location)
+elif app_config.get("react_app_location"):
+    extra_args += ' --extra-vars "react_app_location=%s"' % (app_config['react_app_location'])
+
 
 if app_config.get("secrets"):
     extra_args += ' --extra-vars "secrets={secrets}"'.format(secrets=app_config.get("secrets"))

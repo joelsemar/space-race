@@ -5,12 +5,5 @@ devops:
   app_user: space-race
   key: ~/.ssh/space-race-devops
   public_key: ~/.ssh/space-race-devops.pub
-
-es_instance_name: es-node1
-es_version: 2.4.0
-
-es_config: 
-     network.host: 0.0.0.0,
-     http.port: 9201
      
 

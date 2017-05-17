@@ -1,7 +1,7 @@
 import os, sys
 
 DEBUG = True
-ENV = "LOCAL"
+ENV = "VM"
 
 MEDIA_ROOT = "/srv/space-race/media/"
 STATIC_ROOT = "/srv/space-race/static/"
@@ -25,7 +25,6 @@ BROKER_URL = "redis://127.0.0.1:6379/2"
 
 
 LOG_FILE = os.path.join('/srv/space-race/logs/apiserver', "apiserver.log")
-LOG_FILE = os.path.join('/home/joel/space-race/logs/apiserver', "apiserver.log")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -60,7 +59,7 @@ LOGGING = {
     },
     'loggers': {
         'default': {
-                      'handlers': ['default', 'console'],
+                      'handlers': ['default'],
                       'level': 'DEBUG',
         },
         'apnsclient.apns': {
@@ -92,7 +91,7 @@ LOGGING = {
     }
 }
 try:
-    from apiserver.local_settings import *
+    from apiserver.vm_settings import *
 except ImportError:
     pass
 
