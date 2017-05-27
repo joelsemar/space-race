@@ -14,6 +14,7 @@ parser.add_argument("-v", dest="verbosity", help="ansible verbosity", default=''
 parser.add_argument("--react-app-location", help="location of the react app", dest="react_app_location")
 parser.add_argument('--bootstrap', dest='run_bootstrap', action='store_true',
                     help="boot strap env with devops keys and necessary users")
+parser.add_argument('--lxd', dest="lxd", action="store_true", help="flag, using lxdock or no")
 parser.add_argument("-u", dest="local_user", help="local user to run with devlocalserver role", default='joel')
 
 args = parser.parse_args()
@@ -33,7 +34,10 @@ app_config = yaml.load(open('local.yml').read())
 os.chdir('ansible')
 
 extra_args = ''
-if args.env == "local" or args.env == "vm":
+if args.lxd:
+    bootstrap_user = "root"
+    bootstrap_key = "~/.ssh/id_rsa.pub"
+elif args.env == "local" or args.env == "vm":
     bootstrap_user = 'vagrant'
     extra_args = "-e '@../local.yml'"
     bootstrap_key = "~/.vagrant.d/insecure_private_key"

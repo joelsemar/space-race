@@ -1,0 +1,8 @@
+name: space-race
+
+containers:
+  - name: node01
+    image: ubuntu/xenial
+    provisioning:
+      - type: shell
+        script: "lxdbootstrap.sh"

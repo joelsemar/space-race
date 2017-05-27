@@ -52,7 +52,7 @@ class GameDialog extends Component {
         return (
             <Dialog modal={true} open={this.props.open}>
                 <div className="container center">
-                    <div className="container vertical">
+                    <div className="container vertical flex1">
                         <div className="container">
                             <div className="sectionHeader">Game Settings</div>
                             <div className="container horizontal horizontal-reverse vertical-center flex1">

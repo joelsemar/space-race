@@ -173,6 +173,7 @@ LOGGING = {
     }
 }
 API_RESPONSE_LEGACY_FORMAT = False
+ENV = "LOCAL"
 
 try:
     from apiserver.ops_settings import *
